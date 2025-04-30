@@ -33,6 +33,7 @@ export default function ResultsPage() {
 
       // 사용자 정보 준비
       const userData = currentResult?.userInfo || {
+        id: "", // id 속성 추가
         email: "",
         name: "",
         company: "",
@@ -136,9 +137,10 @@ export default function ResultsPage() {
     );
   }
 
-  const stressLevel = currentResult.hrv
-    ? calculateStressLevel(currentResult.hrv.rmssd)
-    : "분석 불가";
+  const stressLevel =
+    currentResult.hrv && currentResult.hrv.rmssd !== undefined
+      ? calculateStressLevel(currentResult.hrv.rmssd)
+      : "분석 불가";
 
   return (
     <div className="container mx-auto py-12 px-4">
@@ -224,14 +226,22 @@ export default function ResultsPage() {
               <TableBody>
                 <TableRow>
                   <TableCell>RMSSD</TableCell>
-                  <TableCell>{currentResult.hrv.rmssd.toFixed(2)} ms</TableCell>
+                  <TableCell>
+                    {currentResult.hrv.rmssd !== undefined
+                      ? `${currentResult.hrv.rmssd.toFixed(2)} ms`
+                      : "-"}
+                  </TableCell>
                   <TableCell>
                     연속된 RR 간격의 제곱 평균에 루트를 씌운 값
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>SDNN</TableCell>
-                  <TableCell>{currentResult.hrv.sdnn.toFixed(2)} ms</TableCell>
+                  <TableCell>
+                    {currentResult.hrv.sdnn !== undefined
+                      ? `${currentResult.hrv.sdnn.toFixed(2)} ms`
+                      : "-"}
+                  </TableCell>
                   <TableCell>RR 간격의 표준편차</TableCell>
                 </TableRow>
                 <TableRow>
@@ -267,9 +277,8 @@ export default function ResultsPage() {
                   <TableCell>pNN50</TableCell>
                   <TableCell>
                     {currentResult.hrv.pnn50 !== undefined
-                      ? currentResult.hrv.pnn50.toFixed(2)
-                      : "-"}{" "}
-                    %
+                      ? `${currentResult.hrv.pnn50.toFixed(2)} %`
+                      : "-"}
                   </TableCell>
                   <TableCell>50ms 초과 차이를 보이는 RR 간격 비율</TableCell>
                 </TableRow>

@@ -31,7 +31,8 @@ export async function verifyToken(token: string) {
 
 // 현재 로그인한 사용자 가져오기
 export async function getCurrentUser() {
-  const token = cookies().get("auth-token")?.value;
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get("auth-token")?.value;
 
   if (!token) {
     return null;
@@ -56,8 +57,9 @@ export async function getCurrentUser() {
 }
 
 // 로그아웃
-export function logout() {
-  cookies().delete("auth-token");
+export async function logout() {
+  const cookiesStore = await cookies();
+  cookiesStore.delete("auth-token");
 }
 
 // 인증 미들웨어

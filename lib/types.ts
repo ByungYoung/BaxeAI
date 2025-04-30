@@ -1,9 +1,12 @@
 import { HRVMetrics } from "./api-client";
 
 export interface UserInfo {
+  id: string;
   company: string;
   email: string;
   name?: string;
+  isAdmin?: boolean;
+  isGuest?: boolean;
 }
 
 // 기분 상태 타입 추가
