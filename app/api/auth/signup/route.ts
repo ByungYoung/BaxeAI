@@ -25,7 +25,8 @@ export async function POST(request: Request) {
     }
 
     // 이미 가입된 이메일인지 확인
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.findUnique({
+      model: "User",
       where: { email },
     });
 
@@ -43,7 +44,8 @@ export async function POST(request: Request) {
     }
 
     // 사용자 생성
-    const user = await prisma.user.create({
+    const user = await prisma.create({
+      model: "User",
       data: {
         email,
         password: hashedPassword,

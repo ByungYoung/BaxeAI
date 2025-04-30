@@ -43,7 +43,8 @@ export async function getCurrentUser() {
     return null;
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.findUnique({
+    model: "User",
     where: { id: decoded.userId },
   });
 
