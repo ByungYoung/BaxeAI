@@ -1,14 +1,18 @@
-ore
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
 
 # next.js
 /.next/
 /out/
+.next
 
 # production
 /build
@@ -16,16 +20,17 @@ ore
 # misc
 .DS_Store
 *.pem
+.vscode
+.idea
 
 # debug
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
 # local env files
-.env*.local
 .env
+.env*.local
 .env.development
 .env.test
 .env.production
@@ -37,22 +42,60 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# IDE
-.idea/
-.vscode/
-*.sublime-project
-*.sublime-workspace
+# prisma
+/prisma/dev.db
+/prisma/dev.db-journal
 
-# testing
-/coverage
+# temporary files
+/tmp
+/temp
 
-# cache
-.cache/
-.npm/
+# logs
+logs
+*.log
+
+# cache directories
+.eslintcache
+.cache
+
+# Additional ignores
+# macOS
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
 # Python
-/venv/
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 .Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+ENV/
+
+# rppg specific
+processed_data/
+recordings/
+uploads/

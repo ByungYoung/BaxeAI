@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(cuid())
+  email            String             @unique
+  name             String?
+  company          String
+  password         String?            // 선택적 필드로 변경
+  isAdmin          Boolean            @default(false) // 관리자 여부 필드 추가
+  measurementResults MeasurementResult[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model MeasurementResult {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  heartRate   Float
+  confidence  Float
+  rmssd       Float?
+  sdnn        Float?
+  lf          Float?
+  hf          Float?
+  lfHfRatio   Float?
+  pnn50       Float?
+  mood        String?  // 기분 상태 필드 추가
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}

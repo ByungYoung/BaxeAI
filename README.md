@@ -1,4 +1,4 @@
-# rpgg-camera
+# rPPG-camera
 
 rPPG(원격 광용적맥파) 기반 카메라 및 신호 처리 웹 애플리케이션
 
