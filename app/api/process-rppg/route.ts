@@ -1,93 +1,135 @@
-import { NextResponse } from "next/server"
-import { spawn } from "child_process"
-import fs from "fs/promises"
-import path from "path"
-import { v4 as uuidv4 } from "uuid"
+import { NextResponse } from "next/server";
+import { spawn } from "child_process";
+import fs from "fs/promises";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
 
 // This is a server-side route handler that will process the frames using pyVHR
 export async function POST(request: Request) {
   try {
-    const { frames } = await request.json()
+    const { frames } = await request.json();
 
     if (!frames || !Array.isArray(frames) || frames.length === 0) {
-      return NextResponse.json({ error: "Invalid or missing frames data" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid or missing frames data" },
+        { status: 400 }
+      );
     }
 
     // Create a temporary directory to store frames
-    const sessionId = uuidv4()
-    const tempDir = path.join(process.cwd(), "tmp", sessionId)
+    const sessionId = uuidv4();
+    const tempDir = path.join(process.cwd(), "tmp", sessionId);
 
     try {
-      await fs.mkdir(tempDir, { recursive: true })
+      await fs.mkdir(tempDir, { recursive: true });
 
       // Save frames as images
       for (let i = 0; i < frames.length; i++) {
-        const base64Data = frames[i].replace(/^data:image\/jpeg;base64,/, "")
-        const filePath = path.join(tempDir, `frame_${i.toString().padStart(5, "0")}.jpg`)
-        await fs.writeFile(filePath, base64Data, "base64")
+        const base64Data = frames[i].replace(/^data:image\/jpeg;base64,/, "");
+        const filePath = path.join(
+          tempDir,
+          `frame_${i.toString().padStart(5, "0")}.jpg`
+        );
+        await fs.writeFile(filePath, base64Data, "base64");
       }
 
       // Call Python script with pyVHR
-      const result = await runPyVHR(tempDir)
+      const result = await runPyVHR(tempDir);
 
       // Clean up temporary files
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, { recursive: true, force: true });
 
-      return NextResponse.json(result)
+      return NextResponse.json(result);
     } catch (error) {
-      console.error("Error processing frames:", error)
+      console.error("Error processing frames:", error);
 
       // Clean up on error
       try {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await fs.rm(tempDir, { recursive: true, force: true });
       } catch (cleanupError) {
-        console.error("Error cleaning up temp files:", cleanupError)
+        console.error("Error cleaning up temp files:", cleanupError);
       }
 
-      throw error
+      throw error;
     }
   } catch (error) {
-    console.error("Error in process-rppg API route:", error)
-    return NextResponse.json({ error: "Failed to process video frames" }, { status: 500 })
+    console.error("Error in process-rppg API route:", error);
+    return NextResponse.json(
+      { error: "Failed to process video frames" },
+      { status: 500 }
+    );
   }
 }
 
 /**
  * Runs the pyVHR processing on the saved frames
  */
-async function runPyVHR(framesDir: string): Promise<{ heartRate: number; confidence: number }> {
+async function runPyVHR(
+  framesDir: string
+): Promise<{ heartRate: number; confidence: number }> {
   return new Promise((resolve, reject) => {
     // Path to Python script that uses pyVHR
-    const pythonScript = path.join(process.cwd(), "scripts", "process_rppg.py")
+    const pythonScript = path.join(process.cwd(), "scripts", "process_rppg.py");
 
-    // Spawn Python process
-    const pythonProcess = spawn("python", [pythonScript, framesDir])
+    // Path to Python executable in venv (for Mac M1)
+    const pythonPath = path.join(process.cwd(), "venv", "bin", "python");
 
-    let resultData = ""
-    let errorData = ""
+    // Check if venv exists
+    fs.access(pythonPath)
+      .then(() => {
+        // Use virtual environment Python if available
+        console.log(`Using Python from virtual environment: ${pythonPath}`);
+        executePython(pythonPath, pythonScript, framesDir, resolve, reject);
+      })
+      .catch(() => {
+        // Fall back to system Python as a backup
+        console.log("Virtual environment not found, using system Python");
+        executePython("python", pythonScript, framesDir, resolve, reject);
+      });
+  });
+}
 
-    pythonProcess.stdout.on("data", (data) => {
-      resultData += data.toString()
-    })
+/**
+ * Execute the Python script with the specified Python interpreter
+ */
+function executePython(
+  pythonCommand: string,
+  scriptPath: string,
+  framesDir: string,
+  resolve: (value: { heartRate: number; confidence: number }) => void,
+  reject: (reason: Error) => void
+) {
+  // Spawn Python process
+  const pythonProcess = spawn(pythonCommand, [scriptPath, framesDir]);
 
-    pythonProcess.stderr.on("data", (data) => {
-      errorData += data.toString()
-    })
+  let resultData = "";
+  let errorData = "";
 
-    pythonProcess.on("close", (code) => {
-      if (code !== 0) {
-        console.error(`Python process exited with code ${code}`)
-        console.error(`Python stderr: ${errorData}`)
-        reject(new Error(`Python process failed with code ${code}`))
-        return
-      }
+  pythonProcess.stdout.on("data", (data) => {
+    resultData += data.toString();
+  });
 
-      try {
-        const result = JSON.parse(resultData)
-        resolve(result)
-      } catch (error) {
-        reject(new Error(`Failed to parse Python output: ${resultData}`))
-      }
-    })
-  })
+  pythonProcess.stderr.on("data", (data) => {
+    errorData += data.toString();
+    console.error(`Python stderr: ${data.toString()}`);
+  });
+
+  pythonProcess.on("close", (code) => {
+    if (code !== 0) {
+      console.error(`Python process exited with code ${code}`);
+      console.error(`Python stderr: ${errorData}`);
+      reject(
+        new Error(`Python process failed with code ${code}: ${errorData}`)
+      );
+      return;
+    }
+
+    try {
+      const result = JSON.parse(resultData);
+      resolve(result);
+    } catch (error) {
+      console.error(`Failed to parse Python output: ${resultData}`);
+      reject(new Error(`Failed to parse Python output: ${resultData}`));
+    }
+  });
 }
