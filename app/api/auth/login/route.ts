@@ -14,8 +14,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // 사용자 찾기 - Prisma 6.x 버전에 맞게 수정
-    const user = await prisma.findUnique({
+    // 사용자 찾기
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 

@@ -15,8 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 이미 존재하는 사용자인지 확인
-    const existingUser = await prisma.findUnique({
-      model: "User",
+    const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -26,8 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 새 사용자 생성
-    const newUser = await prisma.create({
-      model: "User",
+    const newUser = await prisma.user.create({
       data: {
         email,
         name,
@@ -57,8 +55,7 @@ export async function GET(request: NextRequest) {
       whereClause = { email };
     }
 
-    const users = await prisma.findMany({
-      model: "User",
+    const users = await prisma.user.findMany({
       where: whereClause,
       orderBy: {
         createdAt: "desc",

@@ -14,14 +14,12 @@ export async function GET(request: NextRequest) {
     }
 
     // admin 계정의 id라면 전체 이력 반환
-    const adminUser = await prisma.findFirst({
-      model: "User",
+    const adminUser = await prisma.user.findFirst({
       where: { email: "admin@xitst.com", isAdmin: true },
     });
     if (adminUser && userId === adminUser.id) {
       // 전체 이력 반환
-      const results = await prisma.findMany({
-        model: "MeasurementResult",
+      const results = await prisma.measurementResult.findMany({
         orderBy: { timestamp: "desc" },
         include: {
           user: {
@@ -39,8 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 일반 사용자는 자신의 데이터만 볼 수 있음
-    const results = await prisma.findMany({
-      model: "MeasurementResult",
+    const results = await prisma.measurementResult.findMany({
       where: { userId },
       orderBy: { timestamp: "desc" },
       include: {

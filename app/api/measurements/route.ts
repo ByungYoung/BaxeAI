@@ -36,8 +36,7 @@ export async function POST(request: NextRequest) {
     // 이메일이 제공된 경우, 항상 이를 우선적으로 처리
     if (userEmail) {
       // 이메일로 사용자 찾기
-      const existingUser = await prisma.findUnique({
-        model: "User",
+      const existingUser = await prisma.user.findUnique({
         where: { email: userEmail },
       });
 
@@ -51,8 +50,7 @@ export async function POST(request: NextRequest) {
           (userName && userName !== existingUser.name) ||
           (userCompany && userCompany !== existingUser.company)
         ) {
-          await prisma.update({
-            model: "User",
+          await prisma.user.update({
             where: { id: existingUser.id },
             data: {
               name: userName || existingUser.name,
@@ -63,8 +61,7 @@ export async function POST(request: NextRequest) {
       } else {
         // 이메일이 있지만 사용자가 없으면 새 사용자 생성
         const tempPassword = Math.random().toString(36).slice(-8); // 임시 비밀번호
-        const newUser = await prisma.create({
-          model: "User",
+        const newUser = await prisma.user.create({
           data: {
             email: userEmail,
             name: userName || userEmail.split("@")[0],
@@ -80,8 +77,7 @@ export async function POST(request: NextRequest) {
     // userId만 있고 이메일이 없는 경우 (비정상적인 경우지만 처리)
     else if (finalUserId) {
       // userId로 사용자 정보 확인
-      const user = await prisma.findUnique({
-        model: "User",
+      const user = await prisma.user.findUnique({
         where: { id: finalUserId },
       });
 
@@ -97,14 +93,12 @@ export async function POST(request: NextRequest) {
     if (!finalUserId) {
       // 익명 사용자 ID로 저장 (익명 사용자 생성 또는 기존 익명 사용자 사용)
       const anonymousEmail = "anonymous@user.com";
-      let anonymousUser = await prisma.findUnique({
-        model: "User",
+      let anonymousUser = await prisma.user.findUnique({
         where: { email: anonymousEmail },
       });
 
       if (!anonymousUser) {
-        anonymousUser = await prisma.create({
-          model: "User",
+        anonymousUser = await prisma.user.create({
           data: {
             email: anonymousEmail,
             name: "익명 사용자",
@@ -119,8 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 측정 결과 저장
-    const newResult = await prisma.create({
-      model: "MeasurementResult",
+    const newResult = await prisma.measurementResult.create({
       data: {
         userId: finalUserId,
         heartRate,
@@ -170,8 +163,7 @@ export async function GET(request: NextRequest) {
       whereClause = { userId };
     }
 
-    const results = await prisma.findMany({
-      model: "MeasurementResult",
+    const results = await prisma.measurementResult.findMany({
       where: whereClause,
       include: {
         user: {
