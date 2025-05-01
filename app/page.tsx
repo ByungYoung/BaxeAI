@@ -27,16 +27,11 @@ export default function HomePage() {
           <div className="flex flex-col gap-6 items-center text-center">
             <div className="space-y-4 max-w-2xl mx-auto">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-                카메라로 측정하는
-                <br />
-                <span className="text-blue-600 dark:text-blue-400">
-                  심박변이도(HRV)
-                </span>{" "}
-                서비스
+                Baxe AI로 심박수와 스트레스를 측정하세요
               </h1>
               <p className="text-muted-foreground md:text-lg">
-                스마트폰이나 웹캠 카메라만으로 당신의 심박수와 심박변이도를
-                측정하고 스트레스 수준을 분석해 보세요.
+                스마트폰이나 웹캠 카메라만으로 당신의 현재 상태를 측정하고
+                스트레스 수준을 분석해 보세요.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link href={measurePath}>

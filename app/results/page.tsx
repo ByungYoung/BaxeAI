@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useRef } from "react";
 import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,42 +15,161 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Smile, Frown, Meh, AlertCircle } from "lucide-react";
+import { Smile, Frown, Meh, AlertCircle, Camera } from "lucide-react";
 import { MoodState } from "@/lib/types";
-import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { analyzeHealthStatus, getMoodManagementTips } from "@/lib/openai-client";
+import { loadFaceDetectionModels, detectExpression, drawMoodMask } from "@/lib/face-detection";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ResultsPage() {
   const router = useRouter();
   const { currentResult, addToHistory } = useAppStore();
   const [isSaving, setIsSaving] = useState(false);
+  const [healthAnalysis, setHealthAnalysis] = useState<string | null>(null);
+  const [moodTips, setMoodTips] = useState<string | null>(null);
+  const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
+  const [isMoodTipsLoading, setIsMoodTipsLoading] = useState(false);
+  const [showFaceMask, setShowFaceMask] = useState(false);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const currentDetection = useRef<any>(null);
+
+  useEffect(() => {
+    const loadModels = async () => {
+      const loaded = await loadFaceDetectionModels();
+      setModelsLoaded(loaded);
+    };
+
+    if (currentResult) {
+      loadModels();
+    }
+  }, [currentResult]);
+
+  useEffect(() => {
+    if (currentResult && !healthAnalysis) {
+      setIsAnalysisLoading(true);
+      analyzeHealthStatus(currentResult)
+        .then((analysis) => {
+          setHealthAnalysis(analysis);
+        })
+        .catch((error) => {
+          console.error("건강 분석 오류:", error);
+          setHealthAnalysis("분석을 가져오는 중 오류가 발생했습니다.");
+        })
+        .finally(() => {
+          setIsAnalysisLoading(false);
+        });
+    }
+
+    if (currentResult?.mood && !moodTips) {
+      setIsMoodTipsLoading(true);
+      getMoodManagementTips(currentResult.mood)
+        .then((tips) => {
+          setMoodTips(tips);
+        })
+        .catch((error) => {
+          console.error("팁 가져오기 오류:", error);
+          setMoodTips("팁을 가져오는 중 오류가 발생했습니다.");
+        })
+        .finally(() => {
+          setIsMoodTipsLoading(false);
+        });
+    }
+  }, [currentResult, healthAnalysis, moodTips]);
+
+  const startFaceMasking = async () => {
+    if (!modelsLoaded || !videoRef.current || !canvasRef.current || !currentResult?.mood) {
+      toast({
+        title: "표정 인식 준비 중",
+        description: "표정 인식 모델을 로드 중입니다. 잠시 후 다시 시도하세요.",
+      });
+      return;
+    }
+
+    setShowFaceMask(true);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+
+        const canvas = canvasRef.current;
+        canvas.width = videoRef.current.videoWidth || 640;
+        canvas.height = videoRef.current.videoHeight || 480;
+
+        const intervalId = setInterval(async () => {
+          if (!videoRef.current || !canvasRef.current) return;
+
+          try {
+            const detection = await detectExpression(videoRef.current);
+            currentDetection.current = detection;
+
+            if (detection && canvasRef.current && currentResult.mood) {
+              drawMoodMask(
+                canvasRef.current,
+                detection as any,
+                currentResult.detectedMood || currentResult.mood
+              );
+            }
+          } catch (err) {
+            console.error("표정 감지 오류:", err);
+          }
+        }, 200);
+
+        return () => {
+          clearInterval(intervalId);
+          if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+          }
+        };
+      }
+    } catch (err) {
+      console.error("카메라 접근 오류:", err);
+      toast({
+        title: "카메라 오류",
+        description: "카메라에 접근할 수 없습니다. 권한을 확인해주세요.",
+        variant: "destructive",
+      });
+      setShowFaceMask(false);
+    }
+  };
+
+  const stopFaceMasking = () => {
+    setShowFaceMask(false);
+
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+  };
 
   const handleSaveResult = async () => {
     setIsSaving(true);
 
     try {
-      // 로컬 상태에 저장
       addToHistory();
 
-      // 사용자 정보 준비
       const userData = currentResult?.userInfo || {
-        id: "", // id 속성 추가
+        id: "",
         email: "",
         name: "",
         company: "",
       };
 
-      // DB에 저장
       const response = await fetch("/api/measurements", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: userData.id, // ID가 없을 수 있음
-          userEmail: userData.email, // 이메일 정보 추가
-          userName: userData.name, // 이름 정보 추가
-          userCompany: userData.company, // 소속 정보 추가
+          userId: userData.id,
+          userEmail: userData.email,
+          userName: userData.name,
+          userCompany: userData.company,
           heartRate: currentResult?.heartRate,
           confidence: currentResult?.confidence,
           rmssd: currentResult?.hrv?.rmssd,
@@ -94,7 +214,6 @@ export default function ResultsPage() {
     router.push("/measure");
   };
 
-  // 기분 아이콘 및 텍스트 반환 함수
   const getMoodIcon = (mood?: MoodState) => {
     switch (mood) {
       case "happy":
@@ -144,7 +263,7 @@ export default function ResultsPage() {
 
   return (
     <div className="container mx-auto py-12 px-4">
-      <h1 className="text-3xl font-bold mb-8">심박변이도 측정 결과</h1>
+      <h1 className="text-3xl font-bold mb-8">Baxe AI 측정 결과</h1>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -194,7 +313,6 @@ export default function ResultsPage() {
                   {getStressLevelText(stressLevel)}
                 </span>
               </div>
-              {/* 기분 상태 표시 */}
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">기분 상태</span>
                 <span className="flex items-center gap-2">
@@ -202,14 +320,155 @@ export default function ResultsPage() {
                   {getMoodText(currentResult.mood)}
                 </span>
               </div>
+
+              {currentResult.detectedMood && (
+                <>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-gray-500">감지된 표정</span>
+                    <span className="flex items-center gap-2">
+                      {getMoodIcon(currentResult.detectedMood)}
+                      {getMoodText(currentResult.detectedMood)}
+                    </span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-500">
+                        선택한 기분과 표정 일치도
+                      </span>
+                      <span className="font-medium">
+                        {currentResult.moodMatchScore || 0}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-1">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full"
+                        style={{
+                          width: `${currentResult.moodMatchScore || 0}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {currentResult.moodMatchScore &&
+                      currentResult.moodMatchScore > 70
+                        ? "매우 높은 일치도: 표정과 선택된 기분이 일치합니다."
+                        : currentResult.moodMatchScore &&
+                          currentResult.moodMatchScore > 40
+                        ? "보통 일치도: 표정과 선택된 기분이 어느 정도 일치합니다."
+                        : "낮은 일치도: 표정과 선택된 기분이 다르게 나타납니다."}
+                    </p>
+                  </div>
+                </>
+              )}
+
+              <div className="flex justify-center mt-3">
+                {!showFaceMask ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={startFaceMasking}
+                    className="w-full"
+                    disabled={!modelsLoaded}
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    {modelsLoaded ? "표정 마스킹 보기" : "모델 로딩 중..."}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={stopFaceMasking}
+                    className="w-full"
+                  >
+                    표정 마스킹 중지
+                  </Button>
+                )}
+              </div>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {showFaceMask && (
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>표정 마스킹</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-contain z-10"
+                  style={{ display: "none" }}
+                />
+                <canvas
+                  ref={canvasRef}
+                  className="absolute inset-0 w-full h-full object-contain z-20"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                {currentResult.detectedMood
+                  ? `감지된 표정 '${getMoodText(
+                      currentResult.detectedMood
+                    )}'에 대한 마스킹입니다.`
+                  : `선택한 기분 '${getMoodText(
+                      currentResult.mood
+                    )}'에 대한 마스킹입니다.`}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-2 mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Baxe AI 건강 상태 분석</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isAnalysisLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+            ) : (
+              <div>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {healthAnalysis}
+                </p>
+                <p className="text-xs text-gray-500 mt-4">
+                  ※ 본 분석은 참고용 정보이며, 의학적 진단을 대체하지 않습니다.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>감정 관리 추천</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isMoodTipsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ) : (
+              <div>
+                <p className="text-gray-700 dark:text-gray-300">{moodTips}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
       {currentResult.hrv && (
         <>
-          {/* LF/HF 요약 섹션 추가 */}
           <div className="grid gap-6 md:grid-cols-2 mt-6">
             <Card>
               <CardHeader>
@@ -284,7 +543,7 @@ export default function ResultsPage() {
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>심박변이도(HRV) 상세 지표</CardTitle>
+              <CardTitle>Baxe AI 분석 상세 지표</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>

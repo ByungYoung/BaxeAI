@@ -23,6 +23,7 @@ export interface RPPGCameraProps {
   onFrameCaptured?: (imageData: ImageData) => void; // 단일 프레임 캡처 콜백 추가
   active?: boolean; // 외부에서 활성화 여부 제어
   canvasRef?: React.RefObject<HTMLCanvasElement>; // 외부 캔버스 참조 추가
+  videoRef?: React.RefObject<HTMLVideoElement>; // 외부에서 비디오 참조 추가
   isProcessing?: boolean;
   processText?: string;
   measurementTime?: number;
@@ -35,6 +36,7 @@ export const RPPGCamera = ({
   onFrameCaptured,
   active,
   canvasRef: externalCanvasRef,
+  videoRef: externalVideoRef,
   isProcessing = false,
   processText = "처리 중...",
   measurementTime = 30,
@@ -44,7 +46,8 @@ export const RPPGCamera = ({
   const isMobile = useIsMobile();
 
   // 참조
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const internalVideoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = externalVideoRef || internalVideoRef; // 외부 참조 또는 내부 참조 사용
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const faceCanvasRef = useRef<HTMLCanvasElement>(null); // 얼굴 감지 시각화를 위한 캔버스
   const actualCanvasRef = externalCanvasRef || internalCanvasRef; // 외부 참조 또는 내부 참조 사용
@@ -281,7 +284,10 @@ export const RPPGCamera = ({
           faceDetectionRef.current = setInterval(detectFace, detectionInterval);
         }
       } catch (initialError) {
-        console.warn("기본 설정으로 카메라 접근 실패, 대체 설정 시도:", initialError);
+        console.warn(
+          "기본 설정으로 카메라 접근 실패, 대체 설정 시도:",
+          initialError
+        );
 
         // 기본 설정 실패 시 더 낮은 해상도로 시도
         try {
@@ -366,7 +372,10 @@ export const RPPGCamera = ({
       "visibilitychange",
       visibilityChangeRef.current
     );
-    window.removeEventListener("orientationchange", orientationChangeRef.current);
+    window.removeEventListener(
+      "orientationchange",
+      orientationChangeRef.current
+    );
   };
 
   // 측정 시작 버튼 클릭 처리
@@ -788,7 +797,10 @@ export const RPPGCamera = ({
 
           {/* 모바일 사용자를 위한 추가 팁 */}
           {isMobile && (
-            <Alert variant="default" className="mt-2 bg-blue-50 border-blue-200">
+            <Alert
+              variant="default"
+              className="mt-2 bg-blue-50 border-blue-200"
+            >
               <AlertCircle className="h-4 w-4 text-blue-600" />
               <AlertTitle className="text-blue-800">모바일 사용 팁</AlertTitle>
               <AlertDescription className="text-blue-700 text-xs">

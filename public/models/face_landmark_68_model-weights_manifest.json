@@ -1,0 +1,637 @@
+[
+  {
+    "weights": [
+      {
+        "name": "module_apply_default/block_0/conv2d/conv2d/w",
+        "shape": [3, 3, 3, 32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.004114450729113771,
+          "min": -0.6213219598755456
+        }
+      },
+      {
+        "name": "module_apply_default/block_0/conv2d/BatchNorm/gamma",
+        "shape": [32],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/conv2d/BatchNorm/beta",
+        "shape": [32],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/conv2d/BatchNorm/moving_mean",
+        "shape": [32],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/conv2d/BatchNorm/moving_variance",
+        "shape": [32],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/depthwise_conv2d/depthwise_conv2d/w",
+        "shape": [3, 3, 32, 1],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.005691964882026185,
+          "min": -0.6829157858431422
+        }
+      },
+      {
+        "name": "module_apply_default/block_0/depthwise_conv2d/BatchNorm/gamma",
+        "shape": [32],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/depthwise_conv2d/BatchNorm/beta",
+        "shape": [32],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/depthwise_conv2d/BatchNorm/moving_mean",
+        "shape": [32],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/depthwise_conv2d/BatchNorm/moving_variance",
+        "shape": [32],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/pointwise_conv2d/conv2d/w",
+        "shape": [1, 1, 32, 64],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.012667810590783741,
+          "min": -1.6467153768019
+        }
+      },
+      {
+        "name": "module_apply_default/block_0/pointwise_conv2d/BatchNorm/gamma",
+        "shape": [64],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/pointwise_conv2d/BatchNorm/beta",
+        "shape": [64],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/pointwise_conv2d/BatchNorm/moving_mean",
+        "shape": [64],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_0/pointwise_conv2d/BatchNorm/moving_variance",
+        "shape": [64],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_1/depthwise_conv2d/depthwise_conv2d/w",
+        "shape": [3, 3, 64, 1],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0063220320963392714,
+          "min": -0.8218641725241053
+        }
+      },
+      {
+        "name": "module_apply_default/block_1/depthwise_conv2d/BatchNorm/gamma",
+        "shape": [64],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_1/depthwise_conv2d/BatchNorm/beta",
+        "shape": [64],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_1/depthwise_conv2d/BatchNorm/moving_mean",
+        "shape": [64],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_1/depthwise_conv2d/BatchNorm/moving_variance",
+        "shape": [64],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_1/pointwise_conv2d/conv2d/w",
+        "shape": [1, 1, 64, 128],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.016170304994010154,
+          "min": -2.0212881242513
+        }
+      },
+      {
+        "name": "module_apply_default/block_1/pointwise_conv2d/BatchNorm/gamma",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_1/pointwise_conv2d/BatchNorm/beta",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_1/pointwise_conv2d/BatchNorm/moving_mean",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_1/pointwise_conv2d/BatchNorm/moving_variance",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_2/depthwise_conv2d/depthwise_conv2d/w",
+        "shape": [3, 3, 128, 1],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0074204538992200486,
+          "min": -0.8162499289142053
+        }
+      },
+      {
+        "name": "module_apply_default/block_2/depthwise_conv2d/BatchNorm/gamma",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_2/depthwise_conv2d/BatchNorm/beta",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_2/depthwise_conv2d/BatchNorm/moving_mean",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_2/depthwise_conv2d/BatchNorm/moving_variance",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_2/pointwise_conv2d/conv2d/w",
+        "shape": [1, 1, 128, 128],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.012358231658684078,
+          "min": -1.6065701156289301
+        }
+      },
+      {
+        "name": "module_apply_default/block_2/pointwise_conv2d/BatchNorm/gamma",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_2/pointwise_conv2d/BatchNorm/beta",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_2/pointwise_conv2d/BatchNorm/moving_mean",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_2/pointwise_conv2d/BatchNorm/moving_variance",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_3/depthwise_conv2d/depthwise_conv2d/w",
+        "shape": [3, 3, 128, 1],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0053387702050906006,
+          "min": -0.6940401266617781
+        }
+      },
+      {
+        "name": "module_apply_default/block_3/depthwise_conv2d/BatchNorm/gamma",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_3/depthwise_conv2d/BatchNorm/beta",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_3/depthwise_conv2d/BatchNorm/moving_mean",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_3/depthwise_conv2d/BatchNorm/moving_variance",
+        "shape": [128],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_3/pointwise_conv2d/conv2d/w",
+        "shape": [1, 1, 128, 256],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.010712201734127937,
+          "min": -1.2747520163412146
+        }
+      },
+      {
+        "name": "module_apply_default/block_3/pointwise_conv2d/BatchNorm/gamma",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_3/pointwise_conv2d/BatchNorm/beta",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_3/pointwise_conv2d/BatchNorm/moving_mean",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_3/pointwise_conv2d/BatchNorm/moving_variance",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_4/depthwise_conv2d/depthwise_conv2d/w",
+        "shape": [3, 3, 256, 1],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.00390625,
+          "min": -0.5
+        }
+      },
+      {
+        "name": "module_apply_default/block_4/depthwise_conv2d/BatchNorm/gamma",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_4/depthwise_conv2d/BatchNorm/beta",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_4/depthwise_conv2d/BatchNorm/moving_mean",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_4/depthwise_conv2d/BatchNorm/moving_variance",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_4/pointwise_conv2d/conv2d/w",
+        "shape": [1, 1, 256, 256],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.010352693602994695,
+          "min": -1.3562028220122851
+        }
+      },
+      {
+        "name": "module_apply_default/block_4/pointwise_conv2d/BatchNorm/gamma",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_4/pointwise_conv2d/BatchNorm/beta",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_4/pointwise_conv2d/BatchNorm/moving_mean",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_4/pointwise_conv2d/BatchNorm/moving_variance",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_5/depthwise_conv2d/depthwise_conv2d/w",
+        "shape": [3, 3, 256, 1],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.003505127239063884,
+          "min": -0.42061526868766606
+        }
+      },
+      {
+        "name": "module_apply_default/block_5/depthwise_conv2d/BatchNorm/gamma",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_5/depthwise_conv2d/BatchNorm/beta",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_5/depthwise_conv2d/BatchNorm/moving_mean",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_5/depthwise_conv2d/BatchNorm/moving_variance",
+        "shape": [256],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_5/pointwise_conv2d/conv2d/w",
+        "shape": [1, 1, 256, 512],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.009601552372771544,
+          "min": -1.2290787037148377
+        }
+      },
+      {
+        "name": "module_apply_default/block_5/pointwise_conv2d/BatchNorm/gamma",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_5/pointwise_conv2d/BatchNorm/beta",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_5/pointwise_conv2d/BatchNorm/moving_mean",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_5/pointwise_conv2d/BatchNorm/moving_variance",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_6/depthwise_conv2d/depthwise_conv2d/w",
+        "shape": [3, 3, 512, 1],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.00493374094533296,
+          "min": -0.7252599589639652
+        }
+      },
+      {
+        "name": "module_apply_default/block_6/depthwise_conv2d/BatchNorm/gamma",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_6/depthwise_conv2d/BatchNorm/beta",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_6/depthwise_conv2d/BatchNorm/moving_mean",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_6/depthwise_conv2d/BatchNorm/moving_variance",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_6/pointwise_conv2d/conv2d/w",
+        "shape": [1, 1, 512, 512],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.01611794883101305,
+          "min": -2.0147436038766312
+        }
+      },
+      {
+        "name": "module_apply_default/block_6/pointwise_conv2d/BatchNorm/gamma",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_6/pointwise_conv2d/BatchNorm/beta",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_6/pointwise_conv2d/BatchNorm/moving_mean",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/block_6/pointwise_conv2d/BatchNorm/moving_variance",
+        "shape": [512],
+        "dtype": "float32"
+      },
+      {
+        "name": "module_apply_default/conv2d_0/conv2d/w",
+        "shape": [1, 1, 512, 16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.00901513959697258,
+          "min": -0.9376545180651483
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_0/conv2d/b",
+        "shape": [16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.003302524717000641,
+          "min": -0.6044020731911173
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_1/conv2d/w",
+        "shape": [1, 1, 512, 32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0033767521454966114,
+          "min": -0.4524848274965659
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_1/conv2d/b",
+        "shape": [32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.001678391899101294,
+          "min": -0.2081206154885604
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_2/conv2d/w",
+        "shape": [1, 1, 512, 16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.019176543592592096,
+          "min": -2.493950667037
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_2/conv2d/b",
+        "shape": [16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.010246162143413799,
+          "min": -0.8401852957599515
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_3/conv2d/w",
+        "shape": [1, 1, 512, 32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.009163882118456685,
+          "min": -1.2096524396563225
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_3/conv2d/b",
+        "shape": [32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0038372368304949336,
+          "min": -0.7061316169111882
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_4/conv2d/w",
+        "shape": [1, 1, 512, 16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.02671411700638813,
+          "min": -4.7805868941432955
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_4/conv2d/b",
+        "shape": [16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.010477055499348258,
+          "min": -1.7391112128518108
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_5/conv2d/w",
+        "shape": [1, 1, 512, 32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.017057354617975565,
+          "min": -2.200898745618847
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_5/conv2d/b",
+        "shape": [32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.011877465934306393,
+          "min": -2.0667390725093126
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_6/conv2d/w",
+        "shape": [1, 1, 512, 16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.026652609346335248,
+          "min": -3.3315761682919062
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_6/conv2d/b",
+        "shape": [16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.008279142326636976,
+          "min": -1.2996953652620051
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_7/conv2d/w",
+        "shape": [1, 1, 512, 32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.005431769313559585,
+          "min": -0.7114417800662957
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_7/conv2d/b",
+        "shape": [32],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.002584400584033468,
+          "min": -0.32563847358821695
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_8/conv2d/w",
+        "shape": [1, 1, 512, 16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.016093520174059805,
+          "min": -1.7702872191465786
+        }
+      },
+      {
+        "name": "module_apply_default/conv2d_8/conv2d/b",
+        "shape": [16],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.002959247983002812,
+          "min": -0.4941343732014696
+        }
+      }
+    ],
+    "paths": ["face_landmark_68_model-shard1"]
+  }
+]

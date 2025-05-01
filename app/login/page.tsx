@@ -121,7 +121,7 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <CardTitle>로그인</CardTitle>
           <CardDescription>
-            심박변이도 측정 서비스를 이용하려면 로그인해주세요.
+            Baxe AI 서비스를 이용하려면 로그인해주세요.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>

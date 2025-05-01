@@ -173,9 +173,9 @@ export default function RegisterPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>측정 정보 등록</CardTitle>
+              <CardTitle>Baxe AI 정보 등록</CardTitle>
               <CardDescription>
-                심박변이도 측정 서비스 사용을 위한 정보를 등록해주세요.
+                Baxe AI 서비스 사용을 위한 정보를 등록해주세요.
               </CardDescription>
             </CardHeader>
             <CardContent>

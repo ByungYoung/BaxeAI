@@ -20,7 +20,9 @@ interface AppState {
     heartRate: number,
     confidence: number,
     hrv?: HRVMetrics,
-    mood?: MoodState
+    mood?: MoodState,
+    detectedMood?: MoodState,
+    moodMatchScore?: number
   ) => void;
   updateCurrentMood: (mood: MoodState) => void;
   resetCurrentResult: () => void;
@@ -50,7 +52,9 @@ export const useAppStore = create<AppState>()(
         heartRate: number,
         confidence: number,
         hrv?: HRVMetrics,
-        mood?: MoodState
+        mood?: MoodState,
+        detectedMood?: MoodState,
+        moodMatchScore?: number
       ) => {
         const userInfo = get().userInfo;
         if (!userInfo) return;
@@ -67,6 +71,8 @@ export const useAppStore = create<AppState>()(
             hrv,
             userInfo,
             mood: actualMood,
+            detectedMood,
+            moodMatchScore,
           },
         });
       },

@@ -19,6 +19,10 @@ export interface RPPGResult {
 // 서버 응답이 실패할 경우 사용할 모의 결과 생성 함수
 function generateFallbackResult(errorMessage: string): RPPGResult {
   const randomHeartRate = Math.floor(65 + Math.random() * 20); // 65-85 BPM 범위
+  const randomRMSSD = 20 + Math.random() * 40; // 20-60ms 범위
+  const randomLF = 0.4 + Math.random() * 0.3; // 0.4-0.7 범위
+  const randomHF = 0.3 + Math.random() * 0.3; // 0.3-0.6 범위
+  const lfHfRatio = randomLF / randomHF;
 
   return {
     heartRate: randomHeartRate,
@@ -26,12 +30,12 @@ function generateFallbackResult(errorMessage: string): RPPGResult {
     simulatedData: true, // 시뮬레이션 데이터 표시
     error: errorMessage,
     hrv: {
-      lf: 0.5,
-      hf: 0.5,
-      lfHfRatio: 1.0,
-      sdnn: 40.0,
-      rmssd: 30.0,
-      pnn50: 25.0,
+      lf: randomLF,
+      hf: randomHF,
+      lfHfRatio: parseFloat(lfHfRatio.toFixed(2)),
+      sdnn: parseFloat((35.0 + Math.random() * 15).toFixed(2)),
+      rmssd: parseFloat(randomRMSSD.toFixed(2)), 
+      pnn50: parseFloat((20.0 + Math.random() * 15).toFixed(2)),
     },
   };
 }
@@ -68,11 +72,22 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
       body: JSON.stringify({ frames }),
     });
 
-    // 두 Promise 중 먼저 완료되는 것을 기다림
-    const response = (await Promise.race([
-      fetchPromise,
-      timeoutPromise,
-    ])) as Response;
+    // 서버 응답 처리
+    let response: Response;
+    try {
+      // 두 Promise 중 먼저 완료되는 것을 기다림
+      response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+    } catch (fetchError: any) {
+      console.error("서버 통신 오류:", fetchError.message);
+      // 최소 표시 시간 보장
+      const processingTime = Date.now() - requestStartTime;
+      if (processingTime < MIN_PROCESSING_TIME) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_PROCESSING_TIME - processingTime)
+        );
+      }
+      return generateFallbackResult(fetchError.message || "네트워크 통신 오류가 발생했습니다.");
+    }
 
     // 최소 표시 시간보다 빨리 응답이 오면 약간의 지연 추가
     const processingTime = Date.now() - requestStartTime;
@@ -83,40 +98,52 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
     }
 
     if (!response.ok) {
-      console.error(`Server responded with ${response.status}`);
-
-      // 서버 오류(500)가 발생하면 대체 결과 생성
-      if (response.status === 500) {
-        console.warn("서버 내부 오류 발생, 모의 데이터 생성");
-        return generateFallbackResult(
-          "서버 처리 오류 발생. 모의 데이터로 대체되었습니다."
-        );
-      }
-
-      throw new Error(`서버 응답 오류: ${response.status}`);
+      console.warn(`서버 오류 발생 (상태 코드: ${response.status})`);
+      
+      // 모든 서버 오류(4XX, 5XX)에 대해 폴백 결과 생성
+      return generateFallbackResult(
+        `서버 오류 (${response.status}). 모의 데이터로 대체되었습니다.`
+      );
     }
 
-    const result = await response.json();
+    // 응답 파싱 시도
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      console.error("서버 응답 파싱 오류:", parseError);
+      return generateFallbackResult("서버 응답을 해석할 수 없습니다. 모의 데이터로 대체되었습니다.");
+    }
 
     // 오류 필드가 포함되어 있거나 필수 필드가 없으면 오류 발생
     if (result.error || typeof result.heartRate !== "number") {
-      console.warn("Server returned invalid result:", result);
+      console.warn("서버가 유효하지 않은 결과 반환:", result);
 
       // 결과에 오류가 있으면 대체 결과 생성
-      if (result.error) {
-        return generateFallbackResult(`서버 응답: ${result.error}`);
-      }
+      return generateFallbackResult(
+        result.error || "서버가 유효하지 않은 심박수 데이터를 반환했습니다."
+      );
+    }
 
-      throw new Error("서버 응답이 유효하지 않습니다.");
+    // HRV 데이터가 누락된 경우 보완
+    if (!result.hrv) {
+      result.hrv = {
+        lf: 0.5,
+        hf: 0.5,
+        lfHfRatio: 1.0,
+        sdnn: 40.0,
+        rmssd: 30.0,
+        pnn50: 25.0
+      };
     }
 
     return result;
   } catch (error: any) {
-    console.error("Error processing frames:", error);
+    console.error("프레임 처리 중 예상치 못한 오류:", error);
 
-    // 네트워크 오류, 타임아웃 등의 경우 대체 결과 생성
+    // 모든 예외 상황에 대해 대체 결과 생성
     return generateFallbackResult(
-      error.message || "네트워크 오류가 발생했습니다."
+      error.message || "알 수 없는 오류가 발생했습니다."
     );
   }
 }

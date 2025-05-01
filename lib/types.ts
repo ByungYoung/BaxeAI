@@ -25,7 +25,9 @@ export interface MeasurementResult {
   confidence: number;
   hrv?: HRVMetrics;
   userInfo: UserInfo;
-  mood?: MoodState; // 기분 상태 필드 추가
+  mood?: MoodState; // 사용자가 선택한 기분 상태
+  detectedMood?: MoodState; // 카메라로 감지한 기분 상태
+  moodMatchScore?: number; // 선택한 기분과 감지된 기분의 일치도 (0-100%)
 }
 
 export type StressLevel = "low" | "moderate" | "high" | "unknown";
