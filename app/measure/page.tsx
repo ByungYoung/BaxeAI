@@ -184,12 +184,18 @@ export default function MeasurePage() {
             <div className="text-center">
               <h3 className="text-lg font-medium mb-2">측정 안내</h3>
               <ul className="text-sm text-gray-600 list-disc list-inside text-left mx-auto space-y-1 max-w-lg">
-                <li>밝은 곳에서 얼굴이 잘 보이도록 카메라를 조정하세요.</li>
-                <li>
-                  측정 중에는 움직임을 최소화하고 편안한 자세를 유지하세요.
+                <li className="font-medium text-amber-600">
+                  측정 성공률을 높이기 위한 중요 팁!
                 </li>
-                <li>30초간 측정이 진행됩니다.</li>
-                <li>측정이 완료되면 자동으로 결과 페이지로 이동합니다.</li>
+                <li>밝은 자연광이 있는 환경에서 측정하세요 (창가 추천)</li>
+                <li>형광등이나 깜빡이는 조명은 피하세요</li>
+                <li>얼굴과 카메라 사이 거리는 30-50cm가 적당합니다</li>
+                <li>
+                  측정 중에는 움직임을 최소화하고 편안한 자세를 유지하세요
+                </li>
+                <li>얼굴 전체가 화면에 잘 보이도록 카메라를 조정하세요</li>
+                <li>30초간 측정이 진행됩니다</li>
+                <li>측정이 완료되면 자동으로 결과 페이지로 이동합니다</li>
               </ul>
             </div>
           </div>

@@ -149,12 +149,12 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">비밀번호 (선택사항)</Label>
-                <Link
+                {/* <Link
                   href="/forgot-password"
                   className="text-xs text-primary hover:underline"
                 >
                   비밀번호 찾기
-                </Link>
+                </Link> */}
               </div>
               <Input
                 id="password"

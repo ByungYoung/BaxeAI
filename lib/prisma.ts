@@ -12,6 +12,12 @@ const prismaClientOptions: Prisma.PrismaClientOptions = {
           { level: "error", emit: "stdout" },
           { level: "warn", emit: "stdout" },
         ],
+  // 시간대 설정 - KST(한국 표준시)
+  datasources: {
+    db: {
+      url: process.env.POSTGRES_PRISMA_URL,
+    },
+  },
 };
 
 // 글로벌 상태 유형 설정
@@ -42,17 +48,12 @@ export default prisma;
 export async function withIsolatedPrisma<T>(
   fn: (client: PrismaClient) => Promise<T>
 ): Promise<T> {
-  // 프로덕션 환경에서는 요청별로 격리된 인스턴스 사용
-  if (process.env.NODE_ENV === "production") {
-    const isolatedClient = new PrismaClient(prismaClientOptions);
-    try {
-      return await fn(isolatedClient);
-    } finally {
-      // 작업 완료 후 항상 연결 종료하여 리소스 정리
-      await isolatedClient.$disconnect();
-    }
+  // 항상 격리된 인스턴스 사용 (개발 및 프로덕션 모두)
+  const isolatedClient = new PrismaClient(prismaClientOptions);
+  try {
+    return await fn(isolatedClient);
+  } finally {
+    // 작업 완료 후 항상 연결 종료하여 리소스 정리
+    await isolatedClient.$disconnect();
   }
-
-  // 개발 환경에서는 공유 인스턴스 사용
-  return fn(prisma);
 }

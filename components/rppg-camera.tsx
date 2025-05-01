@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Camera, HeartPulse } from "lucide-react";
+import { Play, Pause, Camera, HeartPulse, AlertCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // 측정 결과 콜백 타입 정의
 export interface RPPGCameraProps {
@@ -41,6 +42,7 @@ export const RPPGCamera = ({
   // 참조
   const videoRef = useRef<HTMLVideoElement>(null);
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
+  const faceCanvasRef = useRef<HTMLCanvasElement>(null); // 얼굴 감지 시각화를 위한 캔버스
   const actualCanvasRef = externalCanvasRef || internalCanvasRef; // 외부 참조 또는 내부 참조 사용
   const framesRef = useRef<string[]>([]); // 프레임 데이터를 참조로 관리
 
@@ -57,6 +59,12 @@ export const RPPGCamera = ({
     "시작하려면 '측정 시작' 버튼을 클릭하세요"
   );
   const [showContinueDialog, setShowContinueDialog] = useState(false);
+  const [faceDetected, setFaceDetected] = useState(false); // 얼굴 감지 상태
+  const [detectionQuality, setDetectionQuality] = useState<
+    "good" | "poor" | "none"
+  >("none"); // 감지 품질
+  const [showQualityAlert, setShowQualityAlert] = useState(false); // 품질 알림 표시 여부
+  const [qualityChecks, setQualityChecks] = useState(0); // 품질 검사 횟수
 
   // active 속성이 제공되면 해당 값에 따라 컴포넌트 동작 제어
   useEffect(() => {
@@ -82,6 +90,7 @@ export const RPPGCamera = ({
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const captureIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const faceDetectionRef = useRef<NodeJS.Timeout | null>(null); // 얼굴 감지 타이머
 
   // 외부 처리용 단일 프레임 캡처
   const captureFrameForExternal = () => {
@@ -113,6 +122,123 @@ export const RPPGCamera = ({
     }
   };
 
+  // 얼굴 감지 처리
+  const detectFace = () => {
+    if (!videoRef.current || !faceCanvasRef.current || !cameraActive) return;
+
+    const video = videoRef.current;
+    const canvas = faceCanvasRef.current;
+    const context = canvas.getContext("2d");
+
+    if (!context || video.videoWidth === 0 || video.videoHeight === 0) return;
+
+    // 캔버스 크기 설정
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // 비디오 프레임을 캔버스에 그리기
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // 얼굴 감지 시뮬레이션 (실제로는 여기서 얼굴 감지 로직 추가)
+    // 빛 상태를 확인하기 위한 간단한 로직
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // 가운데 영역의 평균 밝기 계산
+    const centerX = Math.floor(canvas.width / 2);
+    const centerY = Math.floor(canvas.height / 2);
+    const sampleSize = 50;
+
+    let totalBrightness = 0;
+    let pixelCount = 0;
+
+    for (let y = centerY - sampleSize; y < centerY + sampleSize; y++) {
+      for (let x = centerX - sampleSize; x < centerX + sampleSize; x++) {
+        if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
+          const i = (y * canvas.width + x) * 4;
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const brightness = (r + g + b) / 3;
+          totalBrightness += brightness;
+          pixelCount++;
+        }
+      }
+    }
+
+    const avgBrightness = totalBrightness / pixelCount;
+
+    // 얼굴 감지 시뮬레이션 (실제로는 여기서 얼굴 감지 API 사용)
+    const faceFound = avgBrightness > 30; // 최소 밝기 기준
+    const qualityGood = avgBrightness > 100; // 좋은 밝기 기준
+
+    setFaceDetected(faceFound);
+    setDetectionQuality(qualityGood ? "good" : faceFound ? "poor" : "none");
+
+    // 감지 결과에 따라 시각적 피드백 제공
+    context.lineWidth = 3;
+
+    if (faceFound) {
+      // 얼굴 영역 주변에 사각형 그리기 (시뮬레이션)
+      const faceSize = Math.min(canvas.width, canvas.height) * 0.6;
+      const faceX = centerX - faceSize / 2;
+      const faceY = centerY - faceSize / 2;
+
+      if (qualityGood) {
+        context.strokeStyle = "rgba(0, 255, 0, 0.8)"; // 좋음 - 초록색
+        context.fillStyle = "rgba(0, 255, 0, 0.2)";
+      } else {
+        context.strokeStyle = "rgba(255, 165, 0, 0.8)"; // 나쁨 - 주황색
+        context.fillStyle = "rgba(255, 165, 0, 0.2)";
+      }
+
+      context.beginPath();
+      context.rect(faceX, faceY, faceSize, faceSize);
+      context.stroke();
+      context.fill();
+
+      // 텍스트 표시
+      context.font = "16px sans-serif";
+      context.fillStyle = qualityGood ? "rgb(0, 200, 0)" : "rgb(255, 165, 0)";
+      context.fillText(
+        qualityGood ? "측정 품질: 좋음" : "측정 품질: 개선 필요",
+        10,
+        30
+      );
+    } else {
+      context.strokeStyle = "rgba(255, 0, 0, 0.8)"; // 감지 안됨 - 빨간색
+      context.fillStyle = "rgba(255, 0, 0, 0.2)";
+
+      // 경고 메시지
+      context.font = "18px sans-serif";
+      context.fillStyle = "rgb(255, 50, 50)";
+      context.fillText("얼굴이 감지되지 않습니다", 10, 30);
+
+      // 화면 중앙에 얼굴 윤곽 가이드 표시
+      const guideSize = Math.min(canvas.width, canvas.height) * 0.6;
+      const guideX = centerX - guideSize / 2;
+      const guideY = centerY - guideSize / 2;
+
+      context.beginPath();
+      context.rect(guideX, guideY, guideSize, guideSize);
+      context.stroke();
+      context.setLineDash([5, 5]);
+      context.strokeRect(guideX, guideY, guideSize, guideSize);
+      context.setLineDash([]);
+    }
+
+    // 측정 중인 경우 품질 확인 및 알림
+    if (status === "recording") {
+      setQualityChecks((prev) => prev + 1);
+      if (qualityChecks > 10 && !qualityGood && !showQualityAlert) {
+        setShowQualityAlert(true);
+      }
+    } else {
+      setQualityChecks(0);
+      setShowQualityAlert(false);
+    }
+  };
+
   // 카메라 초기화
   const startCamera = async () => {
     try {
@@ -134,6 +260,9 @@ export const RPPGCamera = ({
         setStatusMessage(
           "카메라가 초기화되었습니다. '측정 시작' 버튼을 클릭하세요."
         );
+
+        // 얼굴 감지 타이머 시작
+        faceDetectionRef.current = setInterval(detectFace, 200);
       }
     } catch (err) {
       console.error("카메라 접근 오류:", err);
@@ -151,11 +280,18 @@ export const RPPGCamera = ({
       videoRef.current.srcObject = null;
       setCameraActive(false);
     }
+
+    // 얼굴 감지 타이머 정리
+    if (faceDetectionRef.current) {
+      clearInterval(faceDetectionRef.current);
+      faceDetectionRef.current = null;
+    }
   };
 
   // 측정 시작 버튼 클릭 처리
   const handleStartClick = () => {
     if (status === "idle") {
+      // 얼굴 감지 여부에 상관없이 측정 시작
       startCountdown();
     } else if (status === "recording") {
       stopRecordingAndProcess();
@@ -171,6 +307,8 @@ export const RPPGCamera = ({
     setFrameCount(0);
     framesRef.current = [];
     setStatusMessage("측정 준비 중...");
+    setShowQualityAlert(false);
+    setQualityChecks(0);
 
     // 카운트다운 타이머 설정
     let count = 5;
@@ -295,6 +433,8 @@ export const RPPGCamera = ({
     setStatusMessage(
       "카메라가 초기화되었습니다. '측정 시작' 버튼을 클릭하세요."
     );
+    setShowQualityAlert(false);
+    setQualityChecks(0);
     startCamera();
   };
 
@@ -397,6 +537,10 @@ export const RPPGCamera = ({
               ref={actualCanvasRef}
               className="absolute top-0 left-0 w-full h-full opacity-0"
             />
+            <canvas
+              ref={faceCanvasRef}
+              className="absolute top-0 left-0 w-full h-full"
+            />
 
             {/* 카메라 비활성화 시 검은 화면 */}
             {!cameraActive && <div className="absolute inset-0 bg-black"></div>}
@@ -446,6 +590,20 @@ export const RPPGCamera = ({
               </div>
             )}
           </div>
+
+          {/* 품질 알림 */}
+          {showQualityAlert && status === "recording" && (
+            <Alert
+              variant="warning"
+              className="mt-2 bg-amber-50 border-amber-300"
+            >
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-700">측정 품질 낮음</AlertTitle>
+              <AlertDescription className="text-amber-600">
+                얼굴이 잘 보이도록 조명을 밝게 하고 카메라 위치를 조정하세요.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-sm">

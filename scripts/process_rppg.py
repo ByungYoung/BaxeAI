@@ -22,7 +22,7 @@ def process_frames(frames_dir):
         frame_files = sorted(glob.glob(os.path.join(frames_dir, "frame_*.jpg")))
         
         if not frame_files:
-            return {"error": "No frames found"}
+            raise Exception("No frames found")
         
         print(f"Found {len(frame_files)} frames for processing", file=sys.stderr)
         
@@ -35,7 +35,7 @@ def process_frames(frames_dir):
         b_values = []
         timestamps = []  # 각 프레임의 시간(초) 추적
         
-        fps = 10  # 10 fps로 가정
+        fps = 20  # 20 fps로 설정 (50ms 간격으로 캡처)
         frame_time = 1.0 / fps
         
         # 얼굴이 감지된 프레임 수를 카운트
@@ -92,7 +92,7 @@ def process_frames(frames_dir):
         
         # 충분한 프레임이 처리되었는지 확인
         if len(r_values) < 10:
-            return {"error": "Not enough valid frames with face detected"}
+            raise Exception(f"Not enough valid frames with face detected: {len(r_values)} frames")
         
         # timestamps 배열도 동일한 길이로 조정
         timestamps = timestamps[:len(r_values)]
@@ -176,6 +176,10 @@ def process_frames(frames_dir):
                 
                 print(f"Valid RR intervals: {len(valid_rr)} out of {len(rr_intervals_ms)}", file=sys.stderr)
                 
+                # RR 간격이 부족하면 오류 발생
+                if len(valid_rr) < 3:
+                    raise Exception(f"Not enough valid RR intervals detected: {len(valid_rr)} intervals")
+                
                 # 시간 영역 HRV 지표 계산
                 # 1. SDNN (Standard Deviation of NN intervals)
                 sdnn = np.std(valid_rr, ddof=1)
@@ -189,85 +193,35 @@ def process_frames(frames_dir):
                 pnn50 = (nn50 / len(diff_rr)) * 100 if len(diff_rr) > 0 else 0
                 
                 # 주파수 영역 HRV 지표 계산
-                # 직접 유효한 구간에서 LF, HF 파워 계산
-                if len(valid_rr) >= 4:  # 최소 4개의 유효한 RR 간격이 있을 때 
-                    # 비정상적으로 큰 값이나 작은 값 제한
-                    lf_power, hf_power, lf_hf_ratio = calculate_frequency_domain_hrv(valid_rr)
-                    
-                    print(f"HRV Metrics - LF: {lf_power:.2f}, HF: {hf_power:.2f}, LF/HF: {lf_hf_ratio:.2f}", file=sys.stderr)
-                    print(f"HRV Metrics - SDNN: {sdnn:.2f} ms, RMSSD: {rmssd:.2f} ms, pNN50: {pnn50:.2f}%", file=sys.stderr)
-                    
-                    result = {
-                        "heartRate": float(heart_rate),
-                        "confidence": float(min(confidence, 1.0)),
-                        "hrv": {
-                            "lf": float(lf_power),
-                            "hf": float(hf_power),
-                            "lfHfRatio": float(lf_hf_ratio),
-                            "sdnn": float(sdnn),
-                            "rmssd": float(rmssd),
-                            "pnn50": float(pnn50)
-                        }
-                    }
-                else:
-                    # 주파수 분석에 충분한 데이터가 없을 때는 기본값 제공
-                    print(f"Not enough RR intervals for accurate frequency domain HRV analysis. Using estimated values.", file=sys.stderr)
-                    
-                    # 기본값으로 대략적인 값 제공 (짧은 측정에서도 값을 표시하기 위함)
-                    estimated_lf = 50.0 * (heart_rate / 60.0) * (sdnn / 100.0) if sdnn > 0 else 10.0
-                    estimated_hf = 25.0 * (heart_rate / 60.0) * (rmssd / 100.0) if rmssd > 0 else 5.0
-                    estimated_ratio = estimated_lf / estimated_hf if estimated_hf > 0 else 2.0
-                    
-                    # 최소값 보장
-                    lf_power = max(estimated_lf, 1.0)
-                    hf_power = max(estimated_hf, 0.5)
-                    lf_hf_ratio = max(min(estimated_ratio, 10.0), 0.1)  # 0.1~10 사이 값으로 제한
-                    
-                    result = {
-                        "heartRate": float(heart_rate),
-                        "confidence": float(min(confidence, 1.0)),
-                        "hrv": {
-                            "lf": float(lf_power),
-                            "hf": float(hf_power),
-                            "lfHfRatio": float(lf_hf_ratio),
-                            "sdnn": float(sdnn),
-                            "rmssd": float(rmssd),
-                            "pnn50": float(pnn50)
-                        }
-                    }
+                lf_power, hf_power, lf_hf_ratio = calculate_frequency_domain_hrv(valid_rr)
                 
-                return result
-            else:
-                # 피크를 충분히 찾지 못한 경우 - 기본값 제공
-                return {
+                print(f"HRV Metrics - LF: {lf_power:.2f}, HF: {hf_power:.2f}, LF/HF: {lf_hf_ratio:.2f}", file=sys.stderr)
+                print(f"HRV Metrics - SDNN: {sdnn:.2f} ms, RMSSD: {rmssd:.2f} ms, pNN50: {pnn50:.2f}%", file=sys.stderr)
+                
+                result = {
                     "heartRate": float(heart_rate),
                     "confidence": float(min(confidence, 1.0)),
                     "hrv": {
-                        "lf": 10.0,
-                        "hf": 5.0,
-                        "lfHfRatio": 2.0,
-                        "sdnn": 30.0,
-                        "rmssd": 20.0,
-                        "pnn50": 5.0
+                        "lf": float(lf_power),
+                        "hf": float(hf_power),
+                        "lfHfRatio": float(lf_hf_ratio),
+                        "sdnn": float(sdnn),
+                        "rmssd": float(rmssd),
+                        "pnn50": float(pnn50)
                     }
                 }
+                
+                return result
+            else:
+                # 피크를 충분히 찾지 못한 경우 오류 발생
+                raise Exception(f"Not enough peaks detected: {len(peaks)} peaks")
         else:
-            return {
-                "heartRate": 70.0,  # 기본값
-                "confidence": 0.1,
-                "hrv": {
-                    "lf": 10.0,
-                    "hf": 5.0,
-                    "lfHfRatio": 2.0,
-                    "sdnn": 30.0,
-                    "rmssd": 20.0,
-                    "pnn50": 5.0
-                }
-            }
+            # 유효한 주파수 범위가 없는 경우 오류 발생
+            raise Exception("No valid frequency range found in the signal")
         
     except Exception as e:
         print(f"Error in rPPG processing: {str(e)}", file=sys.stderr)
-        return {"error": str(e)}
+        raise e
 
 # 주파수 영역 HRV 지표를 계산하는 개선된 함수
 def calculate_frequency_domain_hrv(rr_intervals_ms):
@@ -285,50 +239,44 @@ def calculate_frequency_domain_hrv(rr_intervals_ms):
         t_rr = np.insert(t_rr, 0, 0)  # 첫 번째 시간포인트를 0으로 추가
         t_rr = t_rr[:-1]  # 마지막 포인트 제거 (RR 간격과 길이 맞추기)
         
+        if len(t_rr) <= 3:  # 충분한 데이터가 없는 경우
+            raise Exception(f"Not enough data points for HRV frequency analysis: {len(t_rr)} points")
+        
         # 균일한 시간 간격으로 재구성
         t_interp = np.arange(0, t_rr[-1], 1.0/fs_interp)
-        
-        if len(t_rr) > 3:  # 충분한 데이터가 있는 경우에만 보간 수행
-            # 큐빅 스플라인 보간 (좀더 부드러운 결과)
-            try:
-                f_interp = interpolate.interp1d(t_rr, rr_diff, kind='cubic', bounds_error=False, fill_value="extrapolate")
-                rr_interp = f_interp(t_interp)
-                
-                # 웰치 방법을 사용한 PSD 계산
-                # nperseg 값 최적화: 주파수 해상도 vs 분산 트레이드오프
-                nperseg = min(len(rr_interp), 256)  # 신호 길이보다는 작게, 하지만 충분한 해상도를 위해
-                
-                fxx, pxx = signal.welch(rr_interp, fs=fs_interp, nperseg=nperseg, detrend='constant')
-                
-                # 관련 주파수 대역 필터링
-                lf_indices = np.logical_and(fxx >= 0.04, fxx <= 0.15)  # LF: 0.04-0.15 Hz
-                hf_indices = np.logical_and(fxx >= 0.15, fxx <= 0.4)   # HF: 0.15-0.4 Hz
-                
-                # 파워 계산 (면적)
-                lf_power = np.trapz(pxx[lf_indices], fxx[lf_indices]) if np.any(lf_indices) else 0
-                hf_power = np.trapz(pxx[hf_indices], fxx[hf_indices]) if np.any(hf_indices) else 0
-                
-                # 값이 합리적인 범위에 있는지 확인
-                lf_power = min(max(lf_power, 1.0), 10000.0)  # 1~10000 사이로 제한
-                hf_power = min(max(hf_power, 0.5), 10000.0)  # 0.5~10000 사이로 제한
-                
-                # LF/HF 비율 계산 및 범위 제한
-                lf_hf_ratio = lf_power / hf_power if hf_power > 0.1 else 2.0
-                lf_hf_ratio = min(max(lf_hf_ratio, 0.1), 10.0)  # 0.1~10 사이 값으로 제한
-                
-                return lf_power, hf_power, lf_hf_ratio
             
-            except (ValueError, np.linalg.LinAlgError) as e:
-                print(f"Error in interpolation or PSD calculation: {str(e)}", file=sys.stderr)
-                # 기본값 반환
-                return 50.0, 25.0, 2.0
-        else:
-            # 데이터가 충분하지 않은 경우 기본값 반환
-            return 50.0, 25.0, 2.0
+        # 큐빅 스플라인 보간 (좀더 부드러운 결과)
+        f_interp = interpolate.interp1d(t_rr, rr_diff, kind='cubic', bounds_error=False, fill_value="extrapolate")
+        rr_interp = f_interp(t_interp)
+        
+        # 웰치 방법을 사용한 PSD 계산
+        # nperseg 값 최적화: 주파수 해상도 vs 분산 트레이드오프
+        nperseg = min(len(rr_interp), 256)  # 신호 길이보다는 작게, 하지만 충분한 해상도를 위해
+        
+        fxx, pxx = signal.welch(rr_interp, fs=fs_interp, nperseg=nperseg, detrend='constant')
+        
+        # 관련 주파수 대역 필터링
+        lf_indices = np.logical_and(fxx >= 0.04, fxx <= 0.15)  # LF: 0.04-0.15 Hz
+        hf_indices = np.logical_and(fxx >= 0.15, fxx <= 0.4)   # HF: 0.15-0.4 Hz
+        
+        if not np.any(lf_indices) or not np.any(hf_indices):
+            raise Exception("No valid frequency bands found for HRV analysis")
+        
+        # 파워 계산 (면적)
+        lf_power = np.trapz(pxx[lf_indices], fxx[lf_indices])
+        hf_power = np.trapz(pxx[hf_indices], fxx[hf_indices])
+        
+        # LF/HF 비율 계산
+        if hf_power <= 0:
+            raise Exception(f"Invalid HF power: {hf_power}")
+            
+        lf_hf_ratio = lf_power / hf_power
+        
+        return lf_power, hf_power, lf_hf_ratio
             
     except Exception as e:
         print(f"Error in HRV frequency domain calculation: {str(e)}", file=sys.stderr)
-        return 50.0, 25.0, 2.0  # 오류 시 기본값 반환
+        raise e
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -336,5 +284,10 @@ if __name__ == "__main__":
         sys.exit(1)
     
     frames_dir = sys.argv[1]
-    result = process_frames(frames_dir)
-    print(json.dumps(result))
+    
+    try:
+        result = process_frames(frames_dir)
+        print(json.dumps(result))
+    except Exception as e:
+        print(json.dumps({"error": str(e), "heartRate": 0, "confidence": 0}))
+        sys.exit(1)

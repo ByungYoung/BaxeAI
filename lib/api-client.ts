@@ -46,49 +46,20 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
 
     if (!response.ok) {
       console.error(`Server responded with ${response.status}`);
-      // 서버 오류 시 폴백으로 시뮬레이션된 데이터 생성
-      return generateFallbackResult(frames.length);
+      throw new Error(`Server responded with ${response.status}`);
     }
 
     const result = await response.json();
 
-    // 오류 필드가 포함되어 있거나 필수 필드가 없으면 폴백 결과 사용
+    // 오류 필드가 포함되어 있거나 필수 필드가 없으면 오류 발생
     if (result.error || typeof result.heartRate !== "number") {
       console.warn("Server returned invalid result:", result);
-      return generateFallbackResult(frames.length);
+      throw new Error("Invalid result from server");
     }
 
     return result;
   } catch (error) {
     console.error("Error processing frames:", error);
-    // 예외 발생 시 폴백으로 시뮬레이션된 데이터 생성
-    return generateFallbackResult(frames.length);
+    throw error;
   }
-}
-
-/**
- * 서버 처리가 실패했을 때 클라이언트 측에서 대체 결과 생성
- */
-function generateFallbackResult(frameCount: number): RPPGResult {
-  console.log("Generating fallback result for frames:", frameCount);
-
-  // 프레임 수에 기반하여 약간의 변동성 추가
-  const seed = frameCount % 20;
-  const heartRate = 65 + seed;
-  const confidence = 0.7 + seed / 100;
-
-  return {
-    heartRate: heartRate,
-    confidence: Math.min(confidence, 0.95),
-    hrv: {
-      lf: 40.0 + seed * 2,
-      hf: 20.0 + seed,
-      lfHfRatio: 1.5 + seed / 10,
-      sdnn: 35.0 + seed,
-      rmssd: 25.0 + seed / 2,
-      pnn50: 10.0 + seed / 4,
-    },
-    simulatedData: true,
-    error: "Processing failed, using fallback data",
-  };
 }
