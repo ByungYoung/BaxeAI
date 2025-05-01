@@ -331,8 +331,8 @@ export const RPPGCamera = ({
     framesRef.current = []; // 프레임 배열 초기화
     setFrameCount(0); // 프레임 카운트 초기화
 
-    // 프레임 캡처 시작 - 50ms 간격으로 캡처 (20 FPS)로 수정
-    captureIntervalRef.current = setInterval(captureFrame, 50);
+    // 프레임 캡처 시작 - 200ms 간격으로 캡처 (5 FPS)로 수정
+    captureIntervalRef.current = setInterval(captureFrame, 200);
 
     // 녹화 타이머 시작
     let timeLeft = measurementTime;
@@ -390,15 +390,16 @@ export const RPPGCamera = ({
     if (!context || video.videoWidth === 0 || video.videoHeight === 0) return;
 
     try {
-      // 캔버스 크기 설정
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // 캔버스 크기 설정 - 해상도를 절반으로 줄임
+      const scaleFactor = 0.5;
+      canvas.width = video.videoWidth * scaleFactor;
+      canvas.height = video.videoHeight * scaleFactor;
 
-      // 비디오 프레임을 캔버스에 그리기
+      // 비디오 프레임을 캔버스에 그리기 (작은 크기로)
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // 캔버스 이미지를 데이터 URL로 변환 (JPEG 형식, 품질 0.7)
-      const frameData = canvas.toDataURL("image/jpeg", 0.7);
+      // 캔버스 이미지를 데이터 URL로 변환 (JPEG 형식, 품질 0.4로 낮춤)
+      const frameData = canvas.toDataURL("image/jpeg", 0.4);
 
       // 프레임 배열에 추가 및 카운트 증가
       framesRef.current.push(frameData);
