@@ -15,8 +15,28 @@ import { AuthButtons } from "@/components/auth-buttons";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "심박변이도 측정 서비스",
-  description: "카메라를 통한 심박변이도 측정 및 스트레스 분석 서비스",
+  title: "Baxe ai",
+  description: "xitst read your body, lead your mind",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
+    other: [
+      {
+        url: "/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -55,7 +75,7 @@ export default function RootLayout({
                           className="w-[240px] sm:w-[300px]"
                         >
                           <div className="py-4 font-semibold text-lg">
-                            심박변이도 측정
+                            Baxe AI: read your body, lead your mind
                           </div>
                           <nav className="flex flex-col gap-3 mt-2">
                             <Link
