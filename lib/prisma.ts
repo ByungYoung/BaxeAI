@@ -1,47 +1,61 @@
 // Prisma 클라이언트 - 서버리스 환경에 최적화
 import { PrismaClient } from "@prisma/client";
 
-/**
- * 싱글톤 패턴으로 PrismaClient 인스턴스 관리
- * 서버리스 환경에서 핫 리로드 시 여러 인스턴스 생성 방지
- */
-const prismaClientSingleton = () => {
-  return new PrismaClient({
-    log: process.env.NODE_ENV === "development" 
-      ? ["query", "error", "warn"] 
-      : ["error"],
-  });
+// 개발 환경에서는 글로벌 객체 사용, 프로덕션에서는 각 인스턴스 생성
+// 이는 개발 시 핫 리로드로 인한 다중 인스턴스 생성 방지
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
 };
 
-// 글로벌 타입 선언
-declare global {
-  var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
-}
+// Prisma 클라이언트 옵션 설정
+const prismaOptions = {
+  log: process.env.NODE_ENV === "development"
+    ? ["query", "error", "warn"]
+    : ["error"],
+  // 연결 시간 초과 및 재시도 구성 추가
+  // 서버리스 환경에서의 안정성 향상
+  __internal: {
+    engine: {
+      connectTimeout: 5000, // 연결 시간 초과 5초
+    },
+  },
+};
 
-// 전역 인스턴스 또는 새 인스턴스 사용
-const prisma = global.prisma ?? prismaClientSingleton();
+// 싱글톤 패턴으로 Prisma 클라이언트 생성
+const prisma = globalForPrisma.prisma ?? new PrismaClient(prismaOptions);
 
-// 개발 환경에서만 글로벌 객체에 할당
+// 개발 환경에서만 글로벌 캐시 사용
 if (process.env.NODE_ENV !== "production") {
-  global.prisma = prisma;
+  globalForPrisma.prisma = prisma;
 }
 
 export default prisma;
 
-/**
- * 서버리스 환경에 최적화된 Prisma 클라이언트 사용 함수
- * 각 요청마다 독립된 쿼리 실행 컨텍스트 제공
- */
+// 서버리스 환경에 최적화된 Prisma 사용 함수
+// 이 함수는 개별 API 라우트에서 Prisma를 안전하게 사용할 수 있게 함
 export async function withIsolatedPrisma<T>(
-  fn: (prisma: PrismaClient) => Promise<T>
+  fn: (client: PrismaClient) => Promise<T>
 ): Promise<T> {
+  // 프로덕션 환경에서 각 요청마다 새로운 클라이언트 사용
+  if (process.env.NODE_ENV === "production") {
+    // 각 요청에 대한 독립 Prisma 인스턴스 생성
+    const isolatedClient = new PrismaClient(prismaOptions);
+    try {
+      return await fn(isolatedClient);
+    } finally {
+      // 작업 완료 후 연결 즉시 정리
+      await isolatedClient.$disconnect();
+    }
+  }
+  
+  // 개발 환경에서는 싱글톤 인스턴스 사용
+  // 트랜잭션을 사용하여 각 요청을 격리
   try {
-    // 각 요청마다 새로운 트랜잭션 사용
     return await prisma.$transaction(async (tx) => {
-      return fn(tx as unknown as PrismaClient);
+      return await fn(tx as unknown as PrismaClient);
     }, {
-      maxWait: 5000, // 5초 최대 대기 시간
-      timeout: 10000, // 10초 트랜잭션 타임아웃
+      maxWait: 3000,
+      timeout: 8000,
     });
   } catch (error) {
     console.error("Prisma transaction error:", error);
