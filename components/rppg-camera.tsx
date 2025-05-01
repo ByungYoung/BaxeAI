@@ -594,7 +594,7 @@ export const RPPGCamera = ({
           {/* 품질 알림 */}
           {showQualityAlert && status === "recording" && (
             <Alert
-              variant="warning"
+              variant="default"
               className="mt-2 bg-amber-50 border-amber-300"
             >
               <AlertCircle className="h-4 w-4 text-amber-600" />
