@@ -84,7 +84,7 @@ export default function MeasurePage() {
         try {
           const detection = await detectExpression(videoRef.current);
 
-          if (detection && detection.expressions) {
+          if (detection) {
             const detectedMood = inferMoodFromExpression(detection.expressions);
             const matchScore = calculateMoodMatchScore(
               detection.expressions,
@@ -108,7 +108,7 @@ export default function MeasurePage() {
         try {
           const detection = await detectExpression(videoRef.current!);
 
-          if (detection && detection.expressions) {
+          if (detection) {
             const matchScore = calculateMoodMatchScore(
               detection.expressions,
               selectedMood

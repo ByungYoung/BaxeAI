@@ -33,7 +33,7 @@ export const loadFaceDetectionModels = async () => {
 // 이미지에서 표정 감지
 export const detectExpression = async (
   imageElement: HTMLImageElement | HTMLVideoElement
-): Promise<faceapi.FaceDetection | null> => {
+): Promise<faceapi.WithFaceExpressions<faceapi.WithFaceLandmarks<faceapi.WithFaceDetection<{}>>> | null> => {
   if (!modelsLoaded) {
     const loaded = await loadFaceDetectionModels();
     if (!loaded) return null;
