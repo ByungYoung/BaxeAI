@@ -8,13 +8,13 @@ import { useAppStore } from "@/lib/store";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
-  const { user } = useAppStore();
+  const { userInfo } = useAppStore();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // 컴포넌트 마운트 후 로그인 상태 확인
   useEffect(() => {
-    setIsLoggedIn(!!user?.id);
-  }, [user]);
+    setIsLoggedIn(!!userInfo?.id);
+  }, [userInfo]);
 
   // 측정 페이지 경로 결정 (로그인 상태에 따라)
   const measurePath = isLoggedIn ? "/measure" : "/register";
