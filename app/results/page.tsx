@@ -18,8 +18,15 @@ import { ko } from "date-fns/locale";
 import { Smile, Frown, Meh, AlertCircle, Camera } from "lucide-react";
 import { MoodState } from "@/lib/types";
 import { toast } from "@/components/ui/use-toast";
-import { analyzeHealthStatus, getMoodManagementTips } from "@/lib/openai-client";
-import { loadFaceDetectionModels, detectExpression, drawMoodMask } from "@/lib/face-detection";
+import {
+  analyzeHealthStatus,
+  getMoodManagementTips,
+} from "@/lib/openai-client";
+import {
+  loadFaceDetectionModels,
+  detectExpression,
+  drawMoodMask,
+} from "@/lib/face-detection";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ResultsPage() {
@@ -40,7 +47,7 @@ export default function ResultsPage() {
   useEffect(() => {
     const loadModels = async () => {
       const loaded = await loadFaceDetectionModels();
-      setModelsLoaded(loaded);
+      setModelsLoaded(loaded === undefined ? false : loaded);
     };
 
     if (currentResult) {
@@ -81,7 +88,12 @@ export default function ResultsPage() {
   }, [currentResult, healthAnalysis, moodTips]);
 
   const startFaceMasking = async () => {
-    if (!modelsLoaded || !videoRef.current || !canvasRef.current || !currentResult?.mood) {
+    if (
+      !modelsLoaded ||
+      !videoRef.current ||
+      !canvasRef.current ||
+      !currentResult?.mood
+    ) {
       toast({
         title: "표정 인식 준비 중",
         description: "표정 인식 모델을 로드 중입니다. 잠시 후 다시 시도하세요.",

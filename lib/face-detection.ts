@@ -33,7 +33,9 @@ export const loadFaceDetectionModels = async () => {
 // 이미지에서 표정 감지
 export const detectExpression = async (
   imageElement: HTMLImageElement | HTMLVideoElement
-): Promise<faceapi.WithFaceExpressions<faceapi.WithFaceLandmarks<faceapi.WithFaceDetection<{}>>> | null> => {
+): Promise<faceapi.WithFaceExpressions<
+  faceapi.WithFaceLandmarks<faceapi.WithFaceDetection<{}>>
+> | null> => {
   if (!modelsLoaded) {
     const loaded = await loadFaceDetectionModels();
     if (!loaded) return null;
@@ -77,8 +79,10 @@ export const calculateMoodMatchScore = (
   let matchScore = 0;
 
   for (const expr of matchingExpressions) {
-    if (expressions[expr as keyof faceapi.FaceExpressions] !== undefined) {
-      matchScore += expressions[expr as keyof faceapi.FaceExpressions];
+    const key = expr as keyof faceapi.FaceExpressions;
+    const value = expressions[key];
+    if (value !== undefined && typeof value === "number") {
+      matchScore += value;
     }
   }
 
@@ -124,61 +128,73 @@ export const inferMoodFromExpression = (
 // 얼굴 마스킹 함수 추가: 감지된 얼굴에 감정에 따른 마스크 오버레이
 export const drawMoodMask = (
   canvas: HTMLCanvasElement,
-  detection: faceapi.WithFaceExpressions<faceapi.WithFaceLandmarks<faceapi.WithFaceDetection<{}>>> | null,
+  detection: faceapi.WithFaceExpressions<
+    faceapi.WithFaceLandmarks<faceapi.WithFaceDetection<{}>>
+  > | null,
   mood: MoodState
 ): void => {
   if (!detection || !canvas) return;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  
+
   // 캔버스 초기화
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
+
   // 얼굴 감지 결과에서 박스 위치 가져오기
   const { box } = detection.detection;
-  
+
   // 기분별 색상 설정
   const getMoodColor = (mood: MoodState): string => {
     switch (mood) {
-      case 'happy': return 'rgba(76, 175, 80, 0.5)'; // 녹색 반투명
-      case 'sad': return 'rgba(33, 150, 243, 0.5)';  // 파란색 반투명
-      case 'stressed': return 'rgba(244, 67, 54, 0.5)'; // 빨간색 반투명
-      case 'relaxed': return 'rgba(156, 39, 176, 0.5)'; // 보라색 반투명
-      case 'neutral': 
-      default: return 'rgba(158, 158, 158, 0.5)';  // 회색 반투명
+      case "happy":
+        return "rgba(76, 175, 80, 0.5)"; // 녹색 반투명
+      case "sad":
+        return "rgba(33, 150, 243, 0.5)"; // 파란색 반투명
+      case "stressed":
+        return "rgba(244, 67, 54, 0.5)"; // 빨간색 반투명
+      case "relaxed":
+        return "rgba(156, 39, 176, 0.5)"; // 보라색 반투명
+      case "neutral":
+      default:
+        return "rgba(158, 158, 158, 0.5)"; // 회색 반투명
     }
   };
-  
+
   // 기분별 이모티콘 얻기
   const getMoodEmoji = (mood: MoodState): string => {
     switch (mood) {
-      case 'happy': return '😊';
-      case 'sad': return '😢';
-      case 'stressed': return '😠';
-      case 'relaxed': return '😌';
-      case 'neutral':
-      default: return '😐';
+      case "happy":
+        return "😊";
+      case "sad":
+        return "😢";
+      case "stressed":
+        return "😠";
+      case "relaxed":
+        return "😌";
+      case "neutral":
+      default:
+        return "😐";
     }
   };
-  
+
   // 얼굴 위에 반투명 컬러 오버레이 그리기
   ctx.fillStyle = getMoodColor(mood);
   ctx.fillRect(box.x, box.y, box.width, box.height);
-  
+
   // 얼굴 주변에 테두리 그리기
-  ctx.strokeStyle = getMoodColor(mood).replace('0.5', '0.8');
+  ctx.strokeStyle = getMoodColor(mood).replace("0.5", "0.8");
   ctx.lineWidth = 3;
   ctx.strokeRect(box.x, box.y, box.width, box.height);
-  
+
   // 이모티콘 표시 (얼굴 위쪽)
   ctx.font = `${Math.round(box.width / 2)}px Arial`;
   ctx.fillText(getMoodEmoji(mood), box.x + box.width / 4, box.y - 10);
-  
+
   // 인식된 감정 텍스트 표시
-  ctx.font = '16px Arial';
-  ctx.fillStyle = 'white';
-  ctx.strokeStyle = 'black';
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "black";
   ctx.lineWidth = 3;
   const moodText = getMoodText(mood);
   ctx.strokeText(moodText, box.x, box.y + box.height + 20);
