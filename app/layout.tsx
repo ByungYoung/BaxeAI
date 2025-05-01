@@ -15,8 +15,8 @@ import { AuthButtons } from "@/components/auth-buttons";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Baxe ai",
-  description: "xitst read your body, lead your mind",
+  title: "Baxe AI",
+  description: "Advanced Non-Contact Biomarker & Mental Wellness Scaner",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -36,6 +36,28 @@ export const metadata: Metadata = {
         type: "image/png",
       },
     ],
+  },
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: "https://rpgg-camera.vercel.app/",
+    title: "Baxe AI",
+    description: "Advanced Non-Contact Biomarker & Mental Wellness Scaner",
+    siteName: "Baxe AI",
+    images: [
+      {
+        url: "/android-chrome-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "Baxe AI 로고",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Baxe AI",
+    description: "Advanced Non-Contact Biomarker & Mental Wellness Scaner",
+    images: ["/android-chrome-512x512.png"],
   },
 };
 
@@ -75,7 +97,10 @@ export default function RootLayout({
                           className="w-[240px] sm:w-[300px]"
                         >
                           <div className="py-4 font-semibold text-lg">
-                            Baxe AI: read your body, lead your mind
+                            Baxe AI
+                          </div>
+                          <div className="text-sm text-muted-foreground mb-4">
+                            Read your body, lead your mind
                           </div>
                           <nav className="flex flex-col gap-3 mt-2">
                             <Link
@@ -106,9 +131,12 @@ export default function RootLayout({
                       {/* 로고 */}
                       <Link
                         href="/"
-                        className="font-bold text-lg flex items-center"
+                        className="font-bold text-lg flex items-center gap-2"
                       >
-                        <span>심박변이도 측정</span>
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                          <span className="font-extrabold">B</span>
+                        </div>
+                        <span>Baxe AI</span>
                       </Link>
                     </div>
 
@@ -154,8 +182,8 @@ export default function RootLayout({
                 <footer className="border-t py-4">
                   <div className="max-w-screen-xl mx-auto px-4 flex flex-col items-center justify-between gap-4 md:flex-row">
                     <p className="text-sm text-muted-foreground">
-                      © {new Date().getFullYear()} 심박변이도 측정 서비스. All
-                      rights reserved.
+                      © {new Date().getFullYear()} Xitst (엑시스트). All rights
+                      reserved.
                     </p>
                     <div className="flex items-center gap-2">
                       <Link
