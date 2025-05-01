@@ -138,7 +138,7 @@ export default function RegisterPage() {
 
       // 사용자 정보 로컬 상태에 저장 (게스트 모드)
       setUserInfo({
-        id: null,
+        id: `guest-${Date.now()}`, // 고유한 게스트 ID 부여
         email: values.email,
         name: values.name || values.email.split("@")[0],
         company: values.company,
