@@ -23,7 +23,7 @@ export interface RPPGCameraProps {
   onFrameCaptured?: (imageData: ImageData) => void; // 단일 프레임 캡처 콜백 추가
   active?: boolean; // 외부에서 활성화 여부 제어
   canvasRef?: React.RefObject<HTMLCanvasElement>; // 외부 캔버스 참조 추가
-  videoRef?: React.RefObject<HTMLVideoElement>; // 외부에서 비디오 참조 추가
+  videoRef?: React.RefObject<HTMLVideoElement | null>; // null을 허용하도록 수정
   isProcessing?: boolean;
   processText?: string;
   measurementTime?: number;
