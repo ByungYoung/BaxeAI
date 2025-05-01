@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       const newResult = await db.measurementResult.create({
         data: {
           userId: finalUserId,
-          email: userEmail || userInfo.email, // userEmail 값을 우선적으로 사용
+          email: userEmail || (userInfo?.email ?? "unknown@email.com"), // null 체크 추가
           heartRate,
           confidence,
           rmssd: rmssd || null,
