@@ -38,6 +38,7 @@ export default function MeasurePage() {
   const [isAnalyzingExpression, setIsAnalyzingExpression] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const expressionAnalysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const faceCanvasRef = useRef<HTMLCanvasElement>(null); // 얼굴 마스킹을 위한 캔버스 참조
   const [modelsLoaded, setModelsLoaded] = useState(false);
 
   // 사용자 정보가 없으면 등록 페이지로 리디렉션
@@ -80,7 +81,7 @@ export default function MeasurePage() {
 
     // 2초마다 표정 분석 수행
     expressionAnalysisIntervalRef.current = setInterval(async () => {
-      if (videoRef.current) {
+      if (videoRef.current && faceCanvasRef.current) {
         try {
           const detection = await detectExpression(videoRef.current);
 
@@ -93,6 +94,107 @@ export default function MeasurePage() {
 
             setDetectedMood(detectedMood);
             setMoodMatchScore(matchScore);
+
+            // 캔버스에 얼굴 마스킹 그리기
+            const drawMoodMask = (
+              canvas: HTMLCanvasElement,
+              detection: any,
+              mood: MoodState
+            ): void => {
+              if (!detection || !canvas) return;
+
+              const ctx = canvas.getContext("2d");
+              if (!ctx) return;
+
+              // 캔버스 초기화
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+              // 얼굴 감지 결과에서 박스 위치 가져오기
+              const { box } = detection.detection;
+
+              // 기분별 색상 설정
+              const getMoodColor = (mood: MoodState): string => {
+                switch (mood) {
+                  case "happy":
+                    return "rgba(76, 175, 80, 0.5)"; // 녹색 반투명
+                  case "sad":
+                    return "rgba(33, 150, 243, 0.5)"; // 파란색 반투명
+                  case "stressed":
+                    return "rgba(244, 67, 54, 0.5)"; // 빨간색 반투명
+                  case "relaxed":
+                    return "rgba(156, 39, 176, 0.5)"; // 보라색 반투명
+                  case "neutral":
+                  default:
+                    return "rgba(158, 158, 158, 0.5)"; // 회색 반투명
+                }
+              };
+
+              // 기분별 이모티콘 얻기
+              const getMoodEmoji = (mood: MoodState): string => {
+                switch (mood) {
+                  case "happy":
+                    return "😊";
+                  case "sad":
+                    return "😢";
+                  case "stressed":
+                    return "😠";
+                  case "relaxed":
+                    return "😌";
+                  case "neutral":
+                  default:
+                    return "😐";
+                }
+              };
+
+              // 얼굴 위에 반투명 컬러 오버레이 그리기
+              ctx.fillStyle = getMoodColor(detectedMood);
+              ctx.fillRect(box.x, box.y, box.width, box.height);
+
+              // 얼굴 주변에 테두리 그리기
+              ctx.strokeStyle = getMoodColor(detectedMood).replace("0.5", "0.8");
+              ctx.lineWidth = 3;
+              ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+              // 이모티콘 표시 (얼굴 위쪽)
+              ctx.font = `${Math.round(box.width / 2)}px Arial`;
+              ctx.fillText(
+                getMoodEmoji(detectedMood),
+                box.x + box.width / 4,
+                box.y - 10
+              );
+
+              // 인식된 감정 텍스트 표시
+              ctx.font = "16px Arial";
+              ctx.fillStyle = "white";
+              ctx.strokeStyle = "black";
+              ctx.lineWidth = 3;
+              const getMoodText = (mood: MoodState): string => {
+                switch (mood) {
+                  case "happy":
+                    return "행복함";
+                  case "sad":
+                    return "우울함";
+                  case "stressed":
+                    return "스트레스";
+                  case "relaxed":
+                    return "편안함";
+                  case "neutral":
+                    return "보통";
+                  default:
+                    return "알 수 없음";
+                }
+              };
+              const moodText = getMoodText(detectedMood);
+              ctx.strokeText(moodText, box.x, box.y + box.height + 20);
+              ctx.fillText(moodText, box.x, box.y + box.height + 20);
+            };
+
+            // 마스킹 캔버스 크기 설정
+            faceCanvasRef.current.width = videoRef.current.videoWidth;
+            faceCanvasRef.current.height = videoRef.current.videoHeight;
+
+            // 마스크 그리기
+            drawMoodMask(faceCanvasRef.current, detection, detectedMood);
           }
         } catch (err) {
           console.error("표정 분석 오류:", err);
@@ -330,7 +432,7 @@ export default function MeasurePage() {
               )}
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg overflow-hidden">
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg overflow-hidden relative">
               <RPPGCamera
                 onFramesCapture={handleFramesCapture}
                 isProcessing={isProcessing}
@@ -352,6 +454,10 @@ export default function MeasurePage() {
                   </Button>
                 </div>
               )}
+              <canvas
+                ref={faceCanvasRef}
+                className="absolute top-0 left-0 w-full h-full pointer-events-none"
+              />
             </div>
 
             <div className="text-center">
