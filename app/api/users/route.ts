@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 
 // 새로운 사용자 생성
@@ -65,17 +65,22 @@ export async function GET(request: NextRequest) {
     const email = searchParams.get("email");
 
     return await withDb(async (db) => {
-      let query = db.select().from(users);
+      // 조건 설정
+      const conditions = [];
       
       // 이메일로 필터링
       if (email) {
-        query = query.where(eq(users.email, email));
+        conditions.push(eq(users.email, email));
       }
       
-      // 최신순으로 정렬
-      query = query.orderBy(desc(users.createdAt));
+      // 쿼리 구성
+      const query = db.select().from(users);
       
-      const usersList = await query;
+      // 조건 적용 및 쿼리 실행
+      const usersList = conditions.length > 0
+        ? await query.where(and(...conditions)).orderBy(desc(users.createdAt))
+        : await query.orderBy(desc(users.createdAt));
+      
       return NextResponse.json(usersList);
     });
   } catch (error) {
