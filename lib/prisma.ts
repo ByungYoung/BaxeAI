@@ -1,14 +1,20 @@
 // 서버리스 환경에 최적화된 Prisma 클라이언트 설정
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 // 개발 환경에서 다중 인스턴스 생성 방지를 위한 전역 변수
 const globalForPrisma = global as unknown as { prisma: PrismaClient | undefined };
 
 // 더 안정적인 연결 관리를 위한 Prisma 옵션 설정
-const prismaClientOptions = {
+const prismaClientOptions: Prisma.PrismaClientOptions = {
   log: process.env.NODE_ENV === "development" 
-    ? ["query", "error", "warn"] 
-    : ["error"],
+    ? [
+        { level: 'query', emit: 'stdout' },
+        { level: 'error', emit: 'stdout' },
+        { level: 'warn', emit: 'stdout' },
+      ]
+    : [
+        { level: 'error', emit: 'stdout' }
+      ],
 };
 
 // 사용할 Prisma 클라이언트 인스턴스 결정
