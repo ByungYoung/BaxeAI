@@ -10,9 +10,9 @@
     "create-admin": "node scripts/create-admin.js",
     "seed": "npx ts-node prisma/seed.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma db push --accept-data-loss && prisma generate && next build",
+    "vercel-build": "prisma generate && next build",
     "deploy": "vercel --prod",
-    "build:production": "NODE_ENV=production prisma db push --accept-data-loss && prisma generate && next build"
+    "build:production": "NODE_ENV=production prisma generate && next build"
   },
   "dependencies": {
     "@google-cloud/translate": "^9.0.1",
