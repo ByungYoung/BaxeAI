@@ -1,6 +1,13 @@
+"use client";
+
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { MeasurementResult } from "./types";
+import { use, useEffect, useLayoutEffect } from "react";
+
+// 서버 사이드 렌더링에서 useLayoutEffect 경고를 방지하기 위한 유틸리티 함수
+export const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

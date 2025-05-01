@@ -1,46 +1,41 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
-  // 서버리스 환경에 최적화된 설정
+  provider        = "prisma-client-js"
   previewFeatures = ["metrics", "postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
-  // pgBouncer를 위한 연결 설정
-  directUrl = env("POSTGRES_URL_NON_POOLING")
-  // 서버리스 환경에서의 prepared statement 문제 개선을 위한 설정
-  extensions = [pgcrypto]
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL")
+  directUrl  = env("POSTGRES_URL_NON_POOLING")
+  extensions = [pgcrypto, uuid_ossp(map: "uuid-ossp", schema: "extensions")]
 }
 
 model User {
-  id               String             @id @default(cuid())
-  email            String             @unique
-  name             String?
-  company          String
-  password         String?            // 선택적 필드로 변경
-  isAdmin          Boolean            @default(false) // 관리자 여부 필드 추가
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  name               String?
+  company            String
+  password           String?
+  isAdmin            Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   measurementResults MeasurementResult[]
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
 }
 
 model MeasurementResult {
-  id          String   @id @default(cuid())
-  timestamp   DateTime @default(now())
-  heartRate   Float
-  confidence  Float
-  rmssd       Float?
-  sdnn        Float?
-  lf          Float?
-  hf          Float?
-  lfHfRatio   Float?
-  pnn50       Float?
-  mood        String?  // 기분 상태 필드 추가
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  heartRate  Float
+  confidence Float
+  rmssd      Float?
+  sdnn       Float?
+  lf         Float?
+  hf         Float?
+  lfHfRatio  Float?
+  pnn50      Float?
+  mood       String?
+  userId     String
+  createdAt  DateTime @default(now())
+  email      String?
+  user       User     @relation(fields: [userId], references: [id])
 }

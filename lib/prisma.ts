@@ -3,9 +3,6 @@ import { PrismaClient } from "@prisma/client";
 
 // 연결 설정을 위한 옵션
 const prismaClientOptions = {
-  // 연결 풀링 설정
-  // Vercel 환경에서 예비 연결을 1개로 제한하여 prepared statement 충돌 방지
-  connectionLimit: 1,
   // 로그 설정
   log:
     process.env.NODE_ENV === "production"

@@ -1,10 +1,7 @@
 {
-  "buildCommand": "pnpm install && pnpm prisma generate && pnpm run build",
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' pnpm install && pnpm prisma generate && pnpm run build",
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "outputDirectory": ".next",
-  "regions": ["icn1"],
-  "buildEnvironment": {
-    "NODE_OPTIONS": "--max-old-space-size=4096"
-  }
+  "regions": ["icn1"]
 }

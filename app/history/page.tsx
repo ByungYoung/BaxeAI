@@ -180,7 +180,8 @@ export default function HistoryPage() {
       HF: result.hf !== null ? result.hf.toFixed(2) : "-",
       "LF/HF": result.lfHfRatio !== null ? result.lfHfRatio.toFixed(2) : "-",
       기분: result.mood ? moodToText(result.mood) : "-",
-      사용자: result.user?.name || result.user?.email || "-",
+      사용자: result.user?.name || "-",
+      이메일: result.email || result.user?.email || "-",
       소속: result.user?.company || "-",
     }));
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -616,6 +617,7 @@ export default function HistoryPage() {
                   <TableHead>LF/HF</TableHead>
                   <TableHead>기분</TableHead>
                   <TableHead>사용자</TableHead>
+                  <TableHead>이메일</TableHead>
                   <TableHead>소속</TableHead>
                 </TableRow>
               </TableHeader>
@@ -649,8 +651,9 @@ export default function HistoryPage() {
                     <TableCell>
                       {result.mood ? moodToText(result.mood) : "-"}
                     </TableCell>
+                    <TableCell>{result.user?.name || "-"}</TableCell>
                     <TableCell>
-                      {result.user?.name || result.user?.email || "-"}
+                      {result.email || result.user?.email || "-"}
                     </TableCell>
                     <TableCell>{result.user?.company || "-"}</TableCell>
                   </TableRow>
@@ -697,9 +700,11 @@ export default function HistoryPage() {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">사용자</div>
-                          <div>
-                            {result.user?.name || result.user?.email || "-"}
-                          </div>
+                          <div>{result.user?.name || "-"}</div>
+                        </div>
+                        <div className="border-b pb-1">
+                          <div className="text-muted-foreground">이메일</div>
+                          <div>{result.email || result.user?.email || "-"}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">소속</div>
@@ -817,7 +822,13 @@ export default function HistoryPage() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">사용자</span>
                         <span className="font-medium truncate ml-2">
-                          {result.user?.name || result.user?.email || "-"}
+                          {result.user?.name || "-"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">이메일</span>
+                        <span className="font-medium truncate ml-2">
+                          {result.email || result.user?.email || "-"}
                         </span>
                       </div>
                       <div className="flex justify-between">
