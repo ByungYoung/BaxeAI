@@ -42,10 +42,6 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# prisma
-/prisma/dev.db
-/prisma/dev.db-journal
-
 # temporary files
 /tmp
 /temp

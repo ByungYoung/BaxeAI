@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { withDb } from "@/lib/db";
+import { users, measurementResults } from "@/lib/db/schema";
+import { eq, desc, and } from "drizzle-orm";
 
 // 측정 이력 조회 (GET)
 export async function GET(request: NextRequest) {
@@ -13,46 +15,46 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // admin 계정의 id라면 전체 이력 반환
-    const adminUser = await prisma.user.findFirst({
-      where: { email: "admin@xitst.com", isAdmin: true },
-    });
-    if (adminUser && userId === adminUser.id) {
-      // 전체 이력 반환
-      const results = await prisma.measurementResult.findMany({
-        orderBy: { timestamp: "desc" },
-        include: {
+    return await withDb(async (db) => {
+      // admin 계정의 id인지 확인
+      const [adminUser] = await db
+        .select()
+        .from(users)
+        .where(and(eq(users.email, "admin@xitst.com"), eq(users.isAdmin, true)))
+        .limit(1);
+      
+      // 기본 쿼리 구성
+      const query = db
+        .select({
+          measurementResult: measurementResults,
           user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              company: true,
-              isAdmin: true,
-            },
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            company: users.company,
+            isAdmin: users.isAdmin,
           },
-        },
-      });
-      return NextResponse.json(results);
-    }
+        })
+        .from(measurementResults)
+        .leftJoin(users, eq(measurementResults.userId, users.id))
+        .orderBy(desc(measurementResults.timestamp));
 
-    // 일반 사용자는 자신의 데이터만 볼 수 있음
-    const results = await prisma.measurementResult.findMany({
-      where: { userId },
-      orderBy: { timestamp: "desc" },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            company: true,
-            isAdmin: true,
-          },
-        },
-      },
+      // 일반 사용자는 자신의 데이터만 볼 수 있음
+      if (!adminUser || userId !== adminUser.id) {
+        query.where(eq(measurementResults.userId, userId));
+      }
+
+      // 쿼리 실행
+      const results = await query;
+
+      // 응답 형식 변환
+      const formattedResults = results.map(({ measurementResult, user }) => ({
+        ...measurementResult,
+        user,
+      }));
+
+      return NextResponse.json(formattedResults);
     });
-    return NextResponse.json(results);
   } catch (error) {
     console.error("측정 이력 조회 중 오류 발생:", error);
     return NextResponse.json(

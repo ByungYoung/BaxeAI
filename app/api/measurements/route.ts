@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withIsolatedPrisma } from "@/lib/prisma";
+import { withDb } from "@/lib/db";
+import { users, measurementResults } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { createId } from "@paralleldrive/cuid2";
 
 // 새로운 측정 결과 저장
 export async function POST(request: NextRequest) {
@@ -29,8 +32,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // withIsolatedPrisma를 사용하여 데이터베이스 작업 수행
-    return await withIsolatedPrisma(async (db) => {
+    // withDb를 사용하여 데이터베이스 작업 수행
+    return await withDb(async (db) => {
       // 사용자 처리 로직
       let finalUserId = userId;
       let userInfo = null;
@@ -38,9 +41,11 @@ export async function POST(request: NextRequest) {
       // 이메일이 제공된 경우, 항상 이를 우선적으로 처리
       if (userEmail) {
         // 이메일로 사용자 찾기
-        const existingUser = await db.user.findUnique({
-          where: { email: userEmail },
-        });
+        const [existingUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, userEmail))
+          .limit(1);
 
         if (existingUser) {
           // 기존 사용자 ID 사용
@@ -52,25 +57,32 @@ export async function POST(request: NextRequest) {
             (userName && userName !== existingUser.name) ||
             (userCompany && userCompany !== existingUser.company)
           ) {
-            await db.user.update({
-              where: { id: existingUser.id },
-              data: {
+            await db
+              .update(users)
+              .set({
                 name: userName || existingUser.name,
                 company: userCompany || existingUser.company,
-              },
-            });
+              })
+              .where(eq(users.id, existingUser.id));
           }
         } else {
           // 이메일이 있지만 사용자가 없으면 새 사용자 생성
           const tempPassword = Math.random().toString(36).slice(-8); // 임시 비밀번호
-          const newUser = await db.user.create({
-            data: {
+          const newUserId = createId();
+          
+          const [newUser] = await db
+            .insert(users)
+            .values({
+              id: newUserId,
               email: userEmail,
               name: userName || userEmail.split("@")[0],
               company: userCompany || "미지정",
               password: tempPassword, // 임시 비밀번호 설정
-            },
-          });
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .returning();
+            
           finalUserId = newUser.id;
           userInfo = newUser;
           console.log(`새 사용자 생성: ${userEmail}`);
@@ -79,9 +91,11 @@ export async function POST(request: NextRequest) {
       // userId만 있고 이메일이 없는 경우 (비정상적인 경우지만 처리)
       else if (finalUserId) {
         // userId로 사용자 정보 확인
-        const user = await db.user.findUnique({
-          where: { id: finalUserId },
-        });
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, finalUserId))
+          .limit(1);
 
         if (!user) {
           // userId가 유효하지 않으면 익명으로 처리
@@ -95,19 +109,26 @@ export async function POST(request: NextRequest) {
       if (!finalUserId) {
         // 익명 사용자 ID로 저장 (익명 사용자 생성 또는 기존 익명 사용자 사용)
         const anonymousEmail = "anonymous@user.com";
-        let anonymousUser = await db.user.findUnique({
-          where: { email: anonymousEmail },
-        });
+        let [anonymousUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, anonymousEmail))
+          .limit(1);
 
         if (!anonymousUser) {
-          anonymousUser = await db.user.create({
-            data: {
+          const anonymousUserId = createId();
+          [anonymousUser] = await db
+            .insert(users)
+            .values({
+              id: anonymousUserId,
               email: anonymousEmail,
               name: "익명 사용자",
               company: "미지정",
               password: "anonymous", // 임시 비밀번호
-            },
-          });
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .returning();
         }
 
         finalUserId = anonymousUser.id;
@@ -115,8 +136,11 @@ export async function POST(request: NextRequest) {
       }
 
       // 측정 결과 저장
-      const newResult = await db.measurementResult.create({
-        data: {
+      const resultId = createId();
+      const [newResult] = await db
+        .insert(measurementResults)
+        .values({
+          id: resultId,
           userId: finalUserId,
           email: userEmail || (userInfo?.email ?? "unknown@email.com"), // null 체크 추가
           heartRate,
@@ -128,16 +152,21 @@ export async function POST(request: NextRequest) {
           lfHfRatio: lfHfRatio || null,
           pnn50: pnn50 || null,
           mood: mood || null, // 기분 상태 저장
-        },
-        include: {
-          user: true,
-        },
-      });
+          timestamp: new Date(),
+          createdAt: new Date(),
+        })
+        .returning();
 
       // 응답에 사용자 정보를 명시적으로 포함
       return NextResponse.json(
         {
           ...newResult,
+          user: {
+            id: userInfo?.id,
+            email: userInfo?.email,
+            name: userInfo?.name,
+            company: userInfo?.company,
+          },
           userEmail: userInfo?.email,
           userName: userInfo?.name,
           userCompany: userInfo?.company,
@@ -161,32 +190,38 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get("userId");
     const isAdmin = searchParams.get("isAdmin") === "true";
 
-    return await withIsolatedPrisma(async (db) => {
-      let whereClause = {};
+    return await withDb(async (db) => {
+      // 기본 쿼리 구성
+      let query = db
+        .select({
+          measurementResult: measurementResults,
+          user: {
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            company: users.company,
+            isAdmin: users.isAdmin,
+          },
+        })
+        .from(measurementResults)
+        .leftJoin(users, eq(measurementResults.userId, users.id))
+        .orderBy(desc(measurementResults.timestamp));
+
+      // 사용자 ID 필터 적용
       if (userId && !isAdmin) {
-        // 일반 사용자는 자신의 데이터만 볼 수 있음
-        whereClause = { userId };
+        query = query.where(eq(measurementResults.userId, userId));
       }
 
-      const results = await db.measurementResult.findMany({
-        where: whereClause,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              company: true,
-              isAdmin: true,
-            },
-          },
-        },
-        orderBy: {
-          timestamp: "desc",
-        },
-      });
+      // 쿼리 실행
+      const results = await query;
 
-      return NextResponse.json(results);
+      // 응답 형식 변환
+      const formattedResults = results.map(({ measurementResult, user }) => ({
+        ...measurementResult,
+        user,
+      }));
+
+      return NextResponse.json(formattedResults);
     });
   } catch (error) {
     console.error("측정 결과 조회 중 오류 발생:", error);

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { withDb } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { createId } from "@paralleldrive/cuid2";
 
 // 새로운 사용자 생성
 export async function POST(request: NextRequest) {
@@ -14,26 +17,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 이미 존재하는 사용자인지 확인
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    return await withDb(async (db) => {
+      // 이미 존재하는 사용자인지 확인
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      // 이미 존재하면 기존 사용자 정보 반환
+      if (existingUser) {
+        return NextResponse.json(existingUser);
+      }
+
+      // 새 사용자 생성
+      const userId = createId();
+      const now = new Date();
+      
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          id: userId,
+          email,
+          name,
+          company,
+          isAdmin: false,
+          createdAt: now,
+          updatedAt: now
+        })
+        .returning();
+
+      return NextResponse.json(newUser, { status: 201 });
     });
-
-    // 이미 존재하면 기존 사용자 정보 반환
-    if (existingUser) {
-      return NextResponse.json(existingUser);
-    }
-
-    // 새 사용자 생성
-    const newUser = await prisma.user.create({
-      data: {
-        email,
-        name,
-        company,
-      },
-    });
-
-    return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
     console.error("사용자 생성 중 오류 발생:", error);
     return NextResponse.json(
@@ -49,20 +64,20 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const email = searchParams.get("email");
 
-    // 검색 조건
-    let whereClause = {};
-    if (email) {
-      whereClause = { email };
-    }
-
-    const users = await prisma.user.findMany({
-      where: whereClause,
-      orderBy: {
-        createdAt: "desc",
-      },
+    return await withDb(async (db) => {
+      let query = db.select().from(users);
+      
+      // 이메일로 필터링
+      if (email) {
+        query = query.where(eq(users.email, email));
+      }
+      
+      // 최신순으로 정렬
+      query = query.orderBy(desc(users.createdAt));
+      
+      const usersList = await query;
+      return NextResponse.json(usersList);
     });
-
-    return NextResponse.json(users);
   } catch (error) {
     console.error("사용자 조회 중 오류 발생:", error);
     return NextResponse.json(

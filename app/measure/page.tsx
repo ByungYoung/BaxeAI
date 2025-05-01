@@ -25,11 +25,17 @@ export default function MeasurePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<MoodState>("neutral");
+  const [isReady, setIsReady] = useState(false);
 
   // 사용자 정보가 없으면 등록 페이지로 리디렉션
   useEffect(() => {
     if (!userInfo) {
       router.push("/register");
+    } else {
+      // 페이지 로드 후 카메라가 초기화될 시간을 주기 위해 준비 상태를 약간 지연
+      setTimeout(() => {
+        setIsReady(true);
+      }, 1000);
     }
   }, [userInfo, router]);
 
@@ -39,8 +45,20 @@ export default function MeasurePage() {
       setIsProcessing(true);
       setError(null);
 
+      if (frames.length < 10) {
+        throw new Error(
+          "충분한 프레임이 캡처되지 않았습니다. 더 밝은 환경에서 다시 시도해 주세요."
+        );
+      }
+
       // 서버에 프레임 전송 및 처리 요청
       const result = await processWithPyVHR(frames);
+
+      if (!result || !result.heartRate) {
+        throw new Error(
+          "측정 데이터를 분석할 수 없습니다. 더 밝은 조명 환경에서 다시 시도해 주세요."
+        );
+      }
 
       // 상태 저장 (기분 상태 포함)
       setCurrentResult(
@@ -52,9 +70,12 @@ export default function MeasurePage() {
 
       // 결과 페이지로 이동
       router.push("/results");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Processing error:", err);
-      setError("측정 데이터 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setError(
+        err.message ||
+          "측정 데이터 처리 중 오류가 발생했습니다. 다시 시도해주세요."
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -104,6 +125,16 @@ export default function MeasurePage() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>오류</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {!isReady && (
+            <Alert className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>카메라 초기화 중...</AlertTitle>
+              <AlertDescription>
+                카메라와 측정 시스템을 준비하고 있습니다. 잠시만 기다려주세요.
+              </AlertDescription>
             </Alert>
           )}
 
@@ -196,6 +227,10 @@ export default function MeasurePage() {
                 <li>얼굴 전체가 화면에 잘 보이도록 카메라를 조정하세요</li>
                 <li>30초간 측정이 진행됩니다</li>
                 <li>측정이 완료되면 자동으로 결과 페이지로 이동합니다</li>
+                <li className="font-medium text-amber-600">
+                  얼굴이 감지되지 않아도 측정이 가능합니다. 단, 정확도가 떨어질
+                  수 있으니 가능하면 얼굴이 잘 보이게 해주세요.
+                </li>
               </ul>
             </div>
           </div>

@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import { withIsolatedPrisma } from "./prisma";
+import { withDb } from "./db";
+import { eq } from "drizzle-orm";
+import { users } from "./db/schema";
 
 // JWT_SECRET 환경 변수 체크
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -44,11 +46,13 @@ export async function getCurrentUser() {
       return null;
     }
 
-    // withIsolatedPrisma를 사용하여 데이터베이스 작업 처리
-    return await withIsolatedPrisma(async (db) => {
-      const user = await db.user.findUnique({
-        where: { id: decoded.userId },
-      });
+    // withDb를 사용하여 데이터베이스 작업 처리
+    return await withDb(async (db) => {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, decoded.userId))
+        .limit(1);
 
       if (!user) {
         return null;
