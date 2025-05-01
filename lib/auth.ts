@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import prisma from "./prisma";
+import { withIsolatedPrisma } from "./prisma";
 
 // JWT_SECRET 환경 변수 체크
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -31,29 +31,37 @@ export async function verifyToken(token: string) {
 
 // 현재 로그인한 사용자 가져오기
 export async function getCurrentUser() {
-  const cookiesStore = await cookies();
-  const token = cookiesStore.get("auth-token")?.value;
+  try {
+    const cookiesStore = await cookies();
+    const token = cookiesStore.get("auth-token")?.value;
 
-  if (!token) {
+    if (!token) {
+      return null;
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return null;
+    }
+
+    // withIsolatedPrisma를 사용하여 데이터베이스 작업 처리
+    return await withIsolatedPrisma(async (db) => {
+      const user = await db.user.findUnique({
+        where: { id: decoded.userId },
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      // 비밀번호를 제외한 사용자 정보 반환
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    });
+  } catch (error) {
+    console.error("사용자 정보 조회 중 오류:", error);
     return null;
   }
-
-  const decoded = await verifyToken(token);
-  if (!decoded) {
-    return null;
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: decoded.userId },
-  });
-
-  if (!user) {
-    return null;
-  }
-
-  // 비밀번호를 제외한 사용자 정보 반환
-  const { password, ...userWithoutPassword } = user;
-  return userWithoutPassword;
 }
 
 // 로그아웃

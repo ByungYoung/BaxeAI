@@ -29,7 +29,11 @@ export async function POST(request: Request) {
 
     // Create a temporary directory to store frames
     const sessionId = uuidv4();
-    const tempDir = path.join(process.cwd(), "tmp", sessionId);
+    // Vercel 환경에서는 /tmp 디렉토리를 사용
+    const tempDir =
+      process.env.VERCEL === "1"
+        ? path.join("/tmp", sessionId)
+        : path.join(process.cwd(), "tmp", sessionId);
 
     try {
       await fs.mkdir(tempDir, { recursive: true });

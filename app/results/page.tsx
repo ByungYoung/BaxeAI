@@ -163,14 +163,16 @@ export default function ResultsPage() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">사용자</span>
-                <span>
-                  {currentResult.userInfo.name || currentResult.userInfo.email}
-                </span>
+                <span className="text-gray-500">사용자 이름</span>
+                <span>{currentResult.userInfo.name || "이름없음"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">이메일</span>
+                <span>{currentResult.userInfo.email}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">소속</span>
-                <span>{currentResult.userInfo.company}</span>
+                <span>{currentResult.userInfo.company || "-"}</span>
               </div>
             </div>
           </CardContent>
@@ -185,10 +187,6 @@ export default function ResultsPage() {
               <div className="flex justify-between">
                 <span className="text-gray-500">심박수</span>
                 <span>{currentResult.heartRate.toFixed(1)} BPM</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">신뢰도</span>
-                <span>{(currentResult.confidence * 100).toFixed(0)}%</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">스트레스 레벨</span>
@@ -210,82 +208,157 @@ export default function ResultsPage() {
       </div>
 
       {currentResult.hrv && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>심박변이도(HRV) 상세 지표</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>지표</TableHead>
-                  <TableHead>값</TableHead>
-                  <TableHead>의미</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell>RMSSD</TableCell>
-                  <TableCell>
-                    {currentResult.hrv.rmssd !== undefined
-                      ? `${currentResult.hrv.rmssd.toFixed(2)} ms`
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    연속된 RR 간격의 제곱 평균에 루트를 씌운 값
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>SDNN</TableCell>
-                  <TableCell>
-                    {currentResult.hrv.sdnn !== undefined
-                      ? `${currentResult.hrv.sdnn.toFixed(2)} ms`
-                      : "-"}
-                  </TableCell>
-                  <TableCell>RR 간격의 표준편차</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>LF</TableCell>
-                  <TableCell>
-                    {currentResult.hrv.lf !== undefined
-                      ? currentResult.hrv.lf.toFixed(2)
-                      : "-"}{" "}
-                    ms²
-                  </TableCell>
-                  <TableCell>저주파 파워 (0.04-0.15Hz)</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>HF</TableCell>
-                  <TableCell>
-                    {currentResult.hrv.hf !== undefined
-                      ? currentResult.hrv.hf.toFixed(2)
-                      : "-"}{" "}
-                    ms²
-                  </TableCell>
-                  <TableCell>고주파 파워 (0.15-0.4Hz)</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>LF/HF 비율</TableCell>
-                  <TableCell>
-                    {currentResult.hrv.lfHfRatio !== undefined
-                      ? currentResult.hrv.lfHfRatio.toFixed(2)
-                      : "-"}
-                  </TableCell>
-                  <TableCell>저주파와 고주파 파워의 비율</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>pNN50</TableCell>
-                  <TableCell>
-                    {currentResult.hrv.pnn50 !== undefined
-                      ? `${currentResult.hrv.pnn50.toFixed(2)} %`
-                      : "-"}
-                  </TableCell>
-                  <TableCell>50ms 초과 차이를 보이는 RR 간격 비율</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <>
+          {/* LF/HF 요약 섹션 추가 */}
+          <div className="grid gap-6 md:grid-cols-2 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>자율신경계 균형</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 font-medium">
+                      LF (저주파)
+                    </span>
+                    <span className="text-blue-600 font-bold text-xl">
+                      {currentResult.hrv.lf !== undefined
+                        ? `${currentResult.hrv.lf.toFixed(2)} ms²`
+                        : "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 font-medium">
+                      HF (고주파)
+                    </span>
+                    <span className="text-green-600 font-bold text-xl">
+                      {currentResult.hrv.hf !== undefined
+                        ? `${currentResult.hrv.hf.toFixed(2)} ms²`
+                        : "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center border-t pt-2">
+                    <span className="text-gray-500 font-medium">
+                      LF/HF 비율
+                    </span>
+                    <span className="text-purple-600 font-bold text-xl">
+                      {currentResult.hrv.lfHfRatio !== undefined
+                        ? currentResult.hrv.lfHfRatio.toFixed(2)
+                        : "-"}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-gray-500 text-xs mt-4">
+                  ※ LF는 교감신경계 활성도를, HF는 부교감신경계 활성도를
+                  나타냅니다. LF/HF 비율이 높으면 교감신경계 활성도가 상대적으로
+                  높은 상태입니다.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>자율신경계 해석</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p>
+                    {interpretLfHf(
+                      currentResult.hrv.lfHfRatio,
+                      currentResult.hrv.lf,
+                      currentResult.hrv.hf
+                    )}
+                  </p>
+                  <div className="flex justify-between items-center mt-4">
+                    <span className="text-gray-500 font-medium">
+                      스트레스 레벨
+                    </span>
+                    <span className={getStressLevelColor(stressLevel)}>
+                      {getStressLevelText(stressLevel)}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>심박변이도(HRV) 상세 지표</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>지표</TableHead>
+                    <TableHead>값</TableHead>
+                    <TableHead>의미</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>RMSSD</TableCell>
+                    <TableCell>
+                      {currentResult.hrv.rmssd !== undefined
+                        ? `${currentResult.hrv.rmssd.toFixed(2)} ms`
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      연속된 RR 간격의 제곱 평균에 루트를 씌운 값
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>SDNN</TableCell>
+                    <TableCell>
+                      {currentResult.hrv.sdnn !== undefined
+                        ? `${currentResult.hrv.sdnn.toFixed(2)} ms`
+                        : "-"}
+                    </TableCell>
+                    <TableCell>RR 간격의 표준편차</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>LF</TableCell>
+                    <TableCell>
+                      {currentResult.hrv.lf !== undefined
+                        ? currentResult.hrv.lf.toFixed(2)
+                        : "-"}{" "}
+                      ms²
+                    </TableCell>
+                    <TableCell>저주파 파워 (0.04-0.15Hz)</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>HF</TableCell>
+                    <TableCell>
+                      {currentResult.hrv.hf !== undefined
+                        ? currentResult.hrv.hf.toFixed(2)
+                        : "-"}{" "}
+                      ms²
+                    </TableCell>
+                    <TableCell>고주파 파워 (0.15-0.4Hz)</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>LF/HF 비율</TableCell>
+                    <TableCell>
+                      {currentResult.hrv.lfHfRatio !== undefined
+                        ? currentResult.hrv.lfHfRatio.toFixed(2)
+                        : "-"}
+                    </TableCell>
+                    <TableCell>저주파와 고주파 파워의 비율</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>pNN50</TableCell>
+                    <TableCell>
+                      {currentResult.hrv.pnn50 !== undefined
+                        ? `${currentResult.hrv.pnn50.toFixed(2)} %`
+                        : "-"}
+                    </TableCell>
+                    <TableCell>50ms 초과 차이를 보이는 RR 간격 비율</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       <div className="flex justify-center gap-4 mt-10">
@@ -333,5 +406,19 @@ function getStressLevelColor(level: string): string {
       return "text-red-500 font-medium";
     default:
       return "text-gray-500";
+  }
+}
+
+function interpretLfHf(lfHfRatio?: number, lf?: number, hf?: number): string {
+  if (lfHfRatio === undefined || lf === undefined || hf === undefined) {
+    return "자율신경계 균형을 해석할 수 없습니다.";
+  }
+
+  if (lfHfRatio > 2) {
+    return "교감신경계가 활성화된 상태로 스트레스가 높을 수 있습니다.";
+  } else if (lfHfRatio < 1) {
+    return "부교감신경계가 활성화된 상태로 편안한 상태일 수 있습니다.";
+  } else {
+    return "교감신경계와 부교감신경계가 균형을 이루고 있는 상태입니다.";
   }
 }

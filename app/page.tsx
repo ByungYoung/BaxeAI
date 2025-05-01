@@ -1,9 +1,24 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Heart, Clock, BarChart2, Camera } from "lucide-react";
 import Link from "next/link";
+import { useAppStore } from "@/lib/store";
+import { useEffect, useState } from "react";
 
 export default function HomePage() {
+  const { user } = useAppStore();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // 컴포넌트 마운트 후 로그인 상태 확인
+  useEffect(() => {
+    setIsLoggedIn(!!user?.id);
+  }, [user]);
+
+  // 측정 페이지 경로 결정 (로그인 상태에 따라)
+  const measurePath = isLoggedIn ? "/measure" : "/register";
+
   return (
     <div className="space-y-8">
       {/* 히어로 섹션 */}
@@ -24,8 +39,10 @@ export default function HomePage() {
                 측정하고 스트레스 수준을 분석해 보세요.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
-                <Link href="/register">
-                  <Button size="lg">지금 시작하기</Button>
+                <Link href={measurePath}>
+                  <Button size="lg">
+                    {isLoggedIn ? "측정 시작하기" : "회원가입 후 시작하기"}
+                  </Button>
                 </Link>
                 <Link href="#features">
                   <Button variant="outline" size="lg">
@@ -128,9 +145,9 @@ export default function HomePage() {
             간단한 정보 입력 후 카메라만으로 심박변이도를 측정하고 당신의
             스트레스 수준과 건강 상태를 확인해 보세요.
           </p>
-          <Link href="/register">
+          <Link href={measurePath}>
             <Button size="lg" variant="secondary" className="font-semibold">
-              측정 시작하기
+              {isLoggedIn ? "측정 시작하기" : "측정 정보 등록"}
             </Button>
           </Link>
         </div>

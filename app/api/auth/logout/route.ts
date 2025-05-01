@@ -1,22 +1,21 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function POST() {
   try {
-    // 인증 쿠키 삭제 (비동기적으로 처리)
-    const cookieStore = await cookies();
-    cookieStore.set("auth-token", "", {
-      path: "/",
-      httpOnly: true,
-      maxAge: 0,
-      sameSite: "lax",
+    // 명시적으로 쿠키를 무효화하는 응답 생성
+    const response = NextResponse.json({
+      success: true,
+      message: "로그아웃 성공",
     });
 
-    const response = NextResponse.json({ success: true });
+    // 인증 토큰 쿠키 삭제 (만료 시간을 과거로 설정)
     response.headers.set(
       "Set-Cookie",
-      "auth-token=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax"
+      `auth-token=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax${
+        process.env.NODE_ENV === "production" ? "; Secure" : ""
+      }`
     );
+
     return response;
   } catch (error) {
     console.error("Logout error:", error);
