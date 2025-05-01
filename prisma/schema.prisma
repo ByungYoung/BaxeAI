@@ -3,11 +3,17 @@
 
 generator client {
   provider = "prisma-client-js"
+  // 서버리스 환경에 최적화된 설정
+  previewFeatures = ["metrics", "postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("POSTGRES_PRISMA_URL")
+  // pgBouncer를 위한 연결 설정
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+  // 서버리스 환경에서의 prepared statement 문제 개선을 위한 설정
+  extensions = [pgcrypto]
 }
 
 model User {

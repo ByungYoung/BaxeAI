@@ -1,58 +1,54 @@
 // Prisma 클라이언트 - 서버리스 환경에 최적화
 import { PrismaClient } from "@prisma/client";
 
-// 서버리스 환경에 최적화된 Prisma 옵션
+// 연결 설정을 위한 옵션
 const prismaClientOptions = {
-  // PostgreSQL의 prepared statement 문제 해결을 위한 설정
-  datasources: {
-    db: {
-      url: process.env.POSTGRES_PRISMA_URL,
-    },
-  },
-  // 필요한 로그만 표시
-  log: ["error"],
+  // 연결 풀링 설정
+  // Vercel 환경에서 예비 연결을 1개로 제한하여 prepared statement 충돌 방지
+  connectionLimit: 1,
+  // 로그 설정
+  log:
+    process.env.NODE_ENV === "production"
+      ? ["error"]
+      : ["query", "error", "warn"],
 };
 
-// 각 요청마다 새로운 Prisma 인스턴스를 생성
-export function createPrismaClient() {
-  return new PrismaClient(prismaClientOptions);
+// 글로벌 상태 유형 설정
+declare global {
+  var cachedPrisma: PrismaClient;
 }
 
-// 요청별 Prisma 클라이언트 관리
+// 캐시된 클라이언트 인스턴스 사용
 let prisma: PrismaClient;
-
-// 개발 환경에서는 전역 인스턴스를 재사용
-if (process.env.NODE_ENV === "development") {
-  // @ts-ignore
-  if (!global.prisma) {
-    // @ts-ignore
-    global.prisma = new PrismaClient(prismaClientOptions);
-  }
-  // @ts-ignore
-  prisma = global.prisma;
-} else {
-  // 프로덕션 환경에서는 매 요청마다 새 인스턴스 생성
+if (process.env.NODE_ENV === "production") {
+  // 프로덕션 환경 - 매 인스턴스마다 새로운 클라이언트 생성
   prisma = new PrismaClient(prismaClientOptions);
+} else {
+  // 개발 환경 - 한 번만 생성하고 재사용
+  if (!global.cachedPrisma) {
+    global.cachedPrisma = new PrismaClient(prismaClientOptions);
+  }
+  prisma = global.cachedPrisma;
 }
 
 export default prisma;
 
 /**
- * 요청별 격리된 Prisma 클라이언트를 사용하는 함수
- * 서버리스 환경에서 "prepared statement already exists" 오류 방지
+ * 서버리스 환경에서 안전하게 Prisma를 사용하기 위한 유틸리티 함수
+ * 각 요청마다 새로운 인스턴스를 생성하고 작업 완료 후 연결을 명시적으로 종료하여
+ * "prepared statement already exists" 오류 방지
  */
 export async function withIsolatedPrisma<T>(
   fn: (client: PrismaClient) => Promise<T>
 ): Promise<T> {
-  // 프로덕션 환경에서는 항상 새 인스턴스 생성
+  // 프로덕션 환경에서는 요청별로 격리된 인스턴스 사용
   if (process.env.NODE_ENV === "production") {
-    const isolatedPrisma = createPrismaClient();
-
+    const isolatedClient = new PrismaClient(prismaClientOptions);
     try {
-      return await fn(isolatedPrisma);
+      return await fn(isolatedClient);
     } finally {
-      // 작업 완료 후 연결 종료
-      await isolatedPrisma.$disconnect();
+      // 작업 완료 후 항상 연결 종료하여 리소스 정리
+      await isolatedClient.$disconnect();
     }
   }
 
