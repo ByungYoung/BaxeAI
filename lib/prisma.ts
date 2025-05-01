@@ -1,13 +1,17 @@
 // Prisma 클라이언트 - 서버리스 환경에 최적화
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 // 연결 설정을 위한 옵션
-const prismaClientOptions = {
+const prismaClientOptions: Prisma.PrismaClientOptions = {
   // 로그 설정
   log:
     process.env.NODE_ENV === "production"
-      ? ["error"]
-      : ["query", "error", "warn"],
+      ? [{ level: "error", emit: "stdout" }]
+      : [
+          { level: "query", emit: "stdout" },
+          { level: "error", emit: "stdout" },
+          { level: "warn", emit: "stdout" },
+        ],
 };
 
 // 글로벌 상태 유형 설정
