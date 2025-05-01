@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withDb } from "@/lib/db";
 import { users, measurementResults } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 
 // 새로운 측정 결과 저장
@@ -191,8 +191,16 @@ export async function GET(request: NextRequest) {
     const isAdmin = searchParams.get("isAdmin") === "true";
 
     return await withDb(async (db) => {
+      // 조건 설정
+      const conditions = [];
+      
+      // 사용자 ID 필터 적용
+      if (userId && !isAdmin) {
+        conditions.push(eq(measurementResults.userId, userId));
+      }
+      
       // 기본 쿼리 구성
-      let query = db
+      const query = db
         .select({
           measurementResult: measurementResults,
           user: {
@@ -207,13 +215,10 @@ export async function GET(request: NextRequest) {
         .leftJoin(users, eq(measurementResults.userId, users.id))
         .orderBy(desc(measurementResults.timestamp));
 
-      // 사용자 ID 필터 적용
-      if (userId && !isAdmin) {
-        query = query.where(eq(measurementResults.userId, userId));
-      }
-
-      // 쿼리 실행
-      const results = await query;
+      // 쿼리 실행 (where 조건 적용)
+      const results = conditions.length > 0 
+        ? await query.where(and(...conditions))
+        : await query;
 
       // 응답 형식 변환
       const formattedResults = results.map(({ measurementResult, user }) => ({
