@@ -218,29 +218,29 @@ export default function HistoryPage() {
           ? (result.confidence * 100).toFixed(0)
           : "-",
       RMSSD:
-        result.rmssd !== null && result.rmssd !== undefined
-          ? result.rmssd.toFixed(2)
-          : "-",
+        (result.hrv?.rmssd !== null && result.hrv?.rmssd !== undefined
+          ? result.hrv.rmssd.toFixed(2)
+          : "-"),
       SDNN:
-        result.sdnn !== null && result.sdnn !== undefined
-          ? result.sdnn.toFixed(2)
-          : "-",
+        (result.hrv?.sdnn !== null && result.hrv?.sdnn !== undefined
+          ? result.hrv.sdnn.toFixed(2)
+          : "-"),
       LF:
-        result.lf !== null && result.lf !== undefined
-          ? result.lf.toFixed(2)
-          : "-",
+        (result.hrv?.lf !== null && result.hrv?.lf !== undefined
+          ? result.hrv.lf.toFixed(2)
+          : "-"),
       HF:
-        result.hf !== null && result.hf !== undefined
-          ? result.hf.toFixed(2)
-          : "-",
+        (result.hrv?.hf !== null && result.hrv?.hf !== undefined
+          ? result.hrv.hf.toFixed(2)
+          : "-"),
       "LF/HF":
-        result.lfHfRatio !== null && result.lfHfRatio !== undefined
-          ? result.lfHfRatio.toFixed(2)
-          : "-",
+        (result.hrv?.lfHfRatio !== null && result.hrv?.lfHfRatio !== undefined
+          ? result.hrv.lfHfRatio.toFixed(2)
+          : "-"),
       pNN50:
-        result.pnn50 !== null && result.pnn50 !== undefined
-          ? result.pnn50.toFixed(2)
-          : "-",
+        (result.hrv?.pnn50 !== null && result.hrv?.pnn50 !== undefined
+          ? result.hrv.pnn50.toFixed(2)
+          : "-"),
       기분: result.mood ? moodToText(result.mood) : "-",
       사용자: result.user?.name || "-",
       이메일: result.email || result.user?.email || "-",
@@ -617,6 +617,14 @@ export default function HistoryPage() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleSort("timestamp")}>
                 날짜{" "}
+                {sortField === "timestamp" && (sortOrder === "asc" ? "↑" : "↓")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleSort("heartRate")}>
+                심박수{" "}
+                {sortField === "heartRate" && (sortOrder === "asc" ? "↑" : "↓")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* 엑셀 다운로드 버튼 (관리자만 노출) */}
           {isAdmin && (
@@ -740,18 +748,23 @@ export default function HistoryPage() {
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {result.rmssd !== undefined && result.rmssd !== null
+                      {(result.hrv?.rmssd !== undefined && result.hrv?.rmssd !== null)
+                        ? result.hrv.rmssd.toFixed(2)
+                        : (result.rmssd !== undefined && result.rmssd !== null)
                         ? result.rmssd.toFixed(2)
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {result.sdnn !== undefined && result.sdnn !== null
+                      {(result.hrv?.sdnn !== undefined && result.hrv?.sdnn !== null)
+                        ? result.hrv.sdnn.toFixed(2)
+                        : (result.sdnn !== undefined && result.sdnn !== null)
                         ? result.sdnn.toFixed(2)
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {result.lfHfRatio !== undefined &&
-                      result.lfHfRatio !== null
+                      {(result.hrv?.lfHfRatio !== undefined && result.hrv?.lfHfRatio !== null)
+                        ? result.hrv.lfHfRatio.toFixed(2)
+                        : (result.lfHfRatio !== undefined && result.lfHfRatio !== null)
                         ? result.lfHfRatio.toFixed(2)
                         : "-"}
                     </TableCell>
@@ -830,7 +843,9 @@ export default function HistoryPage() {
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">RMSSD</div>
                           <div>
-                            {result.rmssd !== undefined && result.rmssd !== null
+                            {(result.hrv?.rmssd !== undefined && result.hrv?.rmssd !== null)
+                              ? result.hrv.rmssd.toFixed(2)
+                              : (result.rmssd !== undefined && result.rmssd !== null)
                               ? result.rmssd.toFixed(2)
                               : "-"}
                           </div>
@@ -838,7 +853,9 @@ export default function HistoryPage() {
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">SDNN</div>
                           <div>
-                            {result.sdnn !== undefined && result.sdnn !== null
+                            {(result.hrv?.sdnn !== undefined && result.hrv?.sdnn !== null)
+                              ? result.hrv.sdnn.toFixed(2)
+                              : (result.sdnn !== undefined && result.sdnn !== null)
                               ? result.sdnn.toFixed(2)
                               : "-"}
                           </div>
@@ -846,7 +863,9 @@ export default function HistoryPage() {
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">LF</div>
                           <div>
-                            {result.lf !== undefined && result.lf !== null
+                            {(result.hrv?.lf !== undefined && result.hrv?.lf !== null)
+                              ? result.hrv.lf.toFixed(2)
+                              : (result.lf !== undefined && result.lf !== null)
                               ? result.lf.toFixed(2)
                               : "-"}
                           </div>
@@ -854,7 +873,9 @@ export default function HistoryPage() {
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">HF</div>
                           <div>
-                            {result.hf !== undefined && result.hf !== null
+                            {(result.hrv?.hf !== undefined && result.hrv?.hf !== null)
+                              ? result.hrv.hf.toFixed(2)
+                              : (result.hf !== undefined && result.hf !== null)
                               ? result.hf.toFixed(2)
                               : "-"}
                           </div>
@@ -862,8 +883,9 @@ export default function HistoryPage() {
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">LF/HF</div>
                           <div>
-                            {result.lfHfRatio !== undefined &&
-                            result.lfHfRatio !== null
+                            {(result.hrv?.lfHfRatio !== undefined && result.hrv?.lfHfRatio !== null)
+                              ? result.hrv.lfHfRatio.toFixed(2)
+                              : (result.lfHfRatio !== undefined && result.lfHfRatio !== null)
                               ? result.lfHfRatio.toFixed(2)
                               : "-"}
                           </div>
@@ -871,7 +893,9 @@ export default function HistoryPage() {
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">pNN50</div>
                           <div>
-                            {result.pnn50 !== undefined && result.pnn50 !== null
+                            {(result.hrv?.pnn50 !== undefined && result.hrv?.pnn50 !== null)
+                              ? result.hrv.pnn50.toFixed(2)
+                              : (result.pnn50 !== undefined && result.pnn50 !== null)
                               ? result.pnn50.toFixed(2)
                               : "-"}
                           </div>
@@ -988,7 +1012,9 @@ export default function HistoryPage() {
                         <div>
                           <span className="text-muted-foreground">RMSSD</span>
                           <div className="font-medium">
-                            {result.rmssd !== undefined && result.rmssd !== null
+                            {(result.hrv?.rmssd !== undefined && result.hrv?.rmssd !== null)
+                              ? result.hrv.rmssd.toFixed(2)
+                              : (result.rmssd !== undefined && result.rmssd !== null)
                               ? result.rmssd.toFixed(2)
                               : "-"}
                           </div>
@@ -996,7 +1022,9 @@ export default function HistoryPage() {
                         <div>
                           <span className="text-muted-foreground">SDNN</span>
                           <div className="font-medium">
-                            {result.sdnn !== undefined && result.sdnn !== null
+                            {(result.hrv?.sdnn !== undefined && result.hrv?.sdnn !== null)
+                              ? result.hrv.sdnn.toFixed(2)
+                              : (result.sdnn !== undefined && result.sdnn !== null)
                               ? result.sdnn.toFixed(2)
                               : "-"}
                           </div>
@@ -1004,8 +1032,9 @@ export default function HistoryPage() {
                         <div>
                           <span className="text-muted-foreground">LF/HF</span>
                           <div className="font-medium">
-                            {result.lfHfRatio !== undefined &&
-                            result.lfHfRatio !== null
+                            {(result.hrv?.lfHfRatio !== undefined && result.hrv?.lfHfRatio !== null)
+                              ? result.hrv.lfHfRatio.toFixed(2)
+                              : (result.lfHfRatio !== undefined && result.lfHfRatio !== null)
                               ? result.lfHfRatio.toFixed(2)
                               : "-"}
                           </div>
@@ -1013,7 +1042,9 @@ export default function HistoryPage() {
                         <div>
                           <span className="text-muted-foreground">pNN50</span>
                           <div className="font-medium">
-                            {result.pnn50 !== undefined && result.pnn50 !== null
+                            {(result.hrv?.pnn50 !== undefined && result.hrv?.pnn50 !== null)
+                              ? result.hrv.pnn50.toFixed(2)
+                              : (result.pnn50 !== undefined && result.pnn50 !== null)
                               ? result.pnn50.toFixed(2)
                               : "-"}
                           </div>
