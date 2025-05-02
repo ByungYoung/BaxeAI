@@ -218,33 +218,33 @@ export default function HistoryPage() {
           ? (result.confidence * 100).toFixed(0)
           : "-",
       RMSSD:
-        (result.hrv?.rmssd !== null && result.hrv?.rmssd !== undefined
+        result.hrv?.rmssd !== null && result.hrv?.rmssd !== undefined
           ? result.hrv.rmssd.toFixed(2)
-          : "-"),
+          : "-",
       SDNN:
-        (result.hrv?.sdnn !== null && result.hrv?.sdnn !== undefined
+        result.hrv?.sdnn !== null && result.hrv?.sdnn !== undefined
           ? result.hrv.sdnn.toFixed(2)
-          : "-"),
+          : "-",
       LF:
-        (result.hrv?.lf !== null && result.hrv?.lf !== undefined
+        result.hrv?.lf !== null && result.hrv?.lf !== undefined
           ? result.hrv.lf.toFixed(2)
-          : "-"),
+          : "-",
       HF:
-        (result.hrv?.hf !== null && result.hrv?.hf !== undefined
+        result.hrv?.hf !== null && result.hrv?.hf !== undefined
           ? result.hrv.hf.toFixed(2)
-          : "-"),
+          : "-",
       "LF/HF":
-        (result.hrv?.lfHfRatio !== null && result.hrv?.lfHfRatio !== undefined
+        result.hrv?.lfHfRatio !== null && result.hrv?.lfHfRatio !== undefined
           ? result.hrv.lfHfRatio.toFixed(2)
-          : "-"),
+          : "-",
       pNN50:
-        (result.hrv?.pnn50 !== null && result.hrv?.pnn50 !== undefined
+        result.hrv?.pnn50 !== null && result.hrv?.pnn50 !== undefined
           ? result.hrv.pnn50.toFixed(2)
-          : "-"),
+          : "-",
       기분: result.mood ? moodToText(result.mood) : "-",
-      사용자: result.user?.name || "-",
-      이메일: result.email || result.user?.email || "-",
-      소속: result.user?.company || "-",
+      사용자: result.userInfo?.name || "-",
+      이메일: result.userInfo?.email || "-",
+      소속: result.userInfo?.company || "-",
     }));
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
@@ -290,8 +290,8 @@ export default function HistoryPage() {
 
     // 심박수, RMSSD, SDNN 데이터
     const heartRateData = timeOrderedResults.map((r) => r.heartRate);
-    const rmssdData = timeOrderedResults.map((r) => r.rmssd ?? null);
-    const sdnnData = timeOrderedResults.map((r) => r.sdnn ?? null);
+    const rmssdData = timeOrderedResults.map((r) => r.hrv?.rmssd ?? null);
+    const sdnnData = timeOrderedResults.map((r) => r.hrv?.sdnn ?? null);
 
     return {
       labels,
@@ -337,10 +337,10 @@ export default function HistoryPage() {
     );
 
     // LF/HF 비율 데이터
-    const lfData = timeOrderedResults.map((r) => r.lf ?? null);
-    const hfData = timeOrderedResults.map((r) => r.hf ?? null);
-    const lfhfData = timeOrderedResults.map((r) => r.lfHfRatio ?? null);
-    const pnn50Data = timeOrderedResults.map((r) => r.pnn50 ?? null);
+    const lfData = timeOrderedResults.map((r) => r.hrv?.lf ?? null);
+    const hfData = timeOrderedResults.map((r) => r.hrv?.hf ?? null);
+    const lfhfData = timeOrderedResults.map((r) => r.hrv?.lfHfRatio ?? null);
+    const pnn50Data = timeOrderedResults.map((r) => r.hrv?.pnn50 ?? null);
 
     return {
       labels,
@@ -748,34 +748,29 @@ export default function HistoryPage() {
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {(result.hrv?.rmssd !== undefined && result.hrv?.rmssd !== null)
+                      {result.hrv?.rmssd !== undefined &&
+                      result.hrv?.rmssd !== null
                         ? result.hrv.rmssd.toFixed(2)
-                        : (result.rmssd !== undefined && result.rmssd !== null)
-                        ? result.rmssd.toFixed(2)
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {(result.hrv?.sdnn !== undefined && result.hrv?.sdnn !== null)
+                      {result.hrv?.sdnn !== undefined &&
+                      result.hrv?.sdnn !== null
                         ? result.hrv.sdnn.toFixed(2)
-                        : (result.sdnn !== undefined && result.sdnn !== null)
-                        ? result.sdnn.toFixed(2)
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {(result.hrv?.lfHfRatio !== undefined && result.hrv?.lfHfRatio !== null)
+                      {result.hrv?.lfHfRatio !== undefined &&
+                      result.hrv?.lfHfRatio !== null
                         ? result.hrv.lfHfRatio.toFixed(2)
-                        : (result.lfHfRatio !== undefined && result.lfHfRatio !== null)
-                        ? result.lfHfRatio.toFixed(2)
                         : "-"}
                     </TableCell>
                     <TableCell>
                       {result.mood ? moodToText(result.mood) : "-"}
                     </TableCell>
-                    <TableCell>{result.user?.name || "-"}</TableCell>
-                    <TableCell>
-                      {result.email || result.user?.email || "-"}
-                    </TableCell>
-                    <TableCell>{result.user?.company || "-"}</TableCell>
+                    <TableCell>{result.userInfo?.name || "-"}</TableCell>
+                    <TableCell>{result.userInfo?.email || "-"}</TableCell>
+                    <TableCell>{result.userInfo?.company || "-"}</TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"
@@ -830,73 +825,67 @@ export default function HistoryPage() {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">사용자</div>
-                          <div>{result.user?.name || "-"}</div>
+                          <div>{result.userInfo?.name || "-"}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">이메일</div>
-                          <div>{result.email || result.user?.email || "-"}</div>
+                          <div>{result.userInfo?.email || "-"}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">소속</div>
-                          <div>{result.user?.company || "-"}</div>
+                          <div>{result.userInfo?.company || "-"}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">RMSSD</div>
                           <div>
-                            {(result.hrv?.rmssd !== undefined && result.hrv?.rmssd !== null)
+                            {result.hrv?.rmssd !== undefined &&
+                            result.hrv?.rmssd !== null
                               ? result.hrv.rmssd.toFixed(2)
-                              : (result.rmssd !== undefined && result.rmssd !== null)
-                              ? result.rmssd.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">SDNN</div>
                           <div>
-                            {(result.hrv?.sdnn !== undefined && result.hrv?.sdnn !== null)
+                            {result.hrv?.sdnn !== undefined &&
+                            result.hrv?.sdnn !== null
                               ? result.hrv.sdnn.toFixed(2)
-                              : (result.sdnn !== undefined && result.sdnn !== null)
-                              ? result.sdnn.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">LF</div>
                           <div>
-                            {(result.hrv?.lf !== undefined && result.hrv?.lf !== null)
+                            {result.hrv?.lf !== undefined &&
+                            result.hrv?.lf !== null
                               ? result.hrv.lf.toFixed(2)
-                              : (result.lf !== undefined && result.lf !== null)
-                              ? result.lf.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">HF</div>
                           <div>
-                            {(result.hrv?.hf !== undefined && result.hrv?.hf !== null)
+                            {result.hrv?.hf !== undefined &&
+                            result.hrv?.hf !== null
                               ? result.hrv.hf.toFixed(2)
-                              : (result.hf !== undefined && result.hf !== null)
-                              ? result.hf.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">LF/HF</div>
                           <div>
-                            {(result.hrv?.lfHfRatio !== undefined && result.hrv?.lfHfRatio !== null)
+                            {result.hrv?.lfHfRatio !== undefined &&
+                            result.hrv?.lfHfRatio !== null
                               ? result.hrv.lfHfRatio.toFixed(2)
-                              : (result.lfHfRatio !== undefined && result.lfHfRatio !== null)
-                              ? result.lfHfRatio.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">pNN50</div>
                           <div>
-                            {(result.hrv?.pnn50 !== undefined && result.hrv?.pnn50 !== null)
+                            {result.hrv?.pnn50 !== undefined &&
+                            result.hrv?.pnn50 !== null
                               ? result.hrv.pnn50.toFixed(2)
-                              : (result.pnn50 !== undefined && result.pnn50 !== null)
-                              ? result.pnn50.toFixed(2)
                               : "-"}
                           </div>
                         </div>
@@ -983,19 +972,19 @@ export default function HistoryPage() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">사용자</span>
                         <span className="font-medium truncate ml-2">
-                          {result.user?.name || "-"}
+                          {result.userInfo?.name || "-"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">이메일</span>
                         <span className="font-medium truncate ml-2">
-                          {result.email || result.user?.email || "-"}
+                          {result.userInfo?.email || "-"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">소속</span>
                         <span className="font-medium truncate ml-2">
-                          {result.user?.company || "-"}
+                          {result.userInfo?.company || "-"}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -1012,40 +1001,36 @@ export default function HistoryPage() {
                         <div>
                           <span className="text-muted-foreground">RMSSD</span>
                           <div className="font-medium">
-                            {(result.hrv?.rmssd !== undefined && result.hrv?.rmssd !== null)
+                            {result.hrv?.rmssd !== undefined &&
+                            result.hrv?.rmssd !== null
                               ? result.hrv.rmssd.toFixed(2)
-                              : (result.rmssd !== undefined && result.rmssd !== null)
-                              ? result.rmssd.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">SDNN</span>
                           <div className="font-medium">
-                            {(result.hrv?.sdnn !== undefined && result.hrv?.sdnn !== null)
+                            {result.hrv?.sdnn !== undefined &&
+                            result.hrv?.sdnn !== null
                               ? result.hrv.sdnn.toFixed(2)
-                              : (result.sdnn !== undefined && result.sdnn !== null)
-                              ? result.sdnn.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">LF/HF</span>
                           <div className="font-medium">
-                            {(result.hrv?.lfHfRatio !== undefined && result.hrv?.lfHfRatio !== null)
+                            {result.hrv?.lfHfRatio !== undefined &&
+                            result.hrv?.lfHfRatio !== null
                               ? result.hrv.lfHfRatio.toFixed(2)
-                              : (result.lfHfRatio !== undefined && result.lfHfRatio !== null)
-                              ? result.lfHfRatio.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">pNN50</span>
                           <div className="font-medium">
-                            {(result.hrv?.pnn50 !== undefined && result.hrv?.pnn50 !== null)
+                            {result.hrv?.pnn50 !== undefined &&
+                            result.hrv?.pnn50 !== null
                               ? result.hrv.pnn50.toFixed(2)
-                              : (result.pnn50 !== undefined && result.pnn50 !== null)
-                              ? result.pnn50.toFixed(2)
                               : "-"}
                           </div>
                         </div>
