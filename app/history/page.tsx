@@ -147,6 +147,14 @@ export default function HistoryPage() {
     staleTime: 60 * 1000, // 1분 동안 캐시 유지
   });
 
+  // API 응답 구조 확인을 위한 디버깅
+  useEffect(() => {
+    if (results && results.length > 0) {
+      console.log("API 응답 데이터 구조:", results[0]);
+      console.log("첫 번째 결과 HRV 데이터:", results[0].hrv);
+    }
+  }, [results]);
+
   // 정렬 함수
   const sortedResults = [...results].sort((a, b) => {
     if (sortField === "timestamp") {
@@ -748,29 +756,26 @@ export default function HistoryPage() {
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {result.hrv?.rmssd !== undefined &&
-                      result.hrv?.rmssd !== null
-                        ? result.hrv.rmssd.toFixed(2)
+                      {getHrvValue(result, "rmssd") !== null
+                        ? getHrvValue(result, "rmssd")?.toFixed(2)
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {result.hrv?.sdnn !== undefined &&
-                      result.hrv?.sdnn !== null
-                        ? result.hrv.sdnn.toFixed(2)
+                      {getHrvValue(result, "sdnn") !== null
+                        ? getHrvValue(result, "sdnn")?.toFixed(2)
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {result.hrv?.lfHfRatio !== undefined &&
-                      result.hrv?.lfHfRatio !== null
-                        ? result.hrv.lfHfRatio.toFixed(2)
+                      {getHrvValue(result, "lfHfRatio") !== null
+                        ? getHrvValue(result, "lfHfRatio")?.toFixed(2)
                         : "-"}
                     </TableCell>
                     <TableCell>
                       {result.mood ? moodToText(result.mood) : "-"}
                     </TableCell>
-                    <TableCell>{result.userInfo?.name || "-"}</TableCell>
-                    <TableCell>{result.userInfo?.email || "-"}</TableCell>
-                    <TableCell>{result.userInfo?.company || "-"}</TableCell>
+                    <TableCell>{getUserValue(result, "name")}</TableCell>
+                    <TableCell>{getUserValue(result, "email")}</TableCell>
+                    <TableCell>{getUserValue(result, "company")}</TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"
@@ -825,67 +830,61 @@ export default function HistoryPage() {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">사용자</div>
-                          <div>{result.userInfo?.name || "-"}</div>
+                          <div>{getUserValue(result, "name")}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">이메일</div>
-                          <div>{result.userInfo?.email || "-"}</div>
+                          <div>{getUserValue(result, "email")}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">소속</div>
-                          <div>{result.userInfo?.company || "-"}</div>
+                          <div>{getUserValue(result, "company")}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">RMSSD</div>
                           <div>
-                            {result.hrv?.rmssd !== undefined &&
-                            result.hrv?.rmssd !== null
-                              ? result.hrv.rmssd.toFixed(2)
+                            {getHrvValue(result, "rmssd") !== null
+                              ? getHrvValue(result, "rmssd")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">SDNN</div>
                           <div>
-                            {result.hrv?.sdnn !== undefined &&
-                            result.hrv?.sdnn !== null
-                              ? result.hrv.sdnn.toFixed(2)
+                            {getHrvValue(result, "sdnn") !== null
+                              ? getHrvValue(result, "sdnn")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">LF</div>
                           <div>
-                            {result.hrv?.lf !== undefined &&
-                            result.hrv?.lf !== null
-                              ? result.hrv.lf.toFixed(2)
+                            {getHrvValue(result, "lf") !== null
+                              ? getHrvValue(result, "lf")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">HF</div>
                           <div>
-                            {result.hrv?.hf !== undefined &&
-                            result.hrv?.hf !== null
-                              ? result.hrv.hf.toFixed(2)
+                            {getHrvValue(result, "hf") !== null
+                              ? getHrvValue(result, "hf")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">LF/HF</div>
                           <div>
-                            {result.hrv?.lfHfRatio !== undefined &&
-                            result.hrv?.lfHfRatio !== null
-                              ? result.hrv.lfHfRatio.toFixed(2)
+                            {getHrvValue(result, "lfHfRatio") !== null
+                              ? getHrvValue(result, "lfHfRatio")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">pNN50</div>
                           <div>
-                            {result.hrv?.pnn50 !== undefined &&
-                            result.hrv?.pnn50 !== null
-                              ? result.hrv.pnn50.toFixed(2)
+                            {getHrvValue(result, "pnn50") !== null
+                              ? getHrvValue(result, "pnn50")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
@@ -972,19 +971,19 @@ export default function HistoryPage() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">사용자</span>
                         <span className="font-medium truncate ml-2">
-                          {result.userInfo?.name || "-"}
+                          {getUserValue(result, "name")}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">이메일</span>
                         <span className="font-medium truncate ml-2">
-                          {result.userInfo?.email || "-"}
+                          {getUserValue(result, "email")}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">소속</span>
                         <span className="font-medium truncate ml-2">
-                          {result.userInfo?.company || "-"}
+                          {getUserValue(result, "company")}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -1001,36 +1000,32 @@ export default function HistoryPage() {
                         <div>
                           <span className="text-muted-foreground">RMSSD</span>
                           <div className="font-medium">
-                            {result.hrv?.rmssd !== undefined &&
-                            result.hrv?.rmssd !== null
-                              ? result.hrv.rmssd.toFixed(2)
+                            {getHrvValue(result, "rmssd") !== null
+                              ? getHrvValue(result, "rmssd")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">SDNN</span>
                           <div className="font-medium">
-                            {result.hrv?.sdnn !== undefined &&
-                            result.hrv?.sdnn !== null
-                              ? result.hrv.sdnn.toFixed(2)
+                            {getHrvValue(result, "sdnn") !== null
+                              ? getHrvValue(result, "sdnn")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">LF/HF</span>
                           <div className="font-medium">
-                            {result.hrv?.lfHfRatio !== undefined &&
-                            result.hrv?.lfHfRatio !== null
-                              ? result.hrv.lfHfRatio.toFixed(2)
+                            {getHrvValue(result, "lfHfRatio") !== null
+                              ? getHrvValue(result, "lfHfRatio")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">pNN50</span>
                           <div className="font-medium">
-                            {result.hrv?.pnn50 !== undefined &&
-                            result.hrv?.pnn50 !== null
-                              ? result.hrv.pnn50.toFixed(2)
+                            {getHrvValue(result, "pnn50") !== null
+                              ? getHrvValue(result, "pnn50")?.toFixed(2)
                               : "-"}
                           </div>
                         </div>
@@ -1056,6 +1051,43 @@ export default function HistoryPage() {
       </div>
     </div>
   );
+}
+
+// HRV 값을 안전하게 추출하는 헬퍼 함수
+function getHrvValue(result: any, key: string): number | null {
+  // 1. hrv 객체 내부에서 확인
+  if (result.hrv && result.hrv[key] !== undefined && result.hrv[key] !== null) {
+    return result.hrv[key];
+  }
+  
+  // 2. 루트 레벨에서 확인
+  if (result[key] !== undefined && result[key] !== null) {
+    return result[key];
+  }
+  
+  // 3. 값을 찾을 수 없는 경우
+  return null;
+}
+
+// 사용자 정보를 안전하게 추출하는 헬퍼 함수
+function getUserValue(result: any, key: string): string {
+  // 1. userInfo 객체에서 확인 (표준 형식)
+  if (result.userInfo && result.userInfo[key] !== undefined && result.userInfo[key] !== null) {
+    return result.userInfo[key];
+  }
+  
+  // 2. user 객체에서 확인 (API 응답 형식)
+  if (result.user && result.user[key] !== undefined && result.user[key] !== null) {
+    return result.user[key];
+  }
+  
+  // 3. 특수 케이스: email은 루트 레벨에서도 확인
+  if (key === 'email' && result.email !== undefined && result.email !== null) {
+    return result.email;
+  }
+  
+  // 4. 값을 찾을 수 없는 경우
+  return '-';
 }
 
 // 기분 상태 텍스트로 변환
