@@ -63,7 +63,11 @@ export const useMeasurementStore = create<MeasurementState>()(
             heartRate,
             confidence: confidence || 0,
             hrv,
-            userInfo: null, // useUserStore에서 필요한 경우 별도로 처리
+            userInfo: {
+              id: 'temporary-id',
+              email: '',
+              company: '',
+            }, // 임시 userInfo 객체 생성
             mood: mood || "unknown",
             detectedMood,
             moodMatchScore,

@@ -8,7 +8,7 @@ import {
   QUERY_KEYS,
   useUser,
 } from "@/hooks/use-queries";
-import { useMeasurementStore, useUserStore } from "@/lib/store";
+import { useMeasurementStore, useUserStore } from "@/lib/store/index";
 import { MeasurementResult } from "@/lib/types";
 
 /**
@@ -27,6 +27,7 @@ export function useServerStateSync() {
   const { data: measurementHistory, isSuccess } = useMeasurementHistory(
     userInfo?.id,
     {
+      queryKey: [QUERY_KEYS.MEASUREMENT_HISTORY, userInfo?.id],
       // 로그인한 사용자가 있을 때만 쿼리 활성화
       enabled: !!userInfo?.id,
       // 30초마다 자동으로 새로고침
@@ -36,6 +37,8 @@ export function useServerStateSync() {
 
   // 사용자 정보 연동
   const { data: userData } = useUser(userInfo?.id, {
+    queryKey: [QUERY_KEYS.USER, userInfo?.id],
+    // 로그인한 사용자가 있을 때만 쿼리 활성화
     enabled: !!userInfo?.id,
     // 사용자 정보는 자주 변경되지 않으므로 캐시 시간을 길게 설정
     staleTime: 5 * 60 * 1000, // 5분
@@ -118,7 +121,9 @@ export function useCombinedMeasurementHistory() {
     isLoading,
     isError,
     error,
-  } = useMeasurementHistory(userInfo?.id);
+  } = useMeasurementHistory(userInfo?.id, {
+    queryKey: [QUERY_KEYS.MEASUREMENT_HISTORY, userInfo?.id],
+  });
 
   // 클라이언트 상태
   const localHistory = useMeasurementStore((state) => state.historyResults);

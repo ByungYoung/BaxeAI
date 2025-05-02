@@ -1,6 +1,6 @@
 // 자주 사용하는 API 엔드포인트에 대한 타입 안전한 클라이언트 함수
 
-import { MeasurementResult, UserData } from "./types";
+import { MeasurementResult, UserInfo } from "./types";
 
 /**
  * 측정 이력 조회 API
@@ -26,7 +26,7 @@ export async function fetchMeasurementHistory(
 /**
  * 사용자 목록 조회 API
  */
-export async function fetchUsers(email?: string): Promise<UserData[]> {
+export async function fetchUsers(email?: string): Promise<UserInfo[]> {
   const url = new URL("/api/users", window.location.origin);
   if (email) {
     url.searchParams.append("email", email);
@@ -47,12 +47,14 @@ export async function fetchUsers(email?: string): Promise<UserData[]> {
 /**
  * 특정 사용자 정보 조회 API
  */
-export async function fetchUser(id: string): Promise<UserData> {
+export async function fetchUser(id: string): Promise<UserInfo> {
   const response = await fetch(`/api/users/${id}`);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || "사용자 정보 조회 중 오류가 발생했습니다");
+    throw new Error(
+      errorData.error || "사용자 정보 조회 중 오류가 발생했습니다"
+    );
   }
 
   return response.json();
@@ -66,7 +68,7 @@ export async function registerUser(userData: {
   password: string;
   name?: string;
   company?: string;
-}): Promise<UserData> {
+}): Promise<UserInfo> {
   const response = await fetch("/api/users", {
     method: "POST",
     headers: {
@@ -92,7 +94,7 @@ export async function updateUser(userData: {
   company?: string;
   password?: string;
   isAdmin?: boolean;
-}): Promise<UserData> {
+}): Promise<UserInfo> {
   const response = await fetch("/api/users", {
     method: "PATCH",
     headers: {
@@ -103,7 +105,9 @@ export async function updateUser(userData: {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || "사용자 정보 업데이트 중 오류가 발생했습니다");
+    throw new Error(
+      errorData.error || "사용자 정보 업데이트 중 오류가 발생했습니다"
+    );
   }
 
   return response.json();
@@ -148,12 +152,16 @@ export async function saveMeasurementResult(data: any): Promise<any> {
 /**
  * 측정 결과 상세 조회 API
  */
-export async function fetchMeasurementDetail(id: string): Promise<MeasurementResult> {
+export async function fetchMeasurementDetail(
+  id: string
+): Promise<MeasurementResult> {
   const response = await fetch(`/api/measurements/${id}`);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || "측정 결과 상세 조회 중 오류가 발생했습니다");
+    throw new Error(
+      errorData.error || "측정 결과 상세 조회 중 오류가 발생했습니다"
+    );
   }
 
   return response.json();
