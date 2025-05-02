@@ -13,6 +13,7 @@ import cv2
 from scipy import signal
 from scipy import interpolate
 from scipy.signal import detrend
+from scipy.integrate import trapezoid  # trapz 대신 trapezoid 함수 import
 
 # 시뮬레이션된 결과 생성 함수 추가 - 오류 발생 시 대체 데이터로 사용
 def generate_simulated_results(error_message):
@@ -80,9 +81,9 @@ def calculate_frequency_domain_hrv(rr_intervals_ms):
         if not np.any(lf_indices) or not np.any(hf_indices):
             raise Exception("No valid frequency bands found for HRV analysis")
         
-        # 파워 계산 (면적)
-        lf_power = np.trapz(pxx[lf_indices], fxx[lf_indices])
-        hf_power = np.trapz(pxx[hf_indices], fxx[hf_indices])
+        # 파워 계산 (면적) - trapz 대신 trapezoid 사용
+        lf_power = trapezoid(pxx[lf_indices], fxx[lf_indices])
+        hf_power = trapezoid(pxx[hf_indices], fxx[hf_indices])
         
         # LF/HF 비율 계산
         if hf_power <= 0:
