@@ -67,12 +67,14 @@ interface MeasurementResult {
   timestamp: string;
   heartRate: number;
   confidence?: number;
-  rmssd?: number;
-  sdnn?: number;
-  lf?: number;
-  hf?: number;
-  lfHfRatio?: number;
-  pnn50?: number; // Added pnn50 property
+  hrv?: {
+    rmssd?: number;
+    sdnn?: number;
+    lf?: number;
+    hf?: number;
+    lfHfRatio?: number;
+    pnn50?: number;
+  };
   mood?: string;
   user?: {
     id: string;
@@ -82,6 +84,12 @@ interface MeasurementResult {
   };
   email?: string;
   caricatureUrl?: string;
+  rmssd?: number;
+  sdnn?: number;
+  lf?: number;
+  hf?: number;
+  lfHfRatio?: number;
+  pnn50?: number;
 }
 type SortOrder = "asc" | "desc";
 type ViewMode = "list" | "card" | "graph";
@@ -609,14 +617,6 @@ export default function HistoryPage() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleSort("timestamp")}>
                 날짜{" "}
-                {sortField === "timestamp" && (sortOrder === "asc" ? "↑" : "↓")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSort("heartRate")}>
-                심박수{" "}
-                {sortField === "heartRate" && (sortOrder === "asc" ? "↑" : "↓")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
           {/* 엑셀 다운로드 버튼 (관리자만 노출) */}
           {isAdmin && (
