@@ -19,7 +19,7 @@ import {
   processRPPGFrames,
   generateCaricature,
 } from "@/lib/api";
-import { MeasurementResult, UserData } from "@/lib/types";
+import { MeasurementResult, UserInfo } from "@/lib/types";
 
 // 쿼리 키 상수
 export const QUERY_KEYS = {
@@ -64,7 +64,7 @@ export function useMeasurementDetail(
  */
 export function useUsers(
   email?: string,
-  options?: UseQueryOptions<UserData[]>
+  options?: UseQueryOptions<UserInfo[]>
 ) {
   return useQuery({
     queryKey: [QUERY_KEYS.USERS, email],
@@ -76,7 +76,7 @@ export function useUsers(
 /**
  * 특정 사용자 정보 조회 훅
  */
-export function useUser(id?: string, options?: UseQueryOptions<UserData>) {
+export function useUser(id?: string, options?: UseQueryOptions<UserInfo>) {
   return useQuery({
     queryKey: [QUERY_KEYS.USER, id],
     queryFn: () => fetchUser(id!),
@@ -90,7 +90,7 @@ export function useUser(id?: string, options?: UseQueryOptions<UserData>) {
  */
 export function useRegisterUser(
   options?: UseMutationOptions<
-    UserData,
+    UserInfo,
     Error,
     { email: string; password: string; name?: string; company?: string }
   >
@@ -106,7 +106,7 @@ export function useRegisterUser(
  */
 export function useUpdateUser(
   options?: UseMutationOptions<
-    UserData,
+    UserInfo,
     Error,
     {
       id: string;
