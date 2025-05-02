@@ -1,21 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
-import { MeasurementResult, UserInfo, MoodState } from "./types";
-import { HRVMetrics } from "./api-client";
+import { MeasurementResult, MoodState } from "../types";
+import { HRVMetrics } from "../api-client";
 
-interface AppState {
-  // 사용자 정보
-  userInfo: UserInfo | null;
-  setUserInfo: (info: UserInfo) => void;
-  clearUserInfo: () => void; // 로그아웃 시 사용자 정보 초기화
-
-  // 로그인 상태
-  isAuthenticated: boolean;
-  setAuthenticated: (status: boolean) => void;
-
+interface MeasurementState {
   // 현재 측정 결과
   currentResult: MeasurementResult | null;
+
+  // 이전 측정 결과 목록 (로컬에 캐시)
+  historyResults: MeasurementResult[];
+
+  // 액션
   setCurrentResult: (
     resultOrHeartRate: MeasurementResult | number,
     confidence?: number,
@@ -26,28 +22,19 @@ interface AppState {
   ) => void;
   updateCurrentMood: (mood: MoodState) => void;
   resetCurrentResult: () => void;
-
-  // 이전 측정 결과 목록
-  historyResults: MeasurementResult[];
   addToHistory: () => void;
   clearHistory: () => void;
+  updateHistoryFromServer: (results: MeasurementResult[]) => void;
 }
 
-export const useAppStore = create<AppState>()(
+export const useMeasurementStore = create<MeasurementState>()(
   persist(
     (set, get) => ({
-      // 사용자 정보
-      userInfo: null,
-      setUserInfo: (info: UserInfo) =>
-        set({ userInfo: info, isAuthenticated: true }),
-      clearUserInfo: () => set({ userInfo: null, isAuthenticated: false }),
-
-      // 로그인 상태
-      isAuthenticated: false,
-      setAuthenticated: (status: boolean) => set({ isAuthenticated: status }),
-
-      // 현재 측정 결과
+      // 상태
       currentResult: null,
+      historyResults: [],
+
+      // 액션
       setCurrentResult: (
         resultOrHeartRate: MeasurementResult | number,
         confidence?: number,
@@ -65,12 +52,9 @@ export const useAppStore = create<AppState>()(
           return;
         }
 
+        // UserInfo는 useUserStore에서 가져와야 하지만
+        // circular dependency 방지를 위해 필요한 경우 별도로 처리
         const heartRate = resultOrHeartRate as number;
-        const userInfo = get().userInfo;
-        if (!userInfo) return;
-
-        // 기본값으로 "unknown" 사용
-        const actualMood = mood || "unknown";
 
         set({
           currentResult: {
@@ -79,13 +63,14 @@ export const useAppStore = create<AppState>()(
             heartRate,
             confidence: confidence || 0,
             hrv,
-            userInfo,
-            mood: actualMood,
+            userInfo: null, // useUserStore에서 필요한 경우 별도로 처리
+            mood: mood || "unknown",
             detectedMood,
             moodMatchScore,
           },
         });
       },
+
       updateCurrentMood: (mood: MoodState) => {
         const current = get().currentResult;
         if (!current) return;
@@ -97,10 +82,9 @@ export const useAppStore = create<AppState>()(
           },
         });
       },
+
       resetCurrentResult: () => set({ currentResult: null }),
 
-      // 이전 측정 결과 목록
-      historyResults: [],
       addToHistory: () => {
         const current = get().currentResult;
         if (!current) return;
@@ -109,13 +93,16 @@ export const useAppStore = create<AppState>()(
           historyResults: [current, ...state.historyResults],
         }));
       },
+
       clearHistory: () => set({ historyResults: [] }),
+
+      // 서버에서 가져온 데이터로 로컬 상태를 업데이트
+      updateHistoryFromServer: (results: MeasurementResult[]) =>
+        set({ historyResults: results }),
     }),
     {
-      name: "rppg-app-storage", // 로컬 스토리지 키 이름
+      name: "rppg-measurement-storage",
       partialize: (state) => ({
-        userInfo: state.userInfo,
-        isAuthenticated: state.isAuthenticated,
         historyResults: state.historyResults,
       }),
     }

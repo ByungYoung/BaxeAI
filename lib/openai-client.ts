@@ -34,6 +34,13 @@ export async function analyzeHealthStatus(
           : ""
       }
       ${
+        result.detectedMood && result.mood !== result.detectedMood
+          ? `- 선택한 기분과 카메라로 감지한 표정이 다릅니다. 이는 사용자가 내적으로 느끼는 감정과 외적으로 표현하는 감정에 차이가 있을 수 있음을 나타냅니다.`
+          : result.detectedMood && result.mood === result.detectedMood
+          ? `- 선택한 기분과 카메라로 감지한 표정이 일치합니다. 이는 사용자의 내적 감정과 외적 표현이 조화를 이루고 있음을 나타냅니다.`
+          : ""
+      }
+      ${
         result.hrv?.rmssd !== undefined
           ? `- RMSSD(심박변이도): ${result.hrv.rmssd.toFixed(2)} ms`
           : ""
@@ -44,12 +51,13 @@ export async function analyzeHealthStatus(
           : ""
       }
       ${
-        result.hrv?.lfHfRatio !== undefined
-          ? `- LF/HF 비율: ${result.hrv.lfHfRatio.toFixed(2)}`
+        result.hrv?.lfHfRatio !== undefined && result.hrv?.lfHfRatio !== null
+          ? `- LF/HF 비율: ${Number(result.hrv.lfHfRatio).toFixed(2)}`
           : ""
       }
       
       위 데이터를 기반으로 측정자의 건강 및 정신 상태에 대한 매우 간략한 분석을 2~3문장으로 제공해 주세요. 
+      특히 선택한 기분과 카메라로 감지한 표정이 다를 경우, 이 불일치가 가지는 의미에 대해 언급해 주세요.
       의학적 조언이나 진단이 아닌 참고용 정보임을 언급해주세요. 한국어로 응답해 주세요.
     `;
 
@@ -78,33 +86,67 @@ export async function analyzeHealthStatus(
 /**
  * 선택한 기분 상태에 맞는 간략한 관리 팁 제공
  */
-export async function getMoodManagementTips(mood: MoodState): Promise<string> {
+export async function getMoodManagementTips(
+  mood: MoodState, 
+  detectedMood?: MoodState, 
+  moodMatchScore?: number
+): Promise<string> {
   try {
     if (!process.env.NEXT_PUBLIC_OPENAI_API_KEY) {
       return "API 키가 설정되지 않아 팁을 제공할 수 없습니다.";
     }
 
     // OpenAI에게 보낼 프롬프트 작성
-    const prompt = `
+    let prompt = `
       사용자의 현재 기분은 '${getMoodText(mood)}'입니다.
+    `;
+
+    // 카메라로 감지한 표정 정보가 있으면 추가
+    if (detectedMood) {
+      prompt += `
+      카메라로 감지한 표정은 '${getMoodText(detectedMood)}'입니다.
+      기분-표정 일치도: ${moodMatchScore !== undefined ? moodMatchScore + '%' : '정보 없음'}
+      `;
       
-      이 기분 상태를 관리하거나 개선하기 위한 실용적인 팁 2~3가지를 간략하게 알려주세요.
+      // 기분과 표정의 불일치가 있는 경우 더 자세한 분석을 요청
+      if (mood !== detectedMood) {
+        prompt += `
+        사용자의 선택한 기분과 표정에 차이가 있습니다. 
+        이런 불일치는 사용자가 내적으로 느끼는 감정(${getMoodText(mood)})과 외적으로 표현하는 감정(${getMoodText(detectedMood)})이 다르다는 것을 의미할 수 있습니다.
+        
+        이런 감정 불일치에 대해 분석하고, 이를 고려한 감정 관리 방법을 제안해주세요. 
+        예를 들어:
+        - 감정과 표현의 불일치가 발생하는 이유
+        - 이러한 불일치가 장기적으로 정신 건강에 미칠 수 있는 영향
+        - 내적 감정과 외적 표현을 조화롭게 맞추는 방법
+        `;
+      } else {
+        prompt += `
+        사용자의 선택한 기분과 표정이 일치합니다. 
+        일치도는 ${moodMatchScore}%로, ${moodMatchScore && moodMatchScore > 70 ? '매우 높은 일치도' : moodMatchScore && moodMatchScore > 40 ? '보통 일치도' : '다소 낮은 일치도'}를 보입니다.
+        이는 사용자의 내적 감정과 외적 표현이 ${moodMatchScore && moodMatchScore > 70 ? '매우 조화롭게' : moodMatchScore && moodMatchScore > 40 ? '어느 정도' : '그다지 조화롭지 않게'} 이루어지고 있음을 나타냅니다.
+        `;
+      }
+    }
+
+    prompt += `
+      이 기분 상태와 ${detectedMood && mood !== detectedMood ? '표정과의 불일치를' : '감정 상태를'} 고려하여 감정 관리를 위한 실용적인 팁 2~3가지를 제공해주세요.
       한국어로 응답해 주세요.
     `;
 
-    // OpenAI API 호출
+    // OpenAI API 호출 (더 상세한 분석을 위해 GPT-4 사용)
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4-turbo", // 더 정교한 분석을 위해 GPT-4 모델 사용
       messages: [
         {
           role: "system",
           content:
-            "당신은 정신 건강 관리 전문가입니다. 사용자의 기분에 따라 실용적이고 즉시 실행 가능한 조언을 제공해 주세요.",
+            "당신은 정신 건강 및 감정 분석 전문가입니다. 사용자의 기분과 표정 사이의 관계를 분석하고 실용적이고 즉시 실행 가능한 조언을 제공해 주세요. 감정 불일치의 심리적 의미를 설명하고 이에 대처하는 방법도 함께 안내해 주세요.",
         },
         { role: "user", content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 150,
+      max_tokens: 300, // 더 긴 응답 허용
     });
 
     return response.choices[0].message.content || "팁을 제공할 수 없습니다.";

@@ -41,6 +41,61 @@ def generate_simulated_results(error_message):
         }
     }
 
+# 주파수 영역 HRV 지표를 계산하는 개선된 함수
+def calculate_frequency_domain_hrv(rr_intervals_ms):
+    try:
+        # RR 간격을 초 단위로 변환
+        rr_intervals_sec = rr_intervals_ms / 1000.0
+        
+        # RR 간격의 평균 계산하여 심박 변이 신호 생성
+        rr_mean = np.mean(rr_intervals_sec)
+        rr_diff = rr_intervals_sec - rr_mean
+        
+        # 4Hz로 리샘플링하기 위한 시간 배열 생성
+        fs_interp = 4.0  # Hz
+        t_rr = np.cumsum(rr_intervals_sec)
+        t_rr = np.insert(t_rr, 0, 0)  # 첫 번째 시간포인트를 0으로 추가
+        t_rr = t_rr[:-1]  # 마지막 포인트 제거 (RR 간격과 길이 맞추기)
+        
+        if len(t_rr) <= 3:  # 충분한 데이터가 없는 경우
+            raise Exception(f"Not enough data points for HRV frequency analysis: {len(t_rr)} points")
+        
+        # 균일한 시간 간격으로 재구성
+        t_interp = np.arange(0, t_rr[-1], 1.0/fs_interp)
+            
+        # 큐빅 스플라인 보간 (좀더 부드러운 결과)
+        f_interp = interpolate.interp1d(t_rr, rr_diff, kind='cubic', bounds_error=False, fill_value="extrapolate")
+        rr_interp = f_interp(t_interp)
+        
+        # 웰치 방법을 사용한 PSD 계산
+        # nperseg 값 최적화: 주파수 해상도 vs 분산 트레이드오프
+        nperseg = min(len(rr_interp), 256)  # 신호 길이보다는 작게, 하지만 충분한 해상도를 위해
+        
+        fxx, pxx = signal.welch(rr_interp, fs=fs_interp, nperseg=nperseg, detrend='constant')
+        
+        # 관련 주파수 대역 필터링
+        lf_indices = np.logical_and(fxx >= 0.04, fxx <= 0.15)  # LF: 0.04-0.15 Hz
+        hf_indices = np.logical_and(fxx >= 0.15, fxx <= 0.4)   # HF: 0.15-0.4 Hz
+        
+        if not np.any(lf_indices) or not np.any(hf_indices):
+            raise Exception("No valid frequency bands found for HRV analysis")
+        
+        # 파워 계산 (면적)
+        lf_power = np.trapz(pxx[lf_indices], fxx[lf_indices])
+        hf_power = np.trapz(pxx[hf_indices], fxx[hf_indices])
+        
+        # LF/HF 비율 계산
+        if hf_power <= 0:
+            raise Exception(f"Invalid HF power: {hf_power}")
+            
+        lf_hf_ratio = lf_power / hf_power
+        
+        return lf_power, hf_power, lf_hf_ratio
+            
+    except Exception as e:
+        print(f"Error in HRV frequency domain calculation: {str(e)}", file=sys.stderr)
+        raise e
+
 # Apple M1 호환성을 위해 pyVHR 의존성 우회
 def process_frames(frames_dir):
     """Process frames using CPU-based rPPG and return heart rate and HRV metrics."""
@@ -222,61 +277,31 @@ def process_frames(frames_dir):
                 # 주파수 영역 HRV 지표 계산
                 lf_power, hf_power, lf_hf_ratio = calculate_frequency_domain_hrv(valid_rr)
                 
-
-# 주파수 영역 HRV 지표를 계산하는 개선된 함수
-def calculate_frequency_domain_hrv(rr_intervals_ms):
-    try:
-        # RR 간격을 초 단위로 변환
-        rr_intervals_sec = rr_intervals_ms / 1000.0
-        
-        # RR 간격의 평균 계산하여 심박 변이 신호 생성
-        rr_mean = np.mean(rr_intervals_sec)
-        rr_diff = rr_intervals_sec - rr_mean
-        
-        # 4Hz로 리샘플링하기 위한 시간 배열 생성
-        fs_interp = 4.0  # Hz
-        t_rr = np.cumsum(rr_intervals_sec)
-        t_rr = np.insert(t_rr, 0, 0)  # 첫 번째 시간포인트를 0으로 추가
-        t_rr = t_rr[:-1]  # 마지막 포인트 제거 (RR 간격과 길이 맞추기)
-        
-        if len(t_rr) <= 3:  # 충분한 데이터가 없는 경우
-            raise Exception(f"Not enough data points for HRV frequency analysis: {len(t_rr)} points")
-        
-        # 균일한 시간 간격으로 재구성
-        t_interp = np.arange(0, t_rr[-1], 1.0/fs_interp)
-            
-        # 큐빅 스플라인 보간 (좀더 부드러운 결과)
-        f_interp = interpolate.interp1d(t_rr, rr_diff, kind='cubic', bounds_error=False, fill_value="extrapolate")
-        rr_interp = f_interp(t_interp)
-        
-        # 웰치 방법을 사용한 PSD 계산
-        # nperseg 값 최적화: 주파수 해상도 vs 분산 트레이드오프
-        nperseg = min(len(rr_interp), 256)  # 신호 길이보다는 작게, 하지만 충분한 해상도를 위해
-        
-        fxx, pxx = signal.welch(rr_interp, fs=fs_interp, nperseg=nperseg, detrend='constant')
-        
-        # 관련 주파수 대역 필터링
-        lf_indices = np.logical_and(fxx >= 0.04, fxx <= 0.15)  # LF: 0.04-0.15 Hz
-        hf_indices = np.logical_and(fxx >= 0.15, fxx <= 0.4)   # HF: 0.15-0.4 Hz
-        
-        if not np.any(lf_indices) or not np.any(hf_indices):
-            raise Exception("No valid frequency bands found for HRV analysis")
-        
-        # 파워 계산 (면적)
-        lf_power = np.trapz(pxx[lf_indices], fxx[lf_indices])
-        hf_power = np.trapz(pxx[hf_indices], fxx[hf_indices])
-        
-        # LF/HF 비율 계산
-        if hf_power <= 0:
-            raise Exception(f"Invalid HF power: {hf_power}")
-            
-        lf_hf_ratio = lf_power / hf_power
-        
-        return lf_power, hf_power, lf_hf_ratio
-            
+                # 최종 결과 반환
+                return {
+                    "heartRate": float(heart_rate),
+                    "confidence": float(confidence),
+                    "hrv": {
+                        "sdnn": float(sdnn),
+                        "rmssd": float(rmssd),
+                        "pnn50": float(pnn50),
+                        "lf": float(lf_power),
+                        "hf": float(hf_power),
+                        "lfHfRatio": float(lf_hf_ratio)
+                    }
+                }
+            else:
+                # 피크가 충분하지 않은 경우
+                raise Exception("Not enough peaks detected for HRV calculation")
+        else:
+            # 유효한 주파수 대역폭이 없는 경우
+            raise Exception("No valid frequency components found in the expected heart rate range")
+    
     except Exception as e:
-        print(f"Error in HRV frequency domain calculation: {str(e)}", file=sys.stderr)
-        raise e
+        # 오류 발생 시 시뮬레이션 데이터 반환 (백업)
+        print(f"Error processing frames: {str(e)}", file=sys.stderr)
+        return generate_simulated_results(str(e))
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

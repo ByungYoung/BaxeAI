@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
           // 이메일이 있지만 사용자가 없으면 새 사용자 생성
           const tempPassword = Math.random().toString(36).slice(-8); // 임시 비밀번호
           const newUserId = createId();
-          
+
           const [newUser] = await db
             .insert(users)
             .values({
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
               updatedAt: new Date(),
             })
             .returning();
-            
+
           finalUserId = newUser.id;
           userInfo = newUser;
           console.log(`새 사용자 생성: ${userEmail}`);
@@ -189,16 +189,37 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get("userId");
     const isAdmin = searchParams.get("isAdmin") === "true";
+    const email = searchParams.get("email");
 
     return await withDb(async (db) => {
+      // 관리자 체크 - 이메일로 관리자인지 확인
+      let isAdminUser = isAdmin;
+      if (email) {
+        const [userInfo] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, email))
+          .limit(1);
+
+        if (userInfo?.isAdmin) {
+          isAdminUser = true;
+        }
+      }
+
       // 조건 설정
       const conditions = [];
-      
-      // 사용자 ID 필터 적용
-      if (userId && !isAdmin) {
+
+      // 사용자 ID 필터 적용 (관리자가 아닌 경우에만)
+      if (userId && !isAdminUser) {
         conditions.push(eq(measurementResults.userId, userId));
       }
-      
+
+      // 특정 사용자만 보기 (관리자가 특정 사용자의 데이터만 보고 싶을 때)
+      if (userId && isAdminUser) {
+        // 관리자이면서 userId가 있으면 해당 사용자의 데이터만 필터링
+        conditions.push(eq(measurementResults.userId, userId));
+      }
+
       // 기본 쿼리 구성
       const query = db
         .select({
@@ -216,9 +237,10 @@ export async function GET(request: NextRequest) {
         .orderBy(desc(measurementResults.timestamp));
 
       // 쿼리 실행 (where 조건 적용)
-      const results = conditions.length > 0 
-        ? await query.where(and(...conditions))
-        : await query;
+      const results =
+        conditions.length > 0
+          ? await query.where(and(...conditions))
+          : await query;
 
       // 응답 형식 변환
       const formattedResults = results.map(({ measurementResult, user }) => ({
