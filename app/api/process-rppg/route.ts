@@ -22,10 +22,6 @@ export async function POST(request: Request) {
 
     // Vercel 환경 감지
     const isVercel = process.env.VERCEL === "1";
-    console.log(`Running in Vercel environment: ${isVercel ? "Yes" : "No"}`);
-
-    // 프레임 개수 로깅
-    console.log(`Processing ${frames.length} frames`);
 
     // Create a temporary directory to store frames
     const sessionId = uuidv4();
@@ -86,14 +82,9 @@ async function runPyVHR(
     // Path to Python script that uses pyVHR
     const pythonScript = path.join(process.cwd(), "scripts", "process_rppg.py");
 
-    console.log(`Current working directory: ${process.cwd()}`);
-    console.log(`Looking for Python script at: ${pythonScript}`);
-
     // 스크립트 존재 여부 먼저 확인
     fs.access(pythonScript)
       .then(() => {
-        console.log(`Python script found at ${pythonScript}`);
-
         // Path to Python executable options - try multiple paths for Vercel compatibility
         const pythonPaths = [
           path.join(process.cwd(), "venv", "bin", "python"), // Local venv (Mac/Linux)
@@ -142,18 +133,15 @@ function findWorkingPython(
   }
 
   const pythonPath = pythonPaths[index];
-  console.log(`Trying Python interpreter: ${pythonPath}`);
 
   try {
     // 파일 시스템에 Python이 있는지 먼저 확인한 다음 실행
     if (pythonPath.includes(process.cwd())) {
       fs.access(pythonPath)
         .then(() => {
-          console.log(`Python interpreter found at ${pythonPath}`);
           executePython(pythonPath, scriptPath, framesDir, resolve, reject);
         })
         .catch(() => {
-          console.log(`Python not found at ${pythonPath}, trying next option`);
           findWorkingPython(
             pythonPaths,
             index + 1,
@@ -168,7 +156,6 @@ function findWorkingPython(
       const testProcess = spawn(pythonPath, ["--version"]);
 
       testProcess.on("error", (err) => {
-        console.log(`Error executing ${pythonPath}: ${err.message}`);
         findWorkingPython(
           pythonPaths,
           index + 1,
@@ -181,10 +168,8 @@ function findWorkingPython(
 
       testProcess.on("close", (code) => {
         if (code === 0) {
-          console.log(`Found working Python at ${pythonPath}`);
           executePython(pythonPath, scriptPath, framesDir, resolve, reject);
         } else {
-          console.log(`Python at ${pythonPath} exited with code ${code}`);
           findWorkingPython(
             pythonPaths,
             index + 1,

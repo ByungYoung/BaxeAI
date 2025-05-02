@@ -22,10 +22,8 @@ export const loadFaceDetectionModels = async () => {
     ]);
 
     modelsLoaded = true;
-    console.log("얼굴 인식 모델 로드 완료");
     return true;
   } catch (error) {
-    console.error("얼굴 인식 모델 로드 실패:", error);
     return false;
   }
 };
@@ -50,7 +48,6 @@ export const detectExpression = async (
 
     return detection || null;
   } catch (error) {
-    console.error("표정 감지 오류:", error);
     return null;
   }
 };

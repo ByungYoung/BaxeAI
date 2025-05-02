@@ -85,7 +85,6 @@ export async function POST(request: NextRequest) {
 
           finalUserId = newUser.id;
           userInfo = newUser;
-          console.log(`새 사용자 생성: ${userEmail}`);
         }
       }
       // userId만 있고 이메일이 없는 경우 (비정상적인 경우지만 처리)

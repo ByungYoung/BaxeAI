@@ -34,8 +34,6 @@ export function AuthButtons() {
 
       // 홈 페이지로 이동
       router.push("/");
-    } catch (error) {
-      console.error("로그아웃 중 오류 발생:", error);
     } finally {
       setIsLoggingOut(false);
     }

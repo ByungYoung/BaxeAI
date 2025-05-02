@@ -1,10 +1,10 @@
 /**
  * 데이터베이스 유틸리티
- * 
+ *
  * 이 모듈은 drizzle-orm을 사용하여 데이터베이스 작업을 처리하는 도우미 함수를 제공합니다.
  */
-import { db } from './db/client';
-import * as schema from './db/schema';
+import { db } from "./db/client";
+import * as schema from "./db/schema";
 
 export { db, schema };
 
@@ -19,7 +19,6 @@ export async function withDb<T>(
     // db 인스턴스를 콜백 함수에 전달
     return await fn(db);
   } catch (error) {
-    console.error("Database operation error:", error);
     throw error;
   }
 }

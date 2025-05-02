@@ -46,7 +46,11 @@ import { jsPDF } from "jspdf";
 declare global {
   interface Window {
     jspdf?: {
-      addFont?: (fontBase64: string, fontName: string, fontStyle: string) => void;
+      addFont?: (
+        fontBase64: string,
+        fontName: string,
+        fontStyle: string
+      ) => void;
     };
   }
 }
@@ -196,25 +200,28 @@ export default function ResultsPage() {
         if (pdfLanguage === "ko" || pdfLanguage === "ja") {
           // 직접 파일 경로를 사용하여 폰트 로드
           const fontUrl = `/fonts/NotoSansCJKkr-Regular.ttf`;
-          
+
           // URL 객체로 폰트 가져오기
           const fontResponse = await fetch(fontUrl);
-          
+
           if (!fontResponse.ok) {
-            throw new Error(`폰트를 로드하지 못했습니다: ${fontResponse.statusText}`);
+            throw new Error(
+              `폰트를 로드하지 못했습니다: ${fontResponse.statusText}`
+            );
           }
-          
+
           const fontData = await fontResponse.arrayBuffer();
           const fontBase64 = arrayBufferToBase64(fontData);
 
           // jsPDF에 폰트 등록
           const fontName = pdfLanguage === "ko" ? "NotoSansKR" : "NotoSansJP";
-          
+
           if (window.jspdf && window.jspdf.addFont) {
             window.jspdf.addFont(fontBase64, fontName, "normal");
-            console.log(`${fontName} 폰트 설정 완료`);
           } else {
-            console.warn("jsPDF 인스턴스가 없거나 addFont 메서드를 찾을 수 없습니다");
+            console.warn(
+              "jsPDF 인스턴스가 없거나 addFont 메서드를 찾을 수 없습니다"
+            );
           }
         }
 
@@ -1080,7 +1087,6 @@ export default function ResultsPage() {
             : `File ${fileName} has been saved.`,
       });
     } catch (error) {
-      console.error("PDF 생성 오류:", error);
       toast({
         title:
           pdfLanguage === "ko"
@@ -1153,7 +1159,7 @@ export default function ResultsPage() {
     typeof currentResult.confidence === "number" ? currentResult.confidence : 0;
 
   // 스트레스 레벨 계산
-  const stressLevel = 
+  const stressLevel =
     currentResult.hrv && currentResult.hrv.rmssd !== undefined
       ? calculateStressLevel(currentResult.hrv.rmssd)
       : "분석 불가";
@@ -1574,7 +1580,8 @@ export default function ResultsPage() {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        오늘 당신이 스트레스에서 얼마나 빨리 회복할 수 있는지 보여주는 민첩성 점수
+                        오늘 당신이 스트레스에서 얼마나 빨리 회복할 수 있는지
+                        보여주는 민첩성 점수
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -1586,7 +1593,8 @@ export default function ResultsPage() {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        하루 종일 마음이 안정적으로 유지됐는지 알려주는 균형 지수
+                        하루 종일 마음이 안정적으로 유지됐는지 알려주는 균형
+                        지수
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -1598,7 +1606,8 @@ export default function ResultsPage() {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        지금 몸이 긴장·집중 모드에 올라온 정도 (시험·발표 직전처럼)
+                        지금 몸이 긴장·집중 모드에 올라온 정도 (시험·발표
+                        직전처럼)
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -1610,7 +1619,8 @@ export default function ResultsPage() {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        지금 몸이 휴식·회복 모드에 들어간 정도 (편하게 쉬는 상태)
+                        지금 몸이 휴식·회복 모드에 들어간 정도 (편하게 쉬는
+                        상태)
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -1634,7 +1644,8 @@ export default function ResultsPage() {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        오늘 하루, 내 몸이 상황에 따라 속도를 자연스럽게 바꾼 횟수 비율
+                        오늘 하루, 내 몸이 상황에 따라 속도를 자연스럽게 바꾼
+                        횟수 비율
                       </TableCell>
                     </TableRow>
                   </TableBody>

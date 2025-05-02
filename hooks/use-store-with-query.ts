@@ -86,7 +86,6 @@ export function useServerStateSync() {
 
       return { success: true, data: savedResult };
     } catch (error) {
-      console.error("Failed to sync measurement to server:", error);
       return { success: false, error };
     }
   };

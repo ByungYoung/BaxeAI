@@ -63,7 +63,6 @@ export async function getCurrentUser() {
       return userWithoutPassword;
     });
   } catch (error) {
-    console.error("사용자 정보 조회 중 오류:", error);
     return null;
   }
 }

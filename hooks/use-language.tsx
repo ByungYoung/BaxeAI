@@ -62,7 +62,6 @@ const translateViaAPI = async (
     const data = await response.json();
     return data.translatedText as string;
   } catch (error) {
-    console.error("Translation API error:", error);
     return text; // 오류 발생 시 원본 텍스트 반환
   }
 };
@@ -112,7 +111,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
       return translated;
     } catch (error) {
-      console.error("번역 오류:", error);
       return text; // 오류 시 원본 텍스트 반환
     }
   };

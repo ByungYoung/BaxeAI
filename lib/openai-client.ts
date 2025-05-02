@@ -78,7 +78,6 @@ export async function analyzeHealthStatus(
 
     return response.choices[0].message.content || "분석을 제공할 수 없습니다.";
   } catch (error) {
-    console.error("OpenAI API 오류:", error);
     return "분석 중 오류가 발생했습니다. 다시 시도해 주세요.";
   }
 }
@@ -87,8 +86,8 @@ export async function analyzeHealthStatus(
  * 선택한 기분 상태에 맞는 간략한 관리 팁 제공
  */
 export async function getMoodManagementTips(
-  mood: MoodState, 
-  detectedMood?: MoodState, 
+  mood: MoodState,
+  detectedMood?: MoodState,
   moodMatchScore?: number
 ): Promise<string> {
   try {
@@ -105,14 +104,20 @@ export async function getMoodManagementTips(
     if (detectedMood) {
       prompt += `
       카메라로 감지한 표정은 '${getMoodText(detectedMood)}'입니다.
-      기분-표정 일치도: ${moodMatchScore !== undefined ? moodMatchScore + '%' : '정보 없음'}
+      기분-표정 일치도: ${
+        moodMatchScore !== undefined ? moodMatchScore + "%" : "정보 없음"
+      }
       `;
-      
+
       // 기분과 표정의 불일치가 있는 경우 더 자세한 분석을 요청
       if (mood !== detectedMood) {
         prompt += `
         사용자의 선택한 기분과 표정에 차이가 있습니다. 
-        이런 불일치는 사용자가 내적으로 느끼는 감정(${getMoodText(mood)})과 외적으로 표현하는 감정(${getMoodText(detectedMood)})이 다르다는 것을 의미할 수 있습니다.
+        이런 불일치는 사용자가 내적으로 느끼는 감정(${getMoodText(
+          mood
+        )})과 외적으로 표현하는 감정(${getMoodText(
+          detectedMood
+        )})이 다르다는 것을 의미할 수 있습니다.
         
         이런 감정 불일치에 대해 분석하고, 이를 고려한 감정 관리 방법을 제안해주세요. 
         예를 들어:
@@ -123,14 +128,30 @@ export async function getMoodManagementTips(
       } else {
         prompt += `
         사용자의 선택한 기분과 표정이 일치합니다. 
-        일치도는 ${moodMatchScore}%로, ${moodMatchScore && moodMatchScore > 70 ? '매우 높은 일치도' : moodMatchScore && moodMatchScore > 40 ? '보통 일치도' : '다소 낮은 일치도'}를 보입니다.
-        이는 사용자의 내적 감정과 외적 표현이 ${moodMatchScore && moodMatchScore > 70 ? '매우 조화롭게' : moodMatchScore && moodMatchScore > 40 ? '어느 정도' : '그다지 조화롭지 않게'} 이루어지고 있음을 나타냅니다.
+        일치도는 ${moodMatchScore}%로, ${
+          moodMatchScore && moodMatchScore > 70
+            ? "매우 높은 일치도"
+            : moodMatchScore && moodMatchScore > 40
+            ? "보통 일치도"
+            : "다소 낮은 일치도"
+        }를 보입니다.
+        이는 사용자의 내적 감정과 외적 표현이 ${
+          moodMatchScore && moodMatchScore > 70
+            ? "매우 조화롭게"
+            : moodMatchScore && moodMatchScore > 40
+            ? "어느 정도"
+            : "그다지 조화롭지 않게"
+        } 이루어지고 있음을 나타냅니다.
         `;
       }
     }
 
     prompt += `
-      이 기분 상태와 ${detectedMood && mood !== detectedMood ? '표정과의 불일치를' : '감정 상태를'} 고려하여 감정 관리를 위한 실용적인 팁 2~3가지를 제공해주세요.
+      이 기분 상태와 ${
+        detectedMood && mood !== detectedMood
+          ? "표정과의 불일치를"
+          : "감정 상태를"
+      } 고려하여 감정 관리를 위한 실용적인 팁 2~3가지를 제공해주세요.
       한국어로 응답해 주세요.
     `;
 
@@ -151,7 +172,6 @@ export async function getMoodManagementTips(
 
     return response.choices[0].message.content || "팁을 제공할 수 없습니다.";
   } catch (error) {
-    console.error("OpenAI API 오류:", error);
     return "팁을 가져오는 중 오류가 발생했습니다.";
   }
 }

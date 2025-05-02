@@ -135,9 +135,7 @@ export const RPPGCamera = ({
       if (onFrameCaptured) {
         onFrameCaptured(imageData);
       }
-    } catch (e) {
-      console.error("프레임 캡처 오류:", e);
-    }
+    } catch (e) {}
   };
 
   // 얼굴 감지 처리
@@ -321,14 +319,12 @@ export const RPPGCamera = ({
       // 페이지 가시성 변경(백그라운드로 전환 등) 이벤트 처리기 등록
       const handleVisibilityChange = () => {
         if (document.hidden && status === "recording") {
-          console.log("페이지가 백그라운드로 전환됨, 측정 중단");
           stopRecordingAndProcess();
         }
       };
 
       // 화면 방향 변경 이벤트 처리기 등록
       const handleOrientationChange = () => {
-        console.log("화면 방향이 변경됨, 카메라 상태 확인");
         if (cameraActive && !videoRef.current?.srcObject) {
           // 방향 변경으로 카메라 연결이 끊어진 경우 재시도
           stopCamera();
@@ -342,7 +338,6 @@ export const RPPGCamera = ({
       visibilityChangeRef.current = handleVisibilityChange;
       orientationChangeRef.current = handleOrientationChange;
     } catch (err) {
-      console.error("카메라 접근 오류:", err);
       setCameraError(
         "카메라에 접근할 수 없습니다. 권한을 확인하거나 다른 브라우저로 시도해보세요."
       );
@@ -447,12 +442,8 @@ export const RPPGCamera = ({
     setStatus("processing");
     setStatusMessage(processText);
 
-    // 현재까지 캡처된 프레임 수 확인
-    console.log(`총 캡처된 프레임 수: ${framesRef.current.length}`);
-
     // 캡처된 프레임이 충분하지 않은 경우 - 최소 요구사항을 5개로 낮춤
     if (framesRef.current.length < 5) {
-      console.error("처리할 충분한 프레임이 없습니다.");
       setStatusMessage(
         "오류: 충분한 프레임이 캡처되지 않았습니다. 다시 시도해주세요."
       );
@@ -468,9 +459,6 @@ export const RPPGCamera = ({
       if (isMobile && framesToProcess.length > 150) {
         const stride = Math.ceil(framesToProcess.length / 150);
         framesToProcess = framesToProcess.filter((_, i) => i % stride === 0);
-        console.log(
-          `프레임 수 조정: ${framesRef.current.length} -> ${framesToProcess.length}`
-        );
       }
 
       onFramesCapture(framesToProcess);
@@ -519,9 +507,7 @@ export const RPPGCamera = ({
           Math.floor(framesRef.current.length * 0.3)
         );
       }
-    } catch (e) {
-      console.error("프레임 캡처 오류:", e);
-    }
+    } catch (e) {}
   };
 
   // 모든 타이머 정리

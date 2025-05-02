@@ -56,7 +56,6 @@ export default function MeasurePage() {
         try {
           await loadFaceDetectionModels();
           setModelsLoaded(true);
-          console.log("얼굴 인식 모델 로드 완료");
         } catch (err) {
           console.error("얼굴 인식 모델 로드 실패:", err);
         }
@@ -151,7 +150,10 @@ export default function MeasurePage() {
               ctx.fillRect(box.x, box.y, box.width, box.height);
 
               // 얼굴 주변에 테두리 그리기
-              ctx.strokeStyle = getMoodColor(detectedMood).replace("0.5", "0.8");
+              ctx.strokeStyle = getMoodColor(detectedMood).replace(
+                "0.5",
+                "0.8"
+              );
               ctx.lineWidth = 3;
               ctx.strokeRect(box.x, box.y, box.width, box.height);
 

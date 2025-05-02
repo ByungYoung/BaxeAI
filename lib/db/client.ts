@@ -34,7 +34,6 @@ export async function checkDbConnection() {
     const result = await client`SELECT 1 as connected`;
     return result[0].connected === 1;
   } catch (error) {
-    console.error("데이터베이스 연결 확인 실패:", error);
     return false;
   }
 }

@@ -44,7 +44,6 @@ export async function saveMeasurementToDB(result: MeasurementResult) {
 
     return await response.json();
   } catch (error) {
-    console.error("측정 결과 저장 오류:", error);
     throw error;
   }
 }
@@ -74,7 +73,6 @@ export async function saveUserToDB(
 
     return await response.json();
   } catch (error) {
-    console.error("사용자 정보 저장 오류:", error);
     throw error;
   }
 }

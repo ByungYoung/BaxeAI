@@ -34,7 +34,7 @@ function generateFallbackResult(errorMessage: string): RPPGResult {
       hf: randomHF,
       lfHfRatio: parseFloat(lfHfRatio.toFixed(2)),
       sdnn: parseFloat((35.0 + Math.random() * 15).toFixed(2)),
-      rmssd: parseFloat(randomRMSSD.toFixed(2)), 
+      rmssd: parseFloat(randomRMSSD.toFixed(2)),
       pnn50: parseFloat((20.0 + Math.random() * 15).toFixed(2)),
     },
   };
@@ -76,9 +76,11 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
     let response: Response;
     try {
       // 두 Promise 중 먼저 완료되는 것을 기다림
-      response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+      response = (await Promise.race([
+        fetchPromise,
+        timeoutPromise,
+      ])) as Response;
     } catch (fetchError: any) {
-      console.error("서버 통신 오류:", fetchError.message);
       // 최소 표시 시간 보장
       const processingTime = Date.now() - requestStartTime;
       if (processingTime < MIN_PROCESSING_TIME) {
@@ -86,7 +88,9 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
           setTimeout(resolve, MIN_PROCESSING_TIME - processingTime)
         );
       }
-      return generateFallbackResult(fetchError.message || "네트워크 통신 오류가 발생했습니다.");
+      return generateFallbackResult(
+        fetchError.message || "네트워크 통신 오류가 발생했습니다."
+      );
     }
 
     // 최소 표시 시간보다 빨리 응답이 오면 약간의 지연 추가
@@ -99,7 +103,7 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
 
     if (!response.ok) {
       console.warn(`서버 오류 발생 (상태 코드: ${response.status})`);
-      
+
       // 모든 서버 오류(4XX, 5XX)에 대해 폴백 결과 생성
       return generateFallbackResult(
         `서버 오류 (${response.status}). 모의 데이터로 대체되었습니다.`
@@ -111,8 +115,9 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
     try {
       result = await response.json();
     } catch (parseError) {
-      console.error("서버 응답 파싱 오류:", parseError);
-      return generateFallbackResult("서버 응답을 해석할 수 없습니다. 모의 데이터로 대체되었습니다.");
+      return generateFallbackResult(
+        "서버 응답을 해석할 수 없습니다. 모의 데이터로 대체되었습니다."
+      );
     }
 
     // 오류 필드가 포함되어 있거나 필수 필드가 없으면 오류 발생
@@ -133,14 +138,12 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
         lfHfRatio: 1.0,
         sdnn: 40.0,
         rmssd: 30.0,
-        pnn50: 25.0
+        pnn50: 25.0,
       };
     }
 
     return result;
   } catch (error: any) {
-    console.error("프레임 처리 중 예상치 못한 오류:", error);
-
     // 모든 예외 상황에 대해 대체 결과 생성
     return generateFallbackResult(
       error.message || "알 수 없는 오류가 발생했습니다."

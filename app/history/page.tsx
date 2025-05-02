@@ -59,6 +59,7 @@ import {
 import * as XLSX from "xlsx";
 import { useMeasurementHistory, useUsers } from "@/hooks/use-queries";
 import { useQueryClient } from "@tanstack/react-query";
+import { fetchMeasurementHistory } from "@/lib/api"; // fetchMeasurementHistory 함수 가져오기
 
 type SortField = "timestamp" | "heartRate";
 
@@ -108,7 +109,9 @@ export default function HistoryPage() {
   // 관리자 여부 확인
   useEffect(() => {
     const admin = !!userInfo?.isAdmin;
+
     setIsAdmin(admin);
+
     // 관리자인 경우 기본적으로 모든 사용자 데이터 표시
     if (admin) {
       setShowAllUsers(true);
@@ -141,19 +144,12 @@ export default function HistoryPage() {
     isLoading,
     error,
   } = useMeasurementHistory(queryUserId, {
-    queryKey: ["measurementHistory", queryUserId], // Add queryKey to match the required type
-    enabled: isAdmin || !!userId, // 관리자이거나 로그인한 사용자가 있는 경우에만 실행
+    queryKey: ["measurementHistory", queryUserId, isAdmin],
+    queryFn: () => fetchMeasurementHistory(queryUserId, isAdmin), // isAdmin 파라미터 추가
+    enabled: true, // 항상 쿼리 활성화
     refetchOnWindowFocus: false,
     staleTime: 60 * 1000, // 1분 동안 캐시 유지
   });
-
-  // API 응답 구조 확인을 위한 디버깅
-  useEffect(() => {
-    if (results && results.length > 0) {
-      console.log("API 응답 데이터 구조:", results[0]);
-      console.log("첫 번째 결과 HRV 데이터:", results[0].hrv);
-    }
-  }, [results]);
 
   // 정렬 함수
   const sortedResults = [...results].sort((a, b) => {
@@ -1059,12 +1055,12 @@ function getHrvValue(result: any, key: string): number | null {
   if (result.hrv && result.hrv[key] !== undefined && result.hrv[key] !== null) {
     return result.hrv[key];
   }
-  
+
   // 2. 루트 레벨에서 확인
   if (result[key] !== undefined && result[key] !== null) {
     return result[key];
   }
-  
+
   // 3. 값을 찾을 수 없는 경우
   return null;
 }
@@ -1072,22 +1068,30 @@ function getHrvValue(result: any, key: string): number | null {
 // 사용자 정보를 안전하게 추출하는 헬퍼 함수
 function getUserValue(result: any, key: string): string {
   // 1. userInfo 객체에서 확인 (표준 형식)
-  if (result.userInfo && result.userInfo[key] !== undefined && result.userInfo[key] !== null) {
+  if (
+    result.userInfo &&
+    result.userInfo[key] !== undefined &&
+    result.userInfo[key] !== null
+  ) {
     return result.userInfo[key];
   }
-  
+
   // 2. user 객체에서 확인 (API 응답 형식)
-  if (result.user && result.user[key] !== undefined && result.user[key] !== null) {
+  if (
+    result.user &&
+    result.user[key] !== undefined &&
+    result.user[key] !== null
+  ) {
     return result.user[key];
   }
-  
+
   // 3. 특수 케이스: email은 루트 레벨에서도 확인
-  if (key === 'email' && result.email !== undefined && result.email !== null) {
+  if (key === "email" && result.email !== undefined && result.email !== null) {
     return result.email;
   }
-  
+
   // 4. 값을 찾을 수 없는 경우
-  return '-';
+  return "-";
 }
 
 // 기분 상태 텍스트로 변환

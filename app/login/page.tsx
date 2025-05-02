@@ -61,6 +61,7 @@ export default function LoginPage() {
         name: userData.name || userData.email.split("@")[0],
         company: userData.company || "",
         isGuest: userData.isGuest || false,
+        isAdmin: userData.isAdmin || false, // isAdmin 속성 추가
       });
 
       // 측정 페이지로 이동
@@ -104,6 +105,7 @@ export default function LoginPage() {
         name: userData.name || userData.email.split("@")[0],
         company: userData.company || "",
         isGuest: userData.isGuest || false,
+        isAdmin: userData.isAdmin || false, // isAdmin 속성 추가
       });
 
       // 측정 페이지로 이동

@@ -91,11 +91,9 @@ export async function translateText(
       );
       return Array.isArray(text) ? translatedTexts : translatedTexts[0];
     } else {
-      console.error("No translation credentials available");
       return Array.isArray(text) ? text : text;
     }
   } catch (error) {
-    console.error("Translation error:", error);
     return Array.isArray(text) ? text : text;
   }
 }

@@ -6,14 +6,24 @@ import { MeasurementResult, UserInfo } from "./types";
  * 측정 이력 조회 API
  */
 export async function fetchMeasurementHistory(
-  userId?: string
+  userId?: string,
+  isAdmin: boolean = false
 ): Promise<MeasurementResult[]> {
-  if (!userId) {
-    // 사용자 ID가 없으면 빈 배열 반환 (에러 대신)
+  // 관리자 모드가 아닌데 userId가 없으면 빈 배열 반환
+  if (!userId && !isAdmin) {
     return [];
   }
 
-  const response = await fetch(`/api/measurements?userId=${userId}`);
+  // URL 파라미터 구성
+  const url = new URL("/api/measurements", window.location.origin);
+  if (userId) {
+    url.searchParams.append("userId", userId);
+  }
+  if (isAdmin) {
+    url.searchParams.append("isAdmin", "true");
+  }
+
+  const response = await fetch(url.toString());
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
