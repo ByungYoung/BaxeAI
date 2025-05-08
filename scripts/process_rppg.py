@@ -123,55 +123,96 @@ def process_frames(frames_dir):
         
         # 얼굴이 감지된 프레임 수를 카운트
         face_detected_frames = 0
+        valid_frames = 0
+        missing_frames = 0
         
         for i, frame_file in enumerate(frame_files):
-            frame = cv2.imread(frame_file)
-            if frame is None:
+            # 파일이 실제로 존재하고 유효한지 먼저 확인
+            if not os.path.isfile(frame_file) or os.path.getsize(frame_file) == 0:
+                missing_frames += 1
                 continue
                 
-            # 현재 프레임의 타임스탬프 추가
-            timestamps.append(i * frame_time)
+            # 안전하게 이미지 파일 읽기 시도
+            try:
+                frame = cv2.imread(frame_file)
+                if frame is None:
+                    missing_frames += 1
+                    continue
+                    
+                valid_frames += 1
+                
+                # 현재 프레임의 타임스탬프 추가
+                timestamps.append(i * frame_time)
+                
+                # 그레이스케일로 변환하여 얼굴 감지
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+                
+                if len(faces) > 0:
+                    # 가장 큰 얼굴 영역 선택
+                    max_face = max(faces, key=lambda rect: rect[2] * rect[3])
+                    (x, y, w, h) = max_face
+                    
+                    # 얼굴 영역의 경계 확인 및 수정
+                    y = max(0, y)
+                    x = max(0, x)
+                    h = min(h, frame.shape[0] - y)
+                    w = min(w, frame.shape[1] - x)
+                    
+                    # 얼굴이 감지되었으므로 카운트 증가
+                    face_detected_frames += 1
+                    
+                    # 얼굴 영역이 유효한지 확인
+                    if w > 0 and h > 0:
+                        # 얼굴 영역 추출
+                        face_roi = frame[y:y+h, x:x+w]
+                        
+                        # 피부색 마스킹
+                        try:
+                            # YCrCb 색상 공간에서 피부색 필터링
+                            ycrcb = cv2.cvtColor(face_roi, cv2.COLOR_BGR2YCrCb)
+                            lower = np.array([0, 133, 77], dtype=np.uint8)
+                            upper = np.array([255, 173, 127], dtype=np.uint8)
+                            mask = cv2.inRange(ycrcb, lower, upper)
+                            
+                            # 마스크를 적용하여 얼굴 ROI에서 피부 영역만 추출
+                            skin = cv2.bitwise_and(face_roi, face_roi, mask=mask)
+                            
+                            # 피부 픽셀 수가 충분한 경우에만 처리
+                            mask_sum = np.sum(mask)
+                            if mask_sum > 1000:  # 마스크된 픽셀이 최소 1000개 이상
+                                # 각 채널별 평균 값 계산
+                                b, g, r = cv2.split(skin)
+                                r_values.append(np.sum(r) / mask_sum)
+                                g_values.append(np.sum(g) / mask_sum)
+                                b_values.append(np.sum(b) / mask_sum)
+                            else:
+                                # 얼굴이나 피부가 충분히 감지되지 않은 경우 타임스탬프 제거
+                                timestamps.pop()
+                                face_detected_frames -= 1  # 피부가 충분하지 않으므로, 카운트 다시 감소
+                        except Exception as e:
+                            # 피부 마스킹 오류 처리
+                            timestamps.pop()
+                            print(f"Error during skin masking for frame {frame_file}: {str(e)}", file=sys.stderr)
+                    else:
+                        # 유효하지 않은 얼굴 영역
+                        timestamps.pop()
+                        face_detected_frames -= 1
+            except Exception as e:
+                # 개별 프레임 처리 오류는 기록하고 계속 진행
+                missing_frames += 1
+                print(f"Error processing frame {frame_file}: {str(e)}", file=sys.stderr)
+                continue
+        
+        if missing_frames > 0:
+            print(f"Warning: {missing_frames} frames could not be read or processed", file=sys.stderr)
             
-            # 그레이스케일로 변환하여 얼굴 감지
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-            
-            if len(faces) > 0:
-                # 가장 큰 얼굴 영역 선택
-                max_face = max(faces, key=lambda rect: rect[2] * rect[3])
-                (x, y, w, h) = max_face
-                
-                # 얼굴이 감지되었으므로 카운트 증가
-                face_detected_frames += 1
-                
-                # 얼굴 영역 추출
-                face_roi = frame[y:y+h, x:x+w]
-                
-                # 피부색 마스킹
-                # YCrCb 색상 공간에서 피부색 필터링
-                ycrcb = cv2.cvtColor(face_roi, cv2.COLOR_BGR2YCrCb)
-                lower = np.array([0, 133, 77], dtype=np.uint8)
-                upper = np.array([255, 173, 127], dtype=np.uint8)
-                mask = cv2.inRange(ycrcb, lower, upper)
-                
-                # 마스크를 적용하여 얼굴 ROI에서 피부 영역만 추출
-                skin = cv2.bitwise_and(face_roi, face_roi, mask=mask)
-                
-                # 피부 픽셀 수가 충분한 경우에만 처리
-                if np.sum(mask) > 1000:  # 마스크된 픽셀이 최소 1000개 이상
-                    # 각 채널별 평균 값 계산
-                    b, g, r = cv2.split(skin)
-                    r_values.append(np.sum(r) / np.sum(mask))
-                    g_values.append(np.sum(g) / np.sum(mask))
-                    b_values.append(np.sum(b) / np.sum(mask))
-                else:
-                    # 얼굴이나 피부가 충분히 감지되지 않은 경우 타임스탬프 제거
-                    timestamps.pop()
-                    face_detected_frames -= 1  # 피부가 충분하지 않으므로, 카운트 다시 감소
+        if valid_frames == 0:
+            raise Exception("No valid frames could be processed")
         
         # 총 프레임 중 얼굴 감지 비율 계산
-        detection_ratio = face_detected_frames / len(frame_files) if frame_files else 0
-        print(f"Face detection ratio: {detection_ratio:.2f} ({face_detected_frames}/{len(frame_files)})", file=sys.stderr)
+        detection_ratio = face_detected_frames / valid_frames if valid_frames else 0
+        print(f"Face detection ratio: {detection_ratio:.2f} ({face_detected_frames}/{valid_frames})", file=sys.stderr)
         
         # 충분한 프레임이 처리되었는지 확인
         if len(r_values) < 10:

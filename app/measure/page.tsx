@@ -192,11 +192,19 @@ export default function MeasurePage() {
             };
 
             // 마스킹 캔버스 크기 설정
-            faceCanvasRef.current.width = videoRef.current.videoWidth;
-            faceCanvasRef.current.height = videoRef.current.videoHeight;
+            if (
+              videoRef.current &&
+              videoRef.current.videoWidth &&
+              videoRef.current.videoHeight
+            ) {
+              faceCanvasRef.current.width = videoRef.current.videoWidth;
+              faceCanvasRef.current.height = videoRef.current.videoHeight;
 
-            // 마스크 그리기
-            drawMoodMask(faceCanvasRef.current, detection, detectedMood);
+              // 마스크 그리기
+              drawMoodMask(faceCanvasRef.current, detection, detectedMood);
+            } else {
+              console.warn("비디오 요소의 크기를 확인할 수 없습니다.");
+            }
           }
         } catch (err) {
           console.error("표정 분석 오류:", err);

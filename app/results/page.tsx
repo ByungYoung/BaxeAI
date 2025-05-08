@@ -196,7 +196,7 @@ export default function ResultsPage() {
       if (typeof window === "undefined" || fontLoaded) return;
 
       try {
-        // jsPDF에 폰트 추가
+        // jsPDF 인스턴스 확인
         if (pdfLanguage === "ko" || pdfLanguage === "ja") {
           // 직접 파일 경로를 사용하여 폰트 로드
           const fontUrl = `/fonts/NotoSansCJKkr-Regular.ttf`;
@@ -213,15 +213,20 @@ export default function ResultsPage() {
           const fontData = await fontResponse.arrayBuffer();
           const fontBase64 = arrayBufferToBase64(fontData);
 
-          // jsPDF에 폰트 등록
+          // jsPDF에 폰트 등록 - 직접 jsPDF 라이브러리에서 제공하는 방식으로 처리
           const fontName = pdfLanguage === "ko" ? "NotoSansKR" : "NotoSansJP";
 
-          if (window.jspdf && window.jspdf.addFont) {
-            window.jspdf.addFont(fontBase64, fontName, "normal");
-          } else {
-            console.warn(
-              "jsPDF 인스턴스가 없거나 addFont 메서드를 찾을 수 없습니다"
-            );
+          try {
+            // 안전하게 addFont 함수 접근
+            if (typeof jsPDF !== 'undefined' && jsPDF.API && jsPDF.API.addFont) {
+              jsPDF.API.addFont(fontBase64, fontName, "normal");
+              console.log(`${fontName} 폰트가 성공적으로 등록되었습니다.`);
+            } else {
+              // 폴백: 기본 폰트로 계속 진행
+              console.info("jsPDF API가 준비되지 않았습니다. 기본 폰트를 사용합니다.");
+            }
+          } catch (fontError) {
+            console.warn("폰트 등록 중 오류 발생, 기본 폰트를 사용합니다:", fontError);
           }
         }
 
@@ -1022,7 +1027,7 @@ export default function ResultsPage() {
                   "現在休息・回復モードが活性化された状態です。心身をリフレッシュするのに良い状態ですが、重要な業務や意思決定が必要な場合は集中力を高める活動が役立つ可能性があります。"
                 )
                 .replace(
-                  "긴장과 휴식 사이에서 균형이 잘 잡힌 상태입니다. 현재 업무와 휴식을 적절히 병行할 수 있는 이상적인 상태입니다。",
+                  "긴장과 휴식 사이에서 균형이 잘 잡힌 상태입니다. 현재 업무와 휴식을 적절히 병행할 수 있는 이상적인 상태입니다。",
                   "緊張と休息の間でバランスが取れている状態です。現在、業務と休息を適切に両立できる理想的な状態です。"
                 )
                 .replace(
