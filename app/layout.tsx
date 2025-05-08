@@ -12,6 +12,7 @@ import { LanguageProvider } from "@/hooks/use-language";
 import { AuthStatusProvider } from "@/components/auth-status-provider";
 import { AuthButtons } from "@/components/auth-buttons";
 import { QueryProvider } from "@/components/query-provider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -205,6 +206,7 @@ export default function RootLayout({
                     </div>
                   </footer>
                 </div>
+                <SpeedInsights />
               </QueryProvider>
             </AuthStatusProvider>
           </LanguageProvider>
