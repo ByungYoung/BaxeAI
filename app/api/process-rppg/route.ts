@@ -87,13 +87,15 @@ async function runPyVHR(
       .then(() => {
         // Path to Python executable options - try multiple paths for Vercel compatibility
         const pythonPaths = [
-          path.join(process.cwd(), "venv", "bin", "python"), // Local venv (Mac/Linux)
+          path.join(process.cwd(), "venv", "bin", "python3"), // Local venv python3 (Mac/Linux)
+          path.join(process.cwd(), "venv", "bin", "python"),  // Local venv python (Mac/Linux)
           path.join(process.cwd(), "venv", "Scripts", "python.exe"), // Local venv (Windows)
-          "/var/lang/bin/python", // AWS Lambda Python
+          "/usr/local/bin/python3", // Homebrew Python3 (Mac)
           "/usr/bin/python3", // Standard Python3 path
           "python3", // System Python3
           "/usr/bin/python", // Standard Linux path
           "python", // System Python
+          "/var/lang/bin/python", // AWS Lambda Python
         ];
 
         // 첫 번째 실행 가능한 Python을 찾아서 사용
