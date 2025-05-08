@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       const result = await runPyVHR(tempDir);
 
       // Clean up temporary files
-      await fs.rm(tempDir, { recursive: true, force: true }).catch(err => {
+      await fs.rm(tempDir, { recursive: true, force: true }).catch((err) => {
         console.warn("Failed to clean up temp directory:", err);
       });
 
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("Error in process-rppg API route:", error);
-    
+
     // 모든 예외 상황에서 시뮬레이션된 결과 반환
     return NextResponse.json(createSimulatedResult(`API 오류: ${error}`));
   }
@@ -80,12 +80,64 @@ export async function POST(request: Request) {
 async function runPyVHR(
   framesDir: string
 ): Promise<{ heartRate: number; confidence: number; hrv?: any }> {
-  // Vercel 환경에서는 시뮬레이션된 결과 즉시 반환
+  // Vercel 환경 감지 로직 변경 - 실행 시도
   if (process.env.VERCEL === "1") {
-    console.log("runPyVHR: Vercel 환경 감지, 시뮬레이션 결과 사용");
-    return createSimulatedResult();
+    console.log("runPyVHR: Vercel 환경에서 Python 스크립트 실행 시도");
+    // Vercel 환경에서는 /tmp 디렉토리의 python3을 시도
+    const pythonPaths = [
+      "/var/task/python/bin/python3",   // Vercel의 Python 런타임 경로 (lambda layers)
+      "/var/lang/bin/python3",          // AWS Lambda Python 3
+      "/opt/python/bin/python3",        // 다른 가능한 경로
+      "/tmp/python/bin/python3",        // 사용자 정의 설치 경로
+      "python3",                        // 환경 변수 PATH에 있는 python3
+      "python"                          // 환경 변수 PATH에 있는 python
+    ];
+    
+    return new Promise((resolve, reject) => {
+      // Path to Python script that uses pyVHR
+      const pythonScript = path.join(process.cwd(), "scripts", "process_rppg.py");
+
+      // 15초 타임아웃 설정 (Vercel에서는 조금 더 길게)
+      const timeout = setTimeout(() => {
+        console.error("Python 스크립트 실행 시간 초과 (Vercel)");
+        resolve(createSimulatedResult("스크립트 실행 시간 초과 (Vercel)"));
+      }, 15000);
+
+      // 스크립트 존재 여부 먼저 확인
+      fs.access(pythonScript)
+        .then(() => {
+          // 먼저 Vercel 환경에서 Python 실행 가능한지 로그 출력
+          console.log(`Python 스크립트 경로: ${pythonScript}`);
+          console.log(`프레임 디렉토리 경로: ${framesDir}`);
+          
+          // Vercel 환경에 맞춘 Python 경로 시도
+          findWorkingPython(
+            pythonPaths,
+            0,
+            pythonScript,
+            framesDir,
+            (result) => {
+              clearTimeout(timeout);
+              resolve(result);
+            },
+            (error) => {
+              clearTimeout(timeout);
+              console.error("Vercel에서 Python 처리 실패, 시뮬레이션 결과 사용:", error.message);
+              resolve(createSimulatedResult(error.message));
+            }
+          );
+        })
+        .catch((err) => {
+          clearTimeout(timeout);
+          console.error(
+            `Python script not found at ${pythonScript}. Error: ${err.message}`
+          );
+          resolve(createSimulatedResult(`스크립트를 찾을 수 없음: ${err.message}`));
+        });
+    });
   }
   
+  // 로컬 환경 처리 (기존 코드 유지)
   return new Promise((resolve, reject) => {
     // Path to Python script that uses pyVHR
     const pythonScript = path.join(process.cwd(), "scripts", "process_rppg.py");
@@ -142,9 +194,9 @@ async function runPyVHR(
 /**
  * 시뮬레이션된 결과를 생성합니다.
  */
-function createSimulatedResult(errorReason?: string): { 
-  heartRate: number; 
-  confidence: number; 
+function createSimulatedResult(errorReason?: string): {
+  heartRate: number;
+  confidence: number;
   hrv?: any;
   simulatedData?: boolean;
   error?: string;
@@ -157,7 +209,7 @@ function createSimulatedResult(errorReason?: string): {
 
   return {
     heartRate: randomHeartRate,
-    confidence: 0.7 + (Math.random() * 0.2), // 0.7-0.9 사이 신뢰도
+    confidence: 0.7 + Math.random() * 0.2, // 0.7-0.9 사이 신뢰도
     hrv: {
       lf: randomLF,
       hf: randomHF,
@@ -174,11 +226,11 @@ function createSimulatedResult(errorReason?: string): {
       frequencyMetrics: {
         lfPower: randomLF * 1000,
         hfPower: randomHF * 1000,
-        lfHfRatio: parseFloat(lfHfRatio.toFixed(2))
-      }
+        lfHfRatio: parseFloat(lfHfRatio.toFixed(2)),
+      },
     },
     simulatedData: true,
-    error: errorReason
+    error: errorReason,
   };
 }
 

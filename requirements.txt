@@ -1,9 +1,9 @@
 numpy
-opencv-python
+opencv-python-headless
 scipy
 scikit-learn
 matplotlib
 pyVHR
-mediapipe
+mediapipe-silicon
 pandas
 numba

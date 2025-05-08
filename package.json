@@ -11,7 +11,7 @@
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate:pg",
-    "vercel-build": "next build",
+    "vercel-build": "node vercel-build.js && next build",
     "deploy": "vercel --prod",
     "build:production": "NODE_ENV=production next build"
   },

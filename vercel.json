@@ -1,5 +1,5 @@
 {
-  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' pnpm install && pnpm run vercel-build",
+  "buildCommand": "python -m pip install --upgrade pip && pip install -r requirements.txt && NODE_OPTIONS='--max-old-space-size=4096' pnpm install && pnpm run vercel-build",
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "outputDirectory": ".next",
