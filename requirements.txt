@@ -5,7 +5,8 @@ scipy>=1.7.0,<1.10.0; platform_system != "Linux" or python_version < "3.12"  # �
 scikit-learn>=1.0.0,<1.3.0
 matplotlib>=3.4.0,<3.8.0
 pyVHR==2.0
-mediapipe>=0.9.0,<0.10.0; platform_system != "Darwin"
+mediapipe>=0.10.13; platform_system != "Darwin" and python_version >= "3.12"  # Python 3.12용 최신 mediapipe 버전
+mediapipe>=0.9.0,<0.10.0; platform_system != "Darwin" and python_version < "3.12"  # 이전 Python 버전용
 mediapipe-silicon>=0.9.0; platform_system == "Darwin"
 pandas>=1.3.0,<2.0.0
 numba>=0.53.0,<0.60.0
