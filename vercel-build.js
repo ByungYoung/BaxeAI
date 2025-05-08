@@ -20,17 +20,29 @@ try {
 
   // pip 버전 체크
   log('pip 버전 확인 중...');
-  const pipVersionOutput = execSync(`${pipCommand} --version`).toString();
+  const pipVersionOutput = execSync(`${pythonCommand} -m pip --version`).toString();
   log(pipVersionOutput);
 
-  // requirements.txt 설치
+  // requirements.txt 설치 전에 pip 업그레이드
+  log('pip 업그레이드 중...');
+  execSync(`${pythonCommand} -m pip install --upgrade pip`, { stdio: 'inherit' });
+  log('pip 업그레이드 완료');
+
+  // requirements.txt 설치 - Python 모듈로 직접 실행하여 환경 일관성 유지
   log('Python 패키지 설치 중...');
-  execSync(`${pipCommand} install -r requirements.txt`, { stdio: 'inherit' });
+  execSync(`${pythonCommand} -m pip install --no-cache-dir -r requirements.txt`, { 
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      PIP_DISABLE_PIP_VERSION_CHECK: '1',
+      PIP_NO_WARN_SCRIPT_LOCATION: '1',
+    }
+  });
   log('Python 패키지 설치 완료');
 
   // 설치된 패키지 목록 확인
   log('설치된 Python 패키지 목록:');
-  const installedPackages = execSync(`${pipCommand} freeze`).toString();
+  const installedPackages = execSync(`${pythonCommand} -m pip freeze`).toString();
   log(installedPackages);
 
   // scripts 디렉토리가 있는지 확인
