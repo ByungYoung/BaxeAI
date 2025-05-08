@@ -1,7 +1,10 @@
 {
-  "buildCommand": "python -m pip install --upgrade pip && pip install -r requirements.txt && NODE_OPTIONS='--max-old-space-size=4096' pnpm install && pnpm run vercel-build",
+  "buildCommand": "python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt && NODE_OPTIONS='--max-old-space-size=4096' pnpm install && pnpm run vercel-build",
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "outputDirectory": ".next",
-  "regions": ["icn1"]
+  "regions": ["icn1"],
+  "env": {
+    "PYTHON_VERSION": "3.9"
+  }
 }
