@@ -20,33 +20,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Vercel 환경 감지
-    const isVercel = process.env.VERCEL === "1";
-
-    // Vercel 환경에서는 시뮬레이션된 결과를 반환 (Python 실행 문제 해결을 위함)
-    if (isVercel) {
-      console.log("Running in Vercel environment. Using simulated results.");
-      
-      // 시뮬레이션된 결과 생성
-      const simulatedResult = {
-        heartRate: Math.floor(60 + Math.random() * 30), // 60-90 사이 심박수
-        confidence: 0.85 + (Math.random() * 0.1), // 0.85-0.95 사이 신뢰도
-        hrv: {
-          timeMetrics: {
-            sdnn: 35 + Math.random() * 15,  // 35-50 사이
-            rmssd: 25 + Math.random() * 15, // 25-40 사이
-            pnn50: 10 + Math.random() * 10, // 10-20 사이
-          },
-          frequencyMetrics: {
-            lfPower: 500 + Math.random() * 500,    // 500-1000 사이
-            hfPower: 500 + Math.random() * 500,    // 500-1000 사이
-            lfHfRatio: 1 + Math.random()           // 1-2 사이
-          }
-        }
-      };
-      
-      return NextResponse.json(simulatedResult);
-    }
+    console.log(`Received ${frames.length} frames for processing`);
 
     // Create a temporary directory to store frames
     const sessionId = uuidv4();
@@ -73,7 +47,9 @@ export async function POST(request: Request) {
       const result = await runPyVHR(tempDir);
 
       // Clean up temporary files
-      await fs.rm(tempDir, { recursive: true, force: true });
+      await fs.rm(tempDir, { recursive: true, force: true }).catch(err => {
+        console.warn("Failed to clean up temp directory:", err);
+      });
 
       return NextResponse.json(result);
     } catch (error) {
@@ -86,14 +62,15 @@ export async function POST(request: Request) {
         console.error("Error cleaning up temp files:", cleanupError);
       }
 
-      throw error;
+      // 에러 발생 시에도 시뮬레이션 결과 제공
+      console.log("Error occurred, returning simulated result");
+      return NextResponse.json(createSimulatedResult(`처리 오류: ${error}`));
     }
   } catch (error) {
     console.error("Error in process-rppg API route:", error);
-    return NextResponse.json(
-      { error: "Failed to process video frames" },
-      { status: 500 }
-    );
+    
+    // 모든 예외 상황에서 시뮬레이션된 결과 반환
+    return NextResponse.json(createSimulatedResult(`API 오류: ${error}`));
   }
 }
 
@@ -172,19 +149,32 @@ function createSimulatedResult(errorReason?: string): {
   simulatedData?: boolean;
   error?: string;
 } {
+  const randomHeartRate = Math.floor(65 + Math.random() * 20); // 65-85 BPM 범위
+  const randomRMSSD = 20 + Math.random() * 40; // 20-60ms 범위
+  const randomLF = 0.4 + Math.random() * 0.3; // 0.4-0.7 범위
+  const randomHF = 0.3 + Math.random() * 0.3; // 0.3-0.6 범위
+  const lfHfRatio = randomLF / randomHF;
+
   return {
-    heartRate: Math.floor(60 + Math.random() * 30), // 60-90 사이 심박수
-    confidence: 0.85 + (Math.random() * 0.1), // 0.85-0.95 사이 신뢰도
+    heartRate: randomHeartRate,
+    confidence: 0.7 + (Math.random() * 0.2), // 0.7-0.9 사이 신뢰도
     hrv: {
+      lf: randomLF,
+      hf: randomHF,
+      lfHfRatio: parseFloat(lfHfRatio.toFixed(2)),
+      sdnn: parseFloat((35.0 + Math.random() * 15).toFixed(2)),
+      rmssd: parseFloat(randomRMSSD.toFixed(2)),
+      pnn50: parseFloat((20.0 + Math.random() * 15).toFixed(2)),
+      // 기존 형식도 유지
       timeMetrics: {
-        sdnn: 35 + Math.random() * 15,  // 35-50 사이
-        rmssd: 25 + Math.random() * 15, // 25-40 사이
-        pnn50: 10 + Math.random() * 10, // 10-20 사이
+        sdnn: parseFloat((35.0 + Math.random() * 15).toFixed(2)),
+        rmssd: parseFloat(randomRMSSD.toFixed(2)),
+        pnn50: parseFloat((20.0 + Math.random() * 15).toFixed(2)),
       },
       frequencyMetrics: {
-        lfPower: 500 + Math.random() * 500,    // 500-1000 사이
-        hfPower: 500 + Math.random() * 500,    // 500-1000 사이
-        lfHfRatio: 1 + Math.random()           // 1-2 사이
+        lfPower: randomLF * 1000,
+        hfPower: randomHF * 1000,
+        lfHfRatio: parseFloat(lfHfRatio.toFixed(2))
       }
     },
     simulatedData: true,
