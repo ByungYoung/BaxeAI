@@ -7,25 +7,30 @@ function log(message) {
   console.log(`[Vercel Build] ${message}`);
 }
 
+// Python 명령어 설정 - macOS에서는 python3 사용
+const pythonCommand = process.platform === 'darwin' ? 'python3' : 'python';
+// pip 명령어 설정 - macOS에서는 pip3 사용
+const pipCommand = process.platform === 'darwin' ? 'pip3' : 'pip';
+
 try {
   // Python 버전 체크
   log('Python 버전 확인 중...');
-  const pythonVersionOutput = execSync('python --version').toString();
+  const pythonVersionOutput = execSync(`${pythonCommand} --version`).toString();
   log(pythonVersionOutput);
 
   // pip 버전 체크
   log('pip 버전 확인 중...');
-  const pipVersionOutput = execSync('pip --version').toString();
+  const pipVersionOutput = execSync(`${pipCommand} --version`).toString();
   log(pipVersionOutput);
 
   // requirements.txt 설치
   log('Python 패키지 설치 중...');
-  execSync('pip install -r requirements.txt', { stdio: 'inherit' });
+  execSync(`${pipCommand} install -r requirements.txt`, { stdio: 'inherit' });
   log('Python 패키지 설치 완료');
 
   // 설치된 패키지 목록 확인
   log('설치된 Python 패키지 목록:');
-  const installedPackages = execSync('pip freeze').toString();
+  const installedPackages = execSync(`${pipCommand} freeze`).toString();
   log(installedPackages);
 
   // scripts 디렉토리가 있는지 확인
