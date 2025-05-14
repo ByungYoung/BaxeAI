@@ -1,5 +1,5 @@
 {
-  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' pnpm install && pnpm run vercel-build",
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' pnpm install && pnpm run vercel-build && chmod +x ./api/python/build.sh && ./api/python/build.sh",
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "outputDirectory": ".next",
@@ -9,14 +9,15 @@
       "runtime": "@vercel/python@3.1.0",
       "memory": 1024,
       "maxDuration": 10,
-      "includeFiles": "api/python/requirements.txt"
+      "includeFiles": "api/python/**"
     }
   },
   "build": {
     "env": {
       "PIP_TARGET": ".",
       "PIP_DISABLE_PIP_VERSION_CHECK": "1",
-      "PYTHONPATH": "."
+      "PYTHONPATH": ".",
+      "PYTHONUNBUFFERED": "1"
     }
   }
 }
