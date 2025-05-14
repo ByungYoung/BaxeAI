@@ -2,6 +2,10 @@
   "name": "my-v0-project",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "python": "3.12.x"
+  },
   "scripts": {
     "dev": "next dev",
     "dev:python": "node vercel-python-dev.js",
