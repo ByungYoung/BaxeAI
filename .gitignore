@@ -92,8 +92,11 @@ var/
 .installed.cfg
 *.egg
 venv/
+.venv/
 ENV/
 .pytest_cache/
+pip-log.txt
+pip-delete-this-directory.txt
 
 # ===================================
 # BaxeAI specific
@@ -101,6 +104,9 @@ ENV/
 # 임시 파일 및 폴더
 /tmp
 /temp
+*.tmp
+*.temp
+.coverage
 
 # rppg 관련 데이터
 processed_data/
@@ -109,6 +115,8 @@ uploads/
 
 # Vercel 배포 관련
 .vercel
+/api/python/.vercel/
+.vercelignore
 
 # 개별 사용자의 테스트 파일
 *.pem
