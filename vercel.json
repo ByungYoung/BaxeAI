@@ -4,12 +4,6 @@
   "installCommand": "pnpm install",
   "outputDirectory": ".next",
   "regions": ["icn1"],
-  "functions": {
-    "api/python/*.py": {
-      "runtime": "@vercel/python@3.1.0",
-      "includeFiles": "api/python/**"
-    }
-  },
   "build": {
     "env": {
       "PYTHON_VERSION": "3.9",

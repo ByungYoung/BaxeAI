@@ -1,61 +1,88 @@
 import { NextRequest, NextResponse } from "next/server";
-import { join } from "path";
-import { existsSync, writeFileSync, mkdirSync } from "fs";
+import { spawn } from "child_process";
+import { db } from "@/lib/db";
+import { measurementResults } from "@/lib/db/schema";
+import { createId } from "@paralleldrive/cuid2";
 
-// 이 엔드포인트는 프론트엔드에서 받은 요청을
-// Vercel Python 함수로 포워딩하는 예시입니다
 export async function POST(req: NextRequest) {
+  const body = await req.text();
+  let parsedInput: any = {};
   try {
-    // 요청 데이터 파싱
-    const data = await req.json();
-
-    // 필수 데이터 확인
-    if (!data.frames || !Array.isArray(data.frames)) {
-      return NextResponse.json(
-        { error: "프레임 데이터가 제공되지 않았습니다." },
-        { status: 400 }
-      );
-    }
-
-    // Vercel Python 함수 호출
-    const apiUrl = process.env.VERCEL
-      ? `/api/python/heartrate` // 배포 환경
-      : `${req.nextUrl.origin}/api/python/heartrate`; // 로컬 개발 환경
-
-    console.log(`Python API 호출: ${apiUrl}`);
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Python API 요청 실패: ${response.status} - ${errorText}`
-      );
-    }
-
-    const result = await response.json();
-
-    return NextResponse.json(result);
-  } catch (error: any) {
-    console.error("rPPG 처리 중 오류:", error);
-
-    // 오류 발생 시 대체 응답
+    parsedInput = JSON.parse(body);
+  } catch (e) {
     return NextResponse.json(
-      {
-        error: `처리 중 오류가 발생했습니다: ${error.message}`,
-        heartRate: 0,
-        confidence: 0,
-        processed: false,
-      },
-      { status: 500 }
+      { error: "입력 데이터가 올바른 JSON이 아닙니다." },
+      { status: 400 }
     );
   }
+
+  return new Promise((resolve) => {
+    const py = spawn("python3", ["api/python/heartrate.py"], {
+      env: process.env,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    let data = "";
+    let error = "";
+
+    py.stdout.on("data", (chunk) => {
+      data += chunk.toString();
+    });
+    py.stderr.on("data", (chunk) => {
+      error += chunk.toString();
+    });
+
+    py.on("close", async (code) => {
+      if (code === 0) {
+        let result: any = {};
+        try {
+          result = JSON.parse(data);
+        } catch (e) {
+          resolve(
+            new NextResponse(
+              JSON.stringify({ error: "Python 결과 파싱 오류", raw: data }),
+              { status: 500 }
+            )
+          );
+          return;
+        }
+        // drizzle-orm으로 DB 저장
+        try {
+          const dbResult = await db
+            .insert(measurementResults)
+            .values({
+              id: createId(),
+              userId: parsedInput.userId ?? null,
+              heartRate: result.heartRate ?? 0,
+              confidence: result.confidence ?? 0,
+              createdAt: new Date(),
+              email: parsedInput.email ?? null,
+            })
+            .returning();
+          resolve(
+            new NextResponse(JSON.stringify({ ...result, db: dbResult?.[0] }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            })
+          );
+        } catch (dbError: any) {
+          resolve(
+            new NextResponse(
+              JSON.stringify({ ...result, dbError: dbError.message }),
+              { status: 200, headers: { "Content-Type": "application/json" } }
+            )
+          );
+        }
+      } else {
+        resolve(
+          new NextResponse(JSON.stringify({ error, code }), { status: 500 })
+        );
+      }
+    });
+
+    py.stdin.write(body);
+    py.stdin.end();
+  });
 }
 
 // 서버 상태 확인용 GET 엔드포인트

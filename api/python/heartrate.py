@@ -118,3 +118,59 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'application/json')
         self.end_headers()
         self.wfile.write(json.dumps({"error": message}).encode())
+
+if __name__ == "__main__":
+    try:
+        input_data = sys.stdin.read()
+        data = json.loads(input_data)
+        # 기존 분석 코드 복사 (frames 처리, 심박수 계산 등)
+        frames = np.array(data['frames'])
+        if len(frames) < 10:
+            print(json.dumps({"error": "Not enough frames for analysis (minimum 10)", "processed": False}))
+            sys.exit(0)
+        r_values = frames[:, 0].mean(axis=(1, 2)) if frames.ndim > 3 else frames[:, 0].mean()
+        g_values = frames[:, 1].mean(axis=(1, 2)) if frames.ndim > 3 else frames[:, 1].mean()
+        b_values = frames[:, 2].mean(axis=(1, 2)) if frames.ndim > 3 else frames[:, 2].mean()
+        r_detrended = detrend(r_values)
+        g_detrended = detrend(g_values)
+        b_detrended = detrend(b_values)
+        r_normalized = (r_detrended - np.mean(r_detrended)) / np.std(r_detrended)
+        g_normalized = (g_detrended - np.mean(g_detrended)) / np.std(g_detrended)
+        b_normalized = (b_detrended - np.mean(b_detrended)) / np.std(b_detrended)
+        X = np.vstack([r_normalized, g_normalized, b_normalized])
+        S = np.array([[0, 1, -1], [-2, 1, 1]])
+        P = np.dot(S, X)
+        pos_signal = P[0, :] + ((np.std(P[0, :]) / np.std(P[1, :])) * P[1, :])
+        fps = data.get('fps', 30)
+        low_cutoff = 0.7
+        high_cutoff = 4.0
+        nyquist = fps / 2
+        b, a = signal.butter(3, [low_cutoff/nyquist, high_cutoff/nyquist], btype='band')
+        filtered_signal = signal.filtfilt(b, a, pos_signal)
+        fft_size = len(filtered_signal)
+        fft_result = np.abs(np.fft.rfft(filtered_signal))
+        freqs = np.fft.rfftfreq(fft_size, d=1.0/fps)
+        mask = (freqs >= 0.7) & (freqs <= 4.0)
+        if np.any(mask):
+            idx = np.argmax(fft_result[mask])
+            dominant_freq = freqs[mask][idx]
+            heart_rate = dominant_freq * 60
+            max_amplitude = fft_result[mask][idx]
+            total_power = np.sum(fft_result[mask])
+            confidence = float(max_amplitude / total_power if total_power > 0 else 0)
+            result = {
+                "heartRate": float(heart_rate),
+                "confidence": confidence,
+                "processed": True
+            }
+        else:
+            result = {
+                "error": "No valid frequency components found",
+                "heartRate": 0,
+                "confidence": 0,
+                "processed": False
+            }
+        print(json.dumps(result))
+    except Exception as e:
+        print(json.dumps({"error": str(e), "processed": False}))
+        sys.exit(1)

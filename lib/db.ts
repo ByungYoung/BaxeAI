@@ -6,6 +6,8 @@
 import { db } from "./db/client";
 import * as schema from "./db/schema";
 import { withAdminAccess, withUserAccess } from "./db/rls";
+import { measurementResults } from "./db/schema";
+import { createId } from "@paralleldrive/cuid2";
 
 export { db, schema };
 
@@ -31,4 +33,35 @@ export async function withDb<T>(
   } catch (error) {
     throw error;
   }
+}
+
+/**
+ * 측정 결과를 저장
+ * measurementResults 테이블에 데이터를 삽입합니다.
+ */
+export async function saveMeasurement({
+  userId,
+  heartRate,
+  confidence,
+  createdAt,
+  email,
+}: {
+  userId: string;
+  heartRate: number;
+  confidence: number;
+  createdAt?: Date;
+  email?: string;
+}) {
+  const result = await db
+    .insert(measurementResults)
+    .values({
+      id: createId(),
+      userId,
+      heartRate,
+      confidence,
+      createdAt: createdAt ?? new Date(),
+      email,
+    })
+    .returning();
+  return result[0];
 }
