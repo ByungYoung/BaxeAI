@@ -1,5 +1,4 @@
-numpy>=1.21.0,<2.0.0
-opencv-python-headless>=4.5.0,<4.12.0
-scipy>=1.7.0,<1.12.0
-# Python 3.9 호환 패키지
 werkzeug==1.0.1
+numpy>=1.20.0
+opencv-python-headless>=4.5.0
+scipy>=1.7.0
