@@ -107,3 +107,53 @@ PR 및 이슈 등록 환영합니다!
 - **Python 3.9-3.11**: 호환 가능한 이전 버전 라이브러리 사용
 
 자세한 내용은 `requirements.txt` 및 `vercel-build.js` 파일을 참조하세요.
+
+## Vercel Python 함수
+
+이 프로젝트는 Vercel의 Python 런타임(`@vercel/python`)을 활용하여 서버리스 Python 함수를 배포할 수 있습니다.
+
+### 로컬 개발 환경
+
+1. Python 서버 실행:
+
+```bash
+# Python API 개발 서버만 실행
+pnpm dev:python
+```
+
+2. 모든 서버 동시 실행:
+
+```bash
+# Next.js와 Python API 서버 동시 실행
+pnpm dev:all
+```
+
+3. 테스트 페이지 접속:
+   - http://localhost:3000/vercel-python-test
+
+### Python 함수 구조
+
+Python 함수는 다음 디렉토리에 위치합니다:
+
+```
+api/python/            # Python 함수 디렉토리
+├── requirements.txt   # Python 종속성 파일
+└── heartrate.py       # 심박수 측정 함수 예제
+```
+
+### Python 함수 호출 방법
+
+프론트엔드에서 Python 함수를 호출하는 예시:
+
+```typescript
+// Python API 호출
+const response = await fetch("/api/python/heartrate", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(data),
+});
+
+const result = await response.json();
+```

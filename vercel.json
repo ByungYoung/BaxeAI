@@ -1,9 +1,16 @@
 {
-  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' pnpm install && node vercel-build.js && pnpm run vercel-build",
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' pnpm install && pnpm run vercel-build",
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "outputDirectory": ".next",
   "regions": ["icn1"],
+  "functions": {
+    "api/python/*.py": {
+      "runtime": "@vercel/python@4.0.0",
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
   "env": {
     "PYTHON_VERSION": "3.12"
   }

@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:python": "node vercel-python-dev.js",
+    "dev:all": "concurrently \"next dev\" \"node vercel-python-dev.js\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -95,6 +97,8 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "chokidar": "^4.0.3",
+    "concurrently": "^9.1.2",
     "drizzle-kit": "^0.31.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
