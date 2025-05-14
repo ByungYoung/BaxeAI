@@ -8,7 +8,11 @@
     "api/python/*.py": {
       "runtime": "@vercel/python@4.0.0",
       "memory": 1024,
-      "maxDuration": 10
+      "maxDuration": 10,
+      "runtime_env": {
+        "PYTHON_VERSION": "3.12",
+        "EXCLUDE_PACKAGES": "numpy,scipy,opencv-python-headless"
+      }
     }
   },
   "env": {

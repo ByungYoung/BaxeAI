@@ -68,6 +68,26 @@ function log(message, type = "info") {
 // Python 명령어 가져오기 (OS에 따라)
 function getPythonCommand() {
   const isWindows = process.platform === "win32";
+
+  // Python 3.12 버전을 우선 시도
+  try {
+    const pythonVersion = isWindows
+      ? require("child_process").execSync("python --version").toString()
+      : require("child_process").execSync("python3 --version").toString();
+
+    log(`감지된 Python 버전: ${pythonVersion.trim()}`, "info");
+
+    // 3.12 버전이 아니라면 경고 표시
+    if (!pythonVersion.includes("3.12")) {
+      log(
+        `Python 3.12 버전을 사용하는 것을 권장합니다. 현재 버전: ${pythonVersion.trim()}`,
+        "warning"
+      );
+    }
+  } catch (e) {
+    // 오류 발생 시 무시
+  }
+
   return isWindows ? "python" : "python3";
 }
 
