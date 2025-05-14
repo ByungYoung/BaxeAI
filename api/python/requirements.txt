@@ -1,4 +1,4 @@
-// 이 코멘트는 pip가 무시함
+# 이 코멘트는 pip가 무시함
 werkzeug==1.0.1
 numpy>=1.21.0,<2.0.0
 opencv-python-headless>=4.5.0,<4.12.0
