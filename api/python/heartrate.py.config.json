@@ -1,5 +1,5 @@
 {
-  "runtime": "python3.9",
+  "runtime": "python3",
   "handler": "heartrate.handler",
   "excludeFiles": ["__pycache__/**"]
 }

@@ -4,7 +4,7 @@ echo "📦 Python 패키지 설치 시작..."
 
 # Vercel 환경에서 사용 가능한 Python 명령어 찾기
 PYTHON_CMD=""
-for cmd in python3.9 python3 python python2; do
+for cmd in python3 python python3.9 python2; do
   if command -v $cmd &>/dev/null; then
     PYTHON_CMD=$cmd
     break
