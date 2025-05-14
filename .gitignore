@@ -116,7 +116,6 @@ uploads/
 # Vercel 배포 관련
 .vercel
 /api/python/.vercel/
-.vercelignore
 
 # 개별 사용자의 테스트 파일
 *.pem
