@@ -37,18 +37,16 @@ if (process.env.VERCEL) {
     }
   }
 
-  // pip 명령어 설정
-  if (pythonCommand) {
-    pipCommand = `${pythonCommand} -m pip`;
-  } else {
+  // pip 명령어는 항상 python3 -m pip로 통일
+  pipCommand = "python3 -m pip";
+  if (!pythonCommand) {
     log("경고: 사용 가능한 Python을 찾을 수 없습니다.");
     pythonCommand = "python3"; // 기본값으로 설정
-    pipCommand = "pip3";
   }
 } else {
   // 로컬 환경
   pythonCommand = process.platform === "darwin" ? "python3" : "python";
-  pipCommand = process.platform === "darwin" ? "pip3" : "pip";
+  pipCommand = "python3 -m pip";
 }
 
 try {
