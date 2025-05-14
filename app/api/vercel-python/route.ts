@@ -10,13 +10,15 @@ export async function POST(req: NextRequest) {
   try {
     parsedInput = JSON.parse(body);
   } catch (e) {
+    console.error("JSON parsing error:", e);
     return NextResponse.json(
       { error: "입력 데이터가 올바른 JSON이 아닙니다." },
       { status: 400 }
     );
   }
 
-  return new Promise((resolve) => {
+  // Promise 래핑 대신 await로 동기화
+  const data = await new Promise<string>((resolve, reject) => {
     const py = spawn("python3", ["api/python/heartrate.py"], {
       env: process.env,
       stdio: ["pipe", "pipe", "pipe"],
@@ -32,57 +34,58 @@ export async function POST(req: NextRequest) {
       error += chunk.toString();
     });
 
-    py.on("close", async (code) => {
+    py.on("close", (code) => {
       if (code === 0) {
-        let result: any = {};
-        try {
-          result = JSON.parse(data);
-        } catch (e) {
-          resolve(
-            new NextResponse(
-              JSON.stringify({ error: "Python 결과 파싱 오류", raw: data }),
-              { status: 500 }
-            )
-          );
-          return;
-        }
-        // drizzle-orm으로 DB 저장
-        try {
-          const dbResult = await db
-            .insert(measurementResults)
-            .values({
-              id: createId(),
-              userId: parsedInput.userId ?? null,
-              heartRate: result.heartRate ?? 0,
-              confidence: result.confidence ?? 0,
-              createdAt: new Date(),
-              email: parsedInput.email ?? null,
-            })
-            .returning();
-          resolve(
-            new NextResponse(JSON.stringify({ ...result, db: dbResult?.[0] }), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            })
-          );
-        } catch (dbError: any) {
-          resolve(
-            new NextResponse(
-              JSON.stringify({ ...result, dbError: dbError.message }),
-              { status: 200, headers: { "Content-Type": "application/json" } }
-            )
-          );
-        }
+        resolve(data);
       } else {
-        resolve(
-          new NextResponse(JSON.stringify({ error, code }), { status: 500 })
-        );
+        reject(new Error(error || `Python 프로세스 종료 코드: ${code}`));
       }
     });
 
     py.stdin.write(body);
     py.stdin.end();
+  }).catch((err) => {
+    return JSON.stringify({ error: err.message });
   });
+
+  let result: any = {};
+  try {
+    result = JSON.parse(data);
+  } catch (e) {
+    console.error("Error parsing Python result:", e);
+    return NextResponse.json(
+      {
+        error: "Python 결과 파싱 오류",
+        raw: data,
+        details: e instanceof Error ? e.message : String(e),
+      },
+      { status: 500 }
+    );
+  }
+
+  // drizzle-orm으로 DB 저장
+  try {
+    const dbResult = await db
+      .insert(measurementResults)
+      .values({
+        id: createId(),
+        userId: parsedInput.userId ?? null,
+        heartRate: result.heartRate ?? 0,
+        confidence: result.confidence ?? 0,
+        createdAt: new Date(),
+        email: parsedInput.email ?? null,
+      })
+      .returning();
+    return new NextResponse(JSON.stringify({ ...result, db: dbResult?.[0] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (dbError: any) {
+    return new NextResponse(
+      JSON.stringify({ ...result, dbError: dbError.message }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }
 
 // 서버 상태 확인용 GET 엔드포인트
