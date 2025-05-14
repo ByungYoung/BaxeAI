@@ -56,12 +56,12 @@ try {
   log(`운영체제: ${process.platform}`);
   log(`아키텍처: ${process.arch}`);
 
-  // Python 가상환경 생성 시도 (Vercel 환경에서는 생략될 수 있음)
+  // Python 가상환경 생성 시도 (배포 환경에서는 불필요)
   const venvPath = path.join(process.cwd(), ".venv");
   let useVenv = false;
 
-  // Vercel 환경이 아닌 경우에만 가상환경 생성 시도
-  if (!process.env.VERCEL) {
+  // 프로덕션에서는 가상환경 생성 건너뛰기
+  if (!process.env.VERCEL && process.env.NODE_ENV !== "production") {
     try {
       log("가상환경 생성 시도...");
       if (!fs.existsSync(venvPath)) {
@@ -183,43 +183,41 @@ try {
     }
   }
 
-  // requirements.txt 설치 - 오류 처리 강화
+  // requirements.txt 설치 - 속도와 효율성 최적화
   log("Python 패키지 설치 중...");
   try {
+    // 캐시 사용 및 최신 wheel 패키지 사용
     execSync(
-      `${venvPythonCommand} -m pip install --no-cache-dir -r requirements.txt`,
+      `${venvPythonCommand} -m pip install -r requirements.txt --prefer-binary --only-binary=:all: --upgrade-strategy eager`,
       {
         stdio: "inherit",
         env,
-        // Vercel 환경에서 충분한 시간 제공 (10분)
-        timeout: 600000,
+        // 타임아웃 설정 단축 (5분)
+        timeout: 300000,
       }
     );
     log("Python 패키지 설치 완료");
   } catch (reqError) {
     log(`requirements.txt 설치 중 오류 발생: ${reqError.message}`);
 
-    // 필수 패키지만 직접 설치 시도
-    log("필수 패키지만 개별적으로 설치 시도...");
+    // 필수 패키지만 빠르게 설치 시도
+    log("필수 패키지만 간소화하여 설치 시도...");
     try {
+      // 핵심 패키지만 최적화하여 설치
       const essentialPackages = [
         "numpy>=1.21.0",
         "opencv-python-headless>=4.5.0",
         "scipy>=1.7.0",
-        "scikit-learn>=1.0.0",
-        "matplotlib>=3.4.0",
-        "pandas>=1.3.0",
-        "numba>=0.53.0",
       ];
 
       execSync(
-        `${venvPythonCommand} -m pip install --no-cache-dir ${essentialPackages.join(
+        `${venvPythonCommand} -m pip install ${essentialPackages.join(
           " "
-        )}`,
+        )} --prefer-binary --only-binary=:all:`,
         {
           stdio: "inherit",
           env,
-          timeout: 300000,
+          timeout: 180000, // 3분으로 단축
         }
       );
       log("필수 패키지 설치 완료");
