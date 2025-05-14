@@ -27,22 +27,62 @@ styles/             # 전역 스타일
 
 ## 설치 및 실행
 
-1. 의존성 설치
+### 간편 설치 (권장)
+
+#### macOS
+
+```bash
+# 설치 및 실행 스크립트 실행
+./setup-mac.sh
+```
+
+#### Windows
+
+```bash
+# 설치 및 실행 스크립트 실행
+setup-windows.bat
+```
+
+### 수동 설치
+
+1. Python 환경 설정 (Python 3.9 이상 필요)
+
+```bash
+# 가상 환경 생성
+python -m venv .venv
+
+# 가상 환경 활성화 (macOS/Linux)
+source .venv/bin/activate
+
+# 가상 환경 활성화 (Windows)
+.venv\Scripts\activate
+
+# Python 패키지 설치
+pip install -r requirements.txt
+```
+
+2. Node.js 의존성 설치
 
 ```bash
 pnpm install
 ```
 
-2. 개발 서버 실행
+3. 개발 서버 실행
 
 ```bash
 pnpm dev
 ```
 
-3. (선택) rPPG 처리 Python 스크립트 실행
+### rPPG 처리 스크립트 독립 실행
+
+테스트용으로 rPPG 처리 스크립트를 독립적으로 실행할 수 있습니다.
 
 ```bash
-python scripts/process_rppg.py
+# macOS/Linux
+python scripts/process_rppg.py <frames_directory>
+
+# Windows
+python scripts\process_rppg.py <frames_directory>
 ```
 
 ## 기술 스택
@@ -56,3 +96,14 @@ python scripts/process_rppg.py
 ## 기여
 
 PR 및 이슈 등록 환영합니다!
+
+## 배포 정보
+
+이 프로젝트는 Vercel에 최적화되어 있습니다. 배포 환경별로 다음과 같이 Python 패키지 설치가 자동화되어 있습니다:
+
+- **Mac ARM (M1/M2/M3)**: MediaPipe 대신 OpenCV 기반 얼굴 인식 활용
+- **Windows/Linux/Mac Intel**: MediaPipe 활용하여 얼굴 인식 처리
+- **Python 3.12+**: 최신 SciPy 버전 사용
+- **Python 3.9-3.11**: 호환 가능한 이전 버전 라이브러리 사용
+
+자세한 내용은 `requirements.txt` 및 `vercel-build.js` 파일을 참조하세요.
