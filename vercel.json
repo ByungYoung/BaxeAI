@@ -6,7 +6,7 @@
   "regions": ["icn1"],
   "functions": {
     "api/python/*.py": {
-      "runtime": "python@3.12",
+      "runtime": "@vercel/python@4.0.0",
       "memory": 1024,
       "maxDuration": 10
     }
