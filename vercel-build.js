@@ -20,6 +20,7 @@ if (process.env.VERCEL) {
     "/usr/local/bin/python3",
     "/usr/bin/python3",
     "/var/lang/bin/python3",
+    "/local/bin/python3",
     "python3",
     "python",
   ];
@@ -31,7 +32,7 @@ if (process.env.VERCEL) {
       pythonCommand = pythonPath;
       log(`Python 경로 찾음: ${pythonCommand}`);
       break;
-    } catch (e) {
+    } catch (error) {
       // 못 찾으면 다음 경로 시도
     }
   }
@@ -84,32 +85,20 @@ try {
       log(`가상환경 생성 실패: ${venvError.message}`);
       log("시스템 Python으로 계속 진행합니다.");
     }
-  }
-
-  // Linux 환경에서 필요한 개발 패키지 설치 시도 (Vercel에서만)
+  } // Linux 환경에서 필요한 개발 패키지 설치 시도 (Vercel에서만)
   if (process.platform === "linux" && process.env.VERCEL) {
     try {
       log("Linux 환경을 위한 시스템 패키지 설치 시도...");
       try {
+        // Amazon Linux 기반 환경에서는 yum을 먼저 시도
         execSync(
-          "apt-get update && apt-get install -y build-essential gfortran libopenblas-dev liblapack-dev",
+          "yum update -y && yum install -y gcc-gfortran openblas-devel lapack-devel",
           { stdio: "inherit" }
         );
-        log("시스템 패키지 설치 완료");
-      } catch (aptError) {
-        log(
-          `apt-get 명령어 실행 실패. 다른 설치 방법 시도: ${aptError.message}`
-        );
-        try {
-          execSync(
-            "yum update -y && yum install -y gcc-gfortran openblas-devel lapack-devel",
-            { stdio: "inherit" }
-          );
-          log("yum을 통한 시스템 패키지 설치 완료");
-        } catch (yumError) {
-          log(`yum 명령어 실행 실패: ${yumError.message}`);
-          log("시스템 패키지 설치를 건너뛰고 wheel 패키지 사용 시도");
-        }
+        log("yum을 통한 시스템 패키지 설치 완료");
+      } catch (yumError) {
+        log(`yum 명령어 실행 실패: ${yumError.message}`);
+        log("시스템 패키지 설치를 건너뛰고 wheel 패키지 사용 시도");
       }
     } catch (error) {
       log(`시스템 패키지 설치 중 오류 발생: ${error.message}`);
