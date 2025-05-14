@@ -186,9 +186,9 @@ try {
   // requirements.txt 설치 - 속도와 효율성 최적화
   log("Python 패키지 설치 중...");
   try {
-    // 캐시 사용 및 최신 wheel 패키지 사용
+    // 캐시 사용 및 최신 wheel 패키지 사용, 루트 사용자 경고 무시
     execSync(
-      `${venvPythonCommand} -m pip install -r requirements.txt --prefer-binary --only-binary=:all: --upgrade-strategy eager`,
+      `${venvPythonCommand} -m pip install -r requirements.txt --prefer-binary --only-binary=:all: --upgrade-strategy eager --root-user-action=ignore`,
       {
         stdio: "inherit",
         env,
@@ -208,12 +208,13 @@ try {
         "numpy>=1.21.0",
         "opencv-python-headless>=4.5.0",
         "scipy>=1.7.0",
+        "pandas>=2.0.0",
       ];
 
       execSync(
         `${venvPythonCommand} -m pip install ${essentialPackages.join(
           " "
-        )} --prefer-binary --only-binary=:all:`,
+        )} --prefer-binary --only-binary=:all: --root-user-action=ignore`,
         {
           stdio: "inherit",
           env,
