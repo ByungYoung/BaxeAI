@@ -10,9 +10,5 @@
       "memory": 1024,
       "maxDuration": 10
     }
-  },
-  "env": {
-    "PYTHON_VERSION": "3.9",
-    "PYTHON_RUNTIME": "3.9"
   }
 }
