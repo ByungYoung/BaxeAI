@@ -23,5 +23,3 @@ README.md
 setup-mac.sh
 setup-windows.bat
 requirements.txt
-vercel-build.js
-vercel-python-dev.js
