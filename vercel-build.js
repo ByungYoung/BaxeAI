@@ -7,10 +7,48 @@ function log(message) {
   console.log(`[Vercel Build] ${message}`);
 }
 
-// Python 명령어 설정 - macOS에서는 python3 사용
-const pythonCommand = process.platform === "darwin" ? "python3" : "python";
-// pip 명령어 설정 - macOS에서는 pip3 사용
-const pipCommand = process.platform === "darwin" ? "pip3" : "pip";
+// Python 명령어 설정 - Vercel 환경 고려
+let pythonCommand;
+let pipCommand;
+
+// Vercel 환경에서 Python 경로 찾기
+if (process.env.VERCEL) {
+  // Vercel 환경에서는 특정 경로에 Python이 설치되어 있을 수 있음
+  const possiblePythonPaths = [
+    "/opt/buildhome/.pyenv/shims/python3",
+    "/opt/buildhome/.pyenv/shims/python",
+    "/usr/local/bin/python3",
+    "/usr/bin/python3",
+    "/var/lang/bin/python3",
+    "python3",
+    "python",
+  ];
+
+  // 사용 가능한 Python 경로 찾기
+  for (const pythonPath of possiblePythonPaths) {
+    try {
+      execSync(`${pythonPath} --version`, { stdio: "ignore" });
+      pythonCommand = pythonPath;
+      log(`Python 경로 찾음: ${pythonCommand}`);
+      break;
+    } catch (e) {
+      // 못 찾으면 다음 경로 시도
+    }
+  }
+
+  // pip 명령어 설정
+  if (pythonCommand) {
+    pipCommand = `${pythonCommand} -m pip`;
+  } else {
+    log("경고: 사용 가능한 Python을 찾을 수 없습니다.");
+    pythonCommand = "python3"; // 기본값으로 설정
+    pipCommand = "pip3";
+  }
+} else {
+  // 로컬 환경
+  pythonCommand = process.platform === "darwin" ? "python3" : "python";
+  pipCommand = process.platform === "darwin" ? "pip3" : "pip";
+}
 
 try {
   // 운영체제 감지
