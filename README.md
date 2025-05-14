@@ -58,7 +58,7 @@ source .venv/bin/activate
 .venv\Scripts\activate
 
 # Python 패키지 설치
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 2. Node.js 의존성 설치

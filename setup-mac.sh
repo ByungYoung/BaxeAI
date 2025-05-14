@@ -72,17 +72,17 @@ log_success "가상환경 활성화 완료"
 
 # pip 업그레이드
 log_info "pip 업그레이드 중..."
-pip install --upgrade pip
+python3 -m pip install --upgrade pip
 if [ $? -ne 0 ]; then
     log_warning "pip 업그레이드 실패했지만 계속 진행합니다"
 fi
 
 # 필수 패키지 설치
 log_info "필수 Python 패키지 설치 중..."
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 if [ $? -ne 0 ]; then
     log_warning "requirements.txt 설치 중 문제 발생. 필수 패키지만 설치합니다."
-    pip install numpy opencv-python-headless scipy scikit-learn matplotlib pandas numba
+    python3 -m pip install numpy opencv-python-headless scipy scikit-learn matplotlib pandas numba
 fi
 log_success "Python 패키지 설치 완료"
 
