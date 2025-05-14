@@ -6,6 +6,9 @@
     "node": ">=18.0.0",
     "python": "3.9.x"
   },
+  "volta": {
+    "node": "20.10.0"
+  },
   "scripts": {
     "dev": "next dev",
     "dev:python": "node vercel-python-dev.js",

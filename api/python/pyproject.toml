@@ -1,0 +1,3 @@
+[build-system]
+requires = ["pip>=23.0.0"]
+build-backend = "pip.build_meta"
