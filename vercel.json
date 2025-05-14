@@ -6,16 +6,13 @@
   "regions": ["icn1"],
   "functions": {
     "api/python/*.py": {
-      "runtime": "@vercel/python@4.0.0",
+      "runtime": "python@3.12",
       "memory": 1024,
-      "maxDuration": 10,
-      "runtime_env": {
-        "PYTHON_VERSION": "3.12",
-        "EXCLUDE_PACKAGES": "numpy,scipy,opencv-python-headless"
-      }
+      "maxDuration": 10
     }
   },
   "env": {
-    "PYTHON_VERSION": "3.12"
+    "PYTHON_VERSION": "3.12",
+    "PYTHON_RUNTIME": "3.12"
   }
 }
