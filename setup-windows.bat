@@ -54,17 +54,17 @@ echo %GREEN%[SUCCESS]%NC% 가상환경 활성화 완료
 
 :: pip 업그레이드
 echo %BLUE%[INFO]%NC% pip 업그레이드 중...
-pip install --upgrade pip
+python3 -m pip install --upgrade pip
 if %ERRORLEVEL% NEQ 0 (
     echo %YELLOW%[WARNING]%NC% pip 업그레이드 실패했지만 계속 진행합니다
 )
 
 :: 필수 패키지 설치
 echo %BLUE%[INFO]%NC% 필수 Python 패키지 설치 중...
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 if %ERRORLEVEL% NEQ 0 (
     echo %YELLOW%[WARNING]%NC% requirements.txt 설치 중 문제 발생. 필수 패키지만 설치합니다.
-    pip install numpy opencv-python-headless scipy scikit-learn matplotlib pandas numba
+    python3 -m pip install numpy opencv-python-headless scipy scikit-learn matplotlib pandas numba
 )
 echo %GREEN%[SUCCESS]%NC% Python 패키지 설치 완료
 
