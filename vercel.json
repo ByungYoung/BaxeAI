@@ -9,7 +9,7 @@
       "runtime": "@vercel/python@3.1.0",
       "memory": 1024,
       "maxDuration": 10,
-      "includeFiles": ["api/python/requirements.txt", "api/python/build.sh"]
+      "includeFiles": "api/python/**"
     }
   },
   "build": {
