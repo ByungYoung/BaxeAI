@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { withDb } from '@/lib/db';
-import { users, measurementResults } from '@/lib/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { measurementResults, users } from '@/lib/db/schema';
 import { createId } from '@paralleldrive/cuid2';
+import { and, desc, eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from 'next/server';
 
 // 새로운 측정 결과 저장
 export async function POST(request: NextRequest) {
@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
       userCompany,
       heartRate,
       confidence,
+      temperature, // 온도 필드 추가
       rmssd,
       sdnn,
       lf,
@@ -139,6 +140,7 @@ export async function POST(request: NextRequest) {
             email: userEmail || (userInfo?.email ?? 'unknown@email.com'), // null 체크 추가
             heartRate,
             confidence,
+            temperature: temperature || null, // 온도 저장
             rmssd: rmssd || null,
             sdnn: sdnn || null,
             lf: lf || null,

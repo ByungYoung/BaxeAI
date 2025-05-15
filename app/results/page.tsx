@@ -1,8 +1,16 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useAppStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -11,29 +19,29 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { toast } from '@/components/ui/use-toast';
+import { detectExpression, drawMoodMask, loadFaceDetectionModels } from '@/lib/face-detection';
+import { analyzeHealthStatus, getMoodManagementTips } from '@/lib/openai-client';
+import { useAppStore } from '@/lib/store';
+import { MoodState } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { jsPDF } from 'jspdf';
 import {
-  Smile,
-  Frown,
-  Meh,
   AlertCircle,
   Camera,
-  ImageIcon,
-  FileText,
   Download,
-  Loader2,
+  FileText,
+  Frown,
   Globe,
+  ImageIcon,
+  Loader2,
+  Meh,
+  Smile,
 } from 'lucide-react';
-import { MoodState } from '@/lib/types';
-import { toast } from '@/components/ui/use-toast';
-import { analyzeHealthStatus, getMoodManagementTips } from '@/lib/openai-client';
-import { loadFaceDetectionModels, detectExpression, drawMoodMask } from '@/lib/face-detection';
-import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
-import { jsPDF } from 'jspdf';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 // Extend the Window interface to include jspdf
 declare global {
@@ -43,15 +51,6 @@ declare global {
     };
   }
 }
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
-import { useLanguage } from '@/hooks/use-language';
 
 function getStressLevelText(level: string): string {
   switch (level) {
@@ -433,6 +432,7 @@ export default function ResultsPage() {
           userCompany: userData.company,
           heartRate: currentResult?.heartRate,
           confidence: currentResult?.confidence,
+          temperature: currentResult?.temperature, // 온도 정보 추가
           rmssd: currentResult?.hrv?.rmssd,
           sdnn: currentResult?.hrv?.sdnn,
           lf: currentResult?.hrv?.lf,
@@ -631,6 +631,18 @@ export default function ResultsPage() {
         yPos
       );
       yPos += lineHeight;
+
+      // 온도 정보 추가
+      if (currentResult.temperature) {
+        const temperatureText =
+          pdfLanguage === 'ko' ? '체온' : pdfLanguage === 'ja' ? '体温' : 'Temperature';
+        pdf.text(
+          temperatureText + ': ' + currentResult.temperature.toFixed(1) + '°C',
+          margin + 10,
+          yPos
+        );
+        yPos += lineHeight;
+      }
 
       const stressLevel =
         currentResult.hrv && currentResult.hrv.rmssd !== undefined
@@ -1111,6 +1123,12 @@ export default function ResultsPage() {
                   <span className="text-gray-500">심박수</span>
                   <span>{heartRate.toFixed(1)} BPM</span>
                 </div>
+                {currentResult.temperature !== undefined && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">체온</span>
+                    <span>{currentResult.temperature.toFixed(1)} °C</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-500">스트레스 레벨</span>
                   <span className={getStressLevelColor(stressLevel)}>
