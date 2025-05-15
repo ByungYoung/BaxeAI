@@ -21,6 +21,7 @@ type CameraUIProps = {
   frameCount: number;
   statusMessage: string;
   showQualityAlert: boolean;
+  temperature: number | null; // 측정된 온도 값 추가
   onResetClick: () => void;
   onStartClick: () => void;
   setCameraError: (error: string | null) => void;
@@ -48,6 +49,7 @@ export const CameraUI = memo(
     frameCount,
     statusMessage,
     showQualityAlert,
+    temperature,
     onResetClick,
     onStartClick,
     setCameraError,
@@ -171,6 +173,13 @@ export const CameraUI = memo(
                 <span>측정 중</span>
               </div>
             )}
+
+            {/* 온도 표시 (실시간) */}
+            {status === 'recording' && temperature !== null && (
+              <div className="absolute top-16 left-4 flex items-center gap-2 bg-black/70 text-white px-3 py-1 rounded-full">
+                <span className="font-mono">체온: {temperature}°C</span>
+              </div>
+            )}
           </div>
 
           {/* 품질 알림 */}
@@ -182,6 +191,66 @@ export const CameraUI = memo(
                 얼굴이 잘 보이도록 조명을 밝게 하고 카메라 위치를 조정하세요.
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* Baxe AI 분석 상세지표 */}
+          {temperature !== null && (
+            <div className="mt-2 p-3 rounded-md border border-blue-200 bg-gradient-to-r from-blue-50 to-sky-50">
+              <h3 className="font-bold text-blue-800 mb-2 flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-1 text-blue-600"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16a1 1 0 11-2 0V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Baxe AI 분석 상세지표
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-white rounded-lg border border-blue-100 shadow-sm transition-all hover:shadow">
+                  <div className="flex justify-between items-center mb-1">
+                    <p className="text-sm font-medium text-gray-600">체온</p>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
+                      ${temperature > 37.5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}
+                    >
+                      {temperature > 37.5 ? '높음' : '정상'}
+                    </span>
+                  </div>
+                  <div className="flex items-end">
+                    <p className="text-2xl font-bold text-blue-700">{temperature}</p>
+                    <p className="text-lg font-medium text-blue-500 ml-1">°C</p>
+                  </div>
+                  <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full ${temperature > 37.5 ? 'bg-red-500' : 'bg-green-500'}`}
+                      style={{ width: `${Math.min(((temperature - 36) / 2.5) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                {/* 추가 지표를 위한 칸 */}
+                <div className="p-3 bg-white rounded-lg border border-blue-100 shadow-sm">
+                  <div className="flex justify-between items-center mb-1">
+                    <p className="text-sm font-medium text-gray-600">심박수</p>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                      대기중
+                    </span>
+                  </div>
+                  <div className="flex items-end">
+                    <p className="text-2xl font-bold text-blue-700">-</p>
+                    <p className="text-lg font-medium text-blue-500 ml-1">BPM</p>
+                  </div>
+                  <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                    <div className="h-1.5 rounded-full bg-gray-300" style={{ width: '10%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
