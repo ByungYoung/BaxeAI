@@ -17,7 +17,7 @@ const nextConfig = {
     return config;
   },
   // 서버 외부 패키지 설정 (experimental에서 이동됨)
-  serverExternalPackages: ["@google-cloud/translate"],
+  serverExternalPackages: ['@google-cloud/translate'],
 };
 
 module.exports = nextConfig;

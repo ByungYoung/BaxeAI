@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface UIState {
   // UI 관련 상태
@@ -21,13 +21,12 @@ export const useUIStore = create<UIState>()(
 
       // 액션
       setMobileMenuOpen: (isOpen: boolean) => set({ isMobileMenuOpen: isOpen }),
-      toggleMobileMenu: () =>
-        set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
+      toggleMobileMenu: () => set(state => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
       setLoading: (isLoading: boolean) => set({ isLoading }),
     }),
     {
-      name: "rppg-ui-storage",
-      partialize: (state) => ({}), // UI 상태는 영구 저장하지 않음
+      name: 'rppg-ui-storage',
+      partialize: state => ({}), // UI 상태는 영구 저장하지 않음
     }
   )
 );

@@ -57,17 +57,15 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
     // 타임아웃 처리를 위한 Promise
     const timeoutPromise = new Promise<Response>((_, reject) => {
       setTimeout(() => {
-        reject(
-          new Error("요청 시간이 초과되었습니다. 서버가 응답하지 않습니다.")
-        );
+        reject(new Error('요청 시간이 초과되었습니다. 서버가 응답하지 않습니다.'));
       }, TIMEOUT_MS);
     });
 
     // 실제 요청 Promise
-    const fetchPromise = fetch("/api/process-rppg", {
-      method: "POST",
+    const fetchPromise = fetch('/api/process-rppg', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ frames }),
     });
@@ -76,29 +74,20 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
     let response: Response;
     try {
       // 두 Promise 중 먼저 완료되는 것을 기다림
-      response = (await Promise.race([
-        fetchPromise,
-        timeoutPromise,
-      ])) as Response;
+      response = (await Promise.race([fetchPromise, timeoutPromise])) as Response;
     } catch (fetchError: any) {
       // 최소 표시 시간 보장
       const processingTime = Date.now() - requestStartTime;
       if (processingTime < MIN_PROCESSING_TIME) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, MIN_PROCESSING_TIME - processingTime)
-        );
+        await new Promise(resolve => setTimeout(resolve, MIN_PROCESSING_TIME - processingTime));
       }
-      return generateFallbackResult(
-        fetchError.message || "네트워크 통신 오류가 발생했습니다."
-      );
+      return generateFallbackResult(fetchError.message || '네트워크 통신 오류가 발생했습니다.');
     }
 
     // 최소 표시 시간보다 빨리 응답이 오면 약간의 지연 추가
     const processingTime = Date.now() - requestStartTime;
     if (processingTime < MIN_PROCESSING_TIME) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, MIN_PROCESSING_TIME - processingTime)
-      );
+      await new Promise(resolve => setTimeout(resolve, MIN_PROCESSING_TIME - processingTime));
     }
 
     if (!response.ok) {
@@ -116,17 +105,17 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
       result = await response.json();
     } catch (parseError) {
       return generateFallbackResult(
-        "서버 응답을 해석할 수 없습니다. 모의 데이터로 대체되었습니다."
+        '서버 응답을 해석할 수 없습니다. 모의 데이터로 대체되었습니다.'
       );
     }
 
     // 오류 필드가 포함되어 있거나 필수 필드가 없으면 오류 발생
-    if (result.error || typeof result.heartRate !== "number") {
-      console.warn("서버가 유효하지 않은 결과 반환:", result);
+    if (result.error || typeof result.heartRate !== 'number') {
+      console.warn('서버가 유효하지 않은 결과 반환:', result);
 
       // 결과에 오류가 있으면 대체 결과 생성
       return generateFallbackResult(
-        result.error || "서버가 유효하지 않은 심박수 데이터를 반환했습니다."
+        result.error || '서버가 유효하지 않은 심박수 데이터를 반환했습니다.'
       );
     }
 
@@ -145,8 +134,6 @@ export async function processWithPyVHR(frames: string[]): Promise<RPPGResult> {
     return result;
   } catch (error: any) {
     // 모든 예외 상황에 대해 대체 결과 생성
-    return generateFallbackResult(
-      error.message || "알 수 없는 오류가 발생했습니다."
-    );
+    return generateFallbackResult(error.message || '알 수 없는 오류가 발생했습니다.');
   }
 }

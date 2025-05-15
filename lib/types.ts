@@ -1,4 +1,4 @@
-import { HRVMetrics } from "./api-client";
+import { HRVMetrics } from './api-client';
 
 export interface UserInfo {
   id: string;
@@ -10,13 +10,7 @@ export interface UserInfo {
 }
 
 // 기분 상태 타입 추가
-export type MoodState =
-  | "happy"
-  | "neutral"
-  | "sad"
-  | "stressed"
-  | "relaxed"
-  | "unknown";
+export type MoodState = 'happy' | 'neutral' | 'sad' | 'stressed' | 'relaxed' | 'unknown';
 
 export interface MeasurementResult {
   id: string;
@@ -31,4 +25,4 @@ export interface MeasurementResult {
   caricatureUrl?: string; // 캐리커처 이미지 URL
 }
 
-export type StressLevel = "low" | "moderate" | "high" | "unknown";
+export type StressLevel = 'low' | 'moderate' | 'high' | 'unknown';

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import {
   useMeasurementHistory,
   useSaveMeasurement,
   QUERY_KEYS,
   useUser,
-} from "@/hooks/use-queries";
-import { useMeasurementStore, useUserStore } from "@/lib/store/index";
-import { MeasurementResult } from "@/lib/types";
+} from '@/hooks/use-queries';
+import { useMeasurementStore, useUserStore } from '@/lib/store/index';
+import { MeasurementResult } from '@/lib/types';
 
 /**
  * 서버 상태(TanStack Query)와 클라이언트 상태(Zustand)를 연결하는 훅입니다.
@@ -17,23 +17,18 @@ import { MeasurementResult } from "@/lib/types";
  */
 export function useServerStateSync() {
   const queryClient = useQueryClient();
-  const userInfo = useUserStore((state) => state.userInfo);
-  const updateHistoryFromServer = useMeasurementStore(
-    (state) => state.updateHistoryFromServer
-  );
+  const userInfo = useUserStore(state => state.userInfo);
+  const updateHistoryFromServer = useMeasurementStore(state => state.updateHistoryFromServer);
   const { mutateAsync: saveMeasurementAsync } = useSaveMeasurement();
 
   // 사용자 ID로 측정 기록을 가져옵니다
-  const { data: measurementHistory, isSuccess } = useMeasurementHistory(
-    userInfo?.id,
-    {
-      queryKey: [QUERY_KEYS.MEASUREMENT_HISTORY, userInfo?.id],
-      // 로그인한 사용자가 있을 때만 쿼리 활성화
-      enabled: !!userInfo?.id,
-      // 30초마다 자동으로 새로고침
-      refetchInterval: 30000,
-    }
-  );
+  const { data: measurementHistory, isSuccess } = useMeasurementHistory(userInfo?.id, {
+    queryKey: [QUERY_KEYS.MEASUREMENT_HISTORY, userInfo?.id],
+    // 로그인한 사용자가 있을 때만 쿼리 활성화
+    enabled: !!userInfo?.id,
+    // 30초마다 자동으로 새로고침
+    refetchInterval: 30000,
+  });
 
   // 사용자 정보 연동
   const { data: userData } = useUser(userInfo?.id, {
@@ -63,9 +58,7 @@ export function useServerStateSync() {
   }, [isSuccess, measurementHistory, updateHistoryFromServer]);
 
   // 클라이언트 측 측정 결과를 서버에 저장하는 함수
-  const syncMeasurementToServer = async (
-    measurementResult: MeasurementResult
-  ) => {
+  const syncMeasurementToServer = async (measurementResult: MeasurementResult) => {
     try {
       // 사용자 정보 추가
       const dataToSave = {
@@ -114,7 +107,7 @@ export function useServerStateSync() {
  */
 export function useCombinedMeasurementHistory() {
   // 서버 상태
-  const userInfo = useUserStore((state) => state.userInfo);
+  const userInfo = useUserStore(state => state.userInfo);
   const {
     data: serverHistory,
     isLoading,
@@ -125,11 +118,10 @@ export function useCombinedMeasurementHistory() {
   });
 
   // 클라이언트 상태
-  const localHistory = useMeasurementStore((state) => state.historyResults);
+  const localHistory = useMeasurementStore(state => state.historyResults);
 
   // 서버 상태가 로드되었으면 서버 데이터 사용, 아니면 로컬 캐시 사용
-  const combinedHistory =
-    isLoading || isError ? localHistory : serverHistory || localHistory;
+  const combinedHistory = isLoading || isError ? localHistory : serverHistory || localHistory;
 
   return {
     history: combinedHistory,

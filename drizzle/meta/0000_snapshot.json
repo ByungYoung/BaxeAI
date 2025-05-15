@@ -101,12 +101,8 @@
           "name": "MeasurementResult_userId_User_id_fk",
           "tableFrom": "MeasurementResult",
           "tableTo": "User",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -181,9 +177,7 @@
         "User_email_unique": {
           "name": "User_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -195,13 +189,7 @@
     "public.mood": {
       "name": "mood",
       "schema": "public",
-      "values": [
-        "happy",
-        "sad",
-        "stressed",
-        "relaxed",
-        "neutral"
-      ]
+      "values": ["happy", "sad", "stressed", "relaxed", "neutral"]
     }
   },
   "schemas": {},

@@ -1,65 +1,65 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import Link from "next/link";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageToggle } from "@/components/language-toggle";
-import { LanguageProvider } from "@/hooks/use-language";
-import { AuthStatusProvider } from "@/components/auth-status-provider";
-import { AuthButtons } from "@/components/auth-buttons";
-import { QueryProvider } from "@/components/query-provider";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
+import Link from 'next/link';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageToggle } from '@/components/language-toggle';
+import { LanguageProvider } from '@/hooks/use-language';
+import { AuthStatusProvider } from '@/components/auth-status-provider';
+import { AuthButtons } from '@/components/auth-buttons';
+import { QueryProvider } from '@/components/query-provider';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Baxe AI",
-  description: "Advanced Non-Contact Biomarker & Mental Wellness Scaner",
+  title: 'Baxe AI',
+  description: 'Advanced Non-Contact Biomarker & Mental Wellness Scaner',
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
     ],
-    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
+    apple: { url: '/apple-touch-icon.png', sizes: '180x180' },
     other: [
       {
-        url: "/android-chrome-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
+        url: '/android-chrome-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
       },
       {
-        url: "/android-chrome-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
+        url: '/android-chrome-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
       },
     ],
   },
   openGraph: {
-    type: "website",
-    locale: "ko_KR",
-    url: "https://rpgg-camera.vercel.app/",
-    title: "Baxe AI",
-    description: "Advanced Non-Contact Biomarker & Mental Wellness Scaner",
-    siteName: "Baxe AI",
+    type: 'website',
+    locale: 'ko_KR',
+    url: 'https://rpgg-camera.vercel.app/',
+    title: 'Baxe AI',
+    description: 'Advanced Non-Contact Biomarker & Mental Wellness Scaner',
+    siteName: 'Baxe AI',
     images: [
       {
-        url: "/android-chrome-512x512.png",
+        url: '/android-chrome-512x512.png',
         width: 512,
         height: 512,
-        alt: "Baxe AI 로고",
+        alt: 'Baxe AI 로고',
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Baxe AI",
-    description: "Advanced Non-Contact Biomarker & Mental Wellness Scaner",
-    images: ["/android-chrome-512x512.png"],
+    card: 'summary_large_image',
+    title: 'Baxe AI',
+    description: 'Advanced Non-Contact Biomarker & Mental Wellness Scaner',
+    images: ['/android-chrome-512x512.png'],
   },
 };
 
@@ -71,10 +71,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full" suppressHydrationWarning>
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </head>
       <body className={`${inter.className} h-full antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -95,13 +92,8 @@ export default function RootLayout({
                               <span className="sr-only">메뉴 열기</span>
                             </Button>
                           </SheetTrigger>
-                          <SheetContent
-                            side="left"
-                            className="w-[240px] sm:w-[300px]"
-                          >
-                            <div className="py-4 font-semibold text-lg">
-                              Baxe AI
-                            </div>
+                          <SheetContent side="left" className="w-[240px] sm:w-[300px]">
+                            <div className="py-4 font-semibold text-lg">Baxe AI</div>
                             <div className="text-sm text-muted-foreground mb-4">
                               Read your body, lead your mind
                             </div>
@@ -132,10 +124,7 @@ export default function RootLayout({
                           </SheetContent>
                         </Sheet>
                         {/* 로고 */}
-                        <Link
-                          href="/"
-                          className="font-bold text-lg flex items-center gap-2"
-                        >
+                        <Link href="/" className="font-bold text-lg flex items-center gap-2">
                           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
                             <span className="font-extrabold">B</span>
                           </div>
@@ -185,21 +174,14 @@ export default function RootLayout({
                   <footer className="border-t py-4">
                     <div className="max-w-screen-xl mx-auto px-4 flex flex-col items-center justify-between gap-4 md:flex-row">
                       <p className="text-sm text-muted-foreground">
-                        © {new Date().getFullYear()} Xitst (엑시스트). All
-                        rights reserved.
+                        © {new Date().getFullYear()} Xitst (엑시스트). All rights reserved.
                       </p>
                       <div className="flex items-center gap-2">
-                        <Link
-                          href="/"
-                          className="text-xs text-muted-foreground hover:underline"
-                        >
+                        <Link href="/" className="text-xs text-muted-foreground hover:underline">
                           이용약관
                         </Link>
                         <span className="text-muted-foreground">·</span>
-                        <Link
-                          href="/"
-                          className="text-xs text-muted-foreground hover:underline"
-                        >
+                        <Link href="/" className="text-xs text-muted-foreground hover:underline">
                           개인정보처리방침
                         </Link>
                       </div>

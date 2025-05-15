@@ -31,12 +31,7 @@ export function extractHeartRate(
     const detrendedSignal = detrendSignal(normalizedSignal);
 
     // Apply bandpass filtering (0.7 Hz to 4 Hz, which is ~40-240 BPM)
-    const filteredSignal = bandpassFilter(
-      detrendedSignal,
-      samplingRate,
-      0.7,
-      4
-    );
+    const filteredSignal = bandpassFilter(detrendedSignal, samplingRate, 0.7, 4);
 
     // Perform frequency analysis
     const { dominantFrequency, signalStrength } = performFrequencyAnalysis(
@@ -71,15 +66,13 @@ function normalizeSignal(signal: number[]): number[] {
   const mean = signal.reduce((sum, val) => sum + val, 0) / signal.length;
 
   // Calculate standard deviation
-  const variance =
-    signal.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
-    signal.length;
+  const variance = signal.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / signal.length;
   const stdDev = Math.sqrt(variance);
 
   if (stdDev === 0) return signal.map(() => 0);
 
   // Normalize
-  return signal.map((val) => (val - mean) / stdDev);
+  return signal.map(val => (val - mean) / stdDev);
 }
 
 /**
@@ -95,8 +88,7 @@ function detrendSignal(signal: number[]): number[] {
     const windowStart = Math.max(0, i - windowSize);
     const windowEnd = Math.min(signal.length - 1, i + windowSize);
     const windowValues = signal.slice(windowStart, windowEnd + 1);
-    const windowMean =
-      windowValues.reduce((sum, val) => sum + val, 0) / windowValues.length;
+    const windowMean = windowValues.reduce((sum, val) => sum + val, 0) / windowValues.length;
 
     result.push(signal[i] - windowMean);
   }
@@ -132,7 +124,7 @@ function bandpassFilter(
 
   // Convert back to time domain (simplified)
   // In a real implementation, use inverse FFT
-  return filteredFFT.map((val) => Math.abs(val));
+  return filteredFFT.map(val => Math.abs(val));
 }
 
 /**

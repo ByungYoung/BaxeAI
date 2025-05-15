@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
     const data = await request.formData();
-    const image = data.get("image") as File;
+    const image = data.get('image') as File;
 
     if (!image) {
-      console.error("이미지 파일이 없음");
+      console.error('이미지 파일이 없음');
       return NextResponse.json(
-        { error: "이미지 파일이 필요합니다.", success: false },
+        { error: '이미지 파일이 필요합니다.', success: false },
         { status: 400 }
       );
     }
@@ -22,11 +22,11 @@ export async function POST(request: Request) {
 
     // 랜덤으로 캐리커처 스타일 선택 (실제 구현에서는 AI가 생성)
     const caricatureStyles = [
-      "https://images.unsplash.com/photo-1566753323558-f4e0952af115?q=80&w=1000&auto=format&fit=crop",
-      "https://img.freepik.com/premium-vector/business-man-cartoon-character_24908-58909.jpg",
-      "https://img.freepik.com/premium-vector/cartoon-happy-businessman-showing-thumbs-up_29190-4954.jpg",
-      "https://cdn1.vectorstock.com/i/1000x1000/72/15/cartoon-character-young-happy-businessman-vector-9377215.jpg",
-      "https://img.freepik.com/premium-vector/business-man-cartoon-character_24908-61578.jpg",
+      'https://images.unsplash.com/photo-1566753323558-f4e0952af115?q=80&w=1000&auto=format&fit=crop',
+      'https://img.freepik.com/premium-vector/business-man-cartoon-character_24908-58909.jpg',
+      'https://img.freepik.com/premium-vector/cartoon-happy-businessman-showing-thumbs-up_29190-4954.jpg',
+      'https://cdn1.vectorstock.com/i/1000x1000/72/15/cartoon-character-young-happy-businessman-vector-9377215.jpg',
+      'https://img.freepik.com/premium-vector/business-man-cartoon-character_24908-61578.jpg',
     ];
 
     const randomIndex = Math.floor(Math.random() * caricatureStyles.length);
@@ -38,10 +38,10 @@ export async function POST(request: Request) {
       success: true,
     });
   } catch (error: any) {
-    console.error("캐리커처 생성 오류:", error);
+    console.error('캐리커처 생성 오류:', error);
     return NextResponse.json(
       {
-        error: error.message || "캐리커처 생성 중 오류가 발생했습니다.",
+        error: error.message || '캐리커처 생성 중 오류가 발생했습니다.',
         success: false,
       },
       {

@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Globe } from "lucide-react";
-import { useRouter } from "next/navigation";
+import * as React from 'react';
+import { Globe } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useState, useEffect } from "react";
-import { useLanguage } from "@/hooks/use-language";
+} from '@/components/ui/dropdown-menu';
+import { useState, useEffect } from 'react';
+import { useLanguage } from '@/hooks/use-language';
 
 export function LanguageToggle() {
   const router = useRouter();
@@ -20,14 +20,14 @@ export function LanguageToggle() {
 
   const getLanguageName = (code: string) => {
     switch (code) {
-      case "ko":
-        return "한국어";
-      case "en":
-        return "English";
-      case "ja":
-        return "日本語";
-      case "zh":
-        return "中文";
+      case 'ko':
+        return '한국어';
+      case 'en':
+        return 'English';
+      case 'ja':
+        return '日本語';
+      case 'zh':
+        return '中文';
       default:
         return code;
     }
@@ -53,26 +53,26 @@ export function LanguageToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => changeLanguage("ko")}
-          className={locale === "ko" ? "bg-accent" : ""}
+          onClick={() => changeLanguage('ko')}
+          className={locale === 'ko' ? 'bg-accent' : ''}
         >
           한국어
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => changeLanguage("en")}
-          className={locale === "en" ? "bg-accent" : ""}
+          onClick={() => changeLanguage('en')}
+          className={locale === 'en' ? 'bg-accent' : ''}
         >
           English
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => changeLanguage("ja")}
-          className={locale === "ja" ? "bg-accent" : ""}
+          onClick={() => changeLanguage('ja')}
+          className={locale === 'ja' ? 'bg-accent' : ''}
         >
           日本語
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => changeLanguage("zh")}
-          className={locale === "zh" ? "bg-accent" : ""}
+          onClick={() => changeLanguage('zh')}
+          className={locale === 'zh' ? 'bg-accent' : ''}
         >
           中文
         </DropdownMenuItem>

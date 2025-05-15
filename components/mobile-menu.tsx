@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { Menu } from "lucide-react";
-import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { Menu } from 'lucide-react';
+import { Button } from './ui/button';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const locale = pathname.split("/")[1];
+  const locale = pathname.split('/')[1];
   const basePath = `/${locale}`;
 
   const routes = [
     {
       href: `${basePath}`,
-      label: "Home",
+      label: 'Home',
     },
     {
       href: `${basePath}/measure`,
-      label: "Measure",
+      label: 'Measure',
     },
     {
       href: `${basePath}/history`,
-      label: "History",
+      label: 'History',
     },
   ];
 
@@ -39,14 +39,12 @@ export function MobileMenu() {
       <SheetContent side="right">
         <div className="grid gap-6 py-6">
           <div className="space-y-2">
-            {routes.map((route) => (
+            {routes.map(route => (
               <Link
                 key={route.href}
                 href={route.href}
                 className={`block px-2 py-1 text-lg ${
-                  pathname === route.href
-                    ? "font-medium text-primary"
-                    : "text-muted-foreground"
+                  pathname === route.href ? 'font-medium text-primary' : 'text-muted-foreground'
                 }`}
                 onClick={() => setOpen(false)}
               >

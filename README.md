@@ -147,10 +147,10 @@ api/python/            # Python 함수 디렉토리
 
 ```typescript
 // Python API 호출
-const response = await fetch("/api/python/heartrate", {
-  method: "POST",
+const response = await fetch('/api/python/heartrate', {
+  method: 'POST',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
   body: JSON.stringify(data),
 });

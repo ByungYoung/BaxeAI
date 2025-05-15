@@ -1,8 +1,8 @@
 /**
  * Row Level Security (RLS) 관련 유틸리티 함수
  */
-import { sql } from "drizzle-orm";
-import { db } from "./client";
+import { sql } from 'drizzle-orm';
+import { db } from './client';
 
 /**
  * 현재 세션의 사용자 ID를 설정하여 RLS 정책을 적용합니다.
@@ -19,9 +19,7 @@ export async function setSessionUserId(userId: string | null) {
  * 이 경우 RLS 제한이 우회됩니다 (관리자 정책에 의해).
  * @param callback 실행할 콜백 함수
  */
-export async function withAdminAccess<T>(
-  callback: () => Promise<T>
-): Promise<T> {
+export async function withAdminAccess<T>(callback: () => Promise<T>): Promise<T> {
   try {
     // 관리자 권한 설정 (모든 데이터 접근)
     await db.execute(sql`SELECT set_user_id(null)`);
@@ -38,10 +36,7 @@ export async function withAdminAccess<T>(
  * @param userId 사용자 ID
  * @param callback 실행할 콜백 함수
  */
-export async function withUserAccess<T>(
-  userId: string,
-  callback: () => Promise<T>
-): Promise<T> {
+export async function withUserAccess<T>(userId: string, callback: () => Promise<T>): Promise<T> {
   try {
     await setSessionUserId(userId);
     return await callback();

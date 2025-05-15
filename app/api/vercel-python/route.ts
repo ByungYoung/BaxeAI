@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { spawn } from "child_process";
-import { db } from "@/lib/db";
-import { measurementResults } from "@/lib/db/schema";
-import { createId } from "@paralleldrive/cuid2";
+import { NextRequest, NextResponse } from 'next/server';
+import { spawn } from 'child_process';
+import { db } from '@/lib/db';
+import { measurementResults } from '@/lib/db/schema';
+import { createId } from '@paralleldrive/cuid2';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -10,31 +10,28 @@ export async function POST(req: NextRequest) {
   try {
     parsedInput = JSON.parse(body);
   } catch (e) {
-    console.error("JSON parsing error:", e);
-    return NextResponse.json(
-      { error: "입력 데이터가 올바른 JSON이 아닙니다." },
-      { status: 400 }
-    );
+    console.error('JSON parsing error:', e);
+    return NextResponse.json({ error: '입력 데이터가 올바른 JSON이 아닙니다.' }, { status: 400 });
   }
 
   // Promise 래핑 대신 await로 동기화
   const data = await new Promise<string>((resolve, reject) => {
-    const py = spawn("python3", ["api/python/heartrate.py"], {
+    const py = spawn('python3', ['api/python/heartrate.py'], {
       env: process.env,
-      stdio: ["pipe", "pipe", "pipe"],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
 
-    let data = "";
-    let error = "";
+    let data = '';
+    let error = '';
 
-    py.stdout.on("data", (chunk) => {
+    py.stdout.on('data', chunk => {
       data += chunk.toString();
     });
-    py.stderr.on("data", (chunk) => {
+    py.stderr.on('data', chunk => {
       error += chunk.toString();
     });
 
-    py.on("close", (code) => {
+    py.on('close', code => {
       if (code === 0) {
         resolve(data);
       } else {
@@ -44,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     py.stdin.write(body);
     py.stdin.end();
-  }).catch((err) => {
+  }).catch(err => {
     return JSON.stringify({ error: err.message });
   });
 
@@ -52,10 +49,10 @@ export async function POST(req: NextRequest) {
   try {
     result = JSON.parse(data);
   } catch (e) {
-    console.error("Error parsing Python result:", e);
+    console.error('Error parsing Python result:', e);
     return NextResponse.json(
       {
-        error: "Python 결과 파싱 오류",
+        error: 'Python 결과 파싱 오류',
         raw: data,
         details: e instanceof Error ? e.message : String(e),
       },
@@ -78,13 +75,13 @@ export async function POST(req: NextRequest) {
       .returning();
     return new NextResponse(JSON.stringify({ ...result, db: dbResult?.[0] }), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (dbError: any) {
-    return new NextResponse(
-      JSON.stringify({ ...result, dbError: dbError.message }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return new NextResponse(JSON.stringify({ ...result, dbError: dbError.message }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
 
@@ -96,9 +93,9 @@ export async function GET(req: NextRequest) {
       : `${req.nextUrl.origin}/api/python/heartrate`; // 로컬 개발 환경
 
     const response = await fetch(apiUrl, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
@@ -110,14 +107,14 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ...result,
-      api_status: "connected",
+      api_status: 'connected',
     });
   } catch (error: any) {
     return NextResponse.json(
       {
-        status: "error",
+        status: 'error',
         message: `Python 서버에 연결할 수 없습니다: ${error.message}`,
-        api_status: "disconnected",
+        api_status: 'disconnected',
       },
       { status: 200 } // 프론트엔드에서 처리할 수 있도록 200 반환
     );

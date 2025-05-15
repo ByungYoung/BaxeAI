@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withDb } from "@/lib/db";
-import { users, measurementResults } from "@/lib/db/schema";
-import { eq, desc, and } from "drizzle-orm";
-import { createId } from "@paralleldrive/cuid2";
+import { NextRequest, NextResponse } from 'next/server';
+import { withDb } from '@/lib/db';
+import { users, measurementResults } from '@/lib/db/schema';
+import { eq, desc, and } from 'drizzle-orm';
+import { createId } from '@paralleldrive/cuid2';
 
 // 새로운 측정 결과 저장
 export async function POST(request: NextRequest) {
@@ -26,15 +26,12 @@ export async function POST(request: NextRequest) {
 
     // 필수 항목 확인
     if (heartRate === undefined || confidence === undefined) {
-      return NextResponse.json(
-        { error: "심박수, 신뢰도는 필수 항목입니다." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '심박수, 신뢰도는 필수 항목입니다.' }, { status: 400 });
     }
 
     // withDb를 사용하여 데이터베이스 작업 수행 (관리자 권한으로 수행)
     return await withDb(
-      async (db) => {
+      async db => {
         // 사용자 처리 로직
         let finalUserId = userId;
         let userInfo = null;
@@ -77,8 +74,8 @@ export async function POST(request: NextRequest) {
               .values({
                 id: newUserId,
                 email: userEmail,
-                name: userName || userEmail.split("@")[0],
-                company: userCompany || "미지정",
+                name: userName || userEmail.split('@')[0],
+                company: userCompany || '미지정',
                 password: tempPassword, // 임시 비밀번호 설정
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -92,11 +89,7 @@ export async function POST(request: NextRequest) {
         // userId만 있고 이메일이 없는 경우 (비정상적인 경우지만 처리)
         else if (finalUserId) {
           // userId로 사용자 정보 확인
-          const [user] = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, finalUserId))
-            .limit(1);
+          const [user] = await db.select().from(users).where(eq(users.id, finalUserId)).limit(1);
 
           if (!user) {
             // userId가 유효하지 않으면 익명으로 처리
@@ -109,7 +102,7 @@ export async function POST(request: NextRequest) {
         // 사용자 ID가 없는 경우 익명으로 저장
         if (!finalUserId) {
           // 익명 사용자 ID로 저장 (익명 사용자 생성 또는 기존 익명 사용자 사용)
-          const anonymousEmail = "anonymous@user.com";
+          const anonymousEmail = 'anonymous@user.com';
           let [anonymousUser] = await db
             .select()
             .from(users)
@@ -123,9 +116,9 @@ export async function POST(request: NextRequest) {
               .values({
                 id: anonymousUserId,
                 email: anonymousEmail,
-                name: "익명 사용자",
-                company: "미지정",
-                password: "anonymous", // 임시 비밀번호
+                name: '익명 사용자',
+                company: '미지정',
+                password: 'anonymous', // 임시 비밀번호
                 createdAt: new Date(),
                 updatedAt: new Date(),
               })
@@ -143,7 +136,7 @@ export async function POST(request: NextRequest) {
           .values({
             id: resultId,
             userId: finalUserId,
-            email: userEmail || (userInfo?.email ?? "unknown@email.com"), // null 체크 추가
+            email: userEmail || (userInfo?.email ?? 'unknown@email.com'), // null 체크 추가
             heartRate,
             confidence,
             rmssd: rmssd || null,
@@ -180,11 +173,8 @@ export async function POST(request: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("측정 결과 저장 중 오류 발생:", error);
-    return NextResponse.json(
-      { error: "측정 결과 저장 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
+    console.error('측정 결과 저장 중 오류 발생:', error);
+    return NextResponse.json({ error: '측정 결과 저장 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
 
@@ -192,9 +182,9 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const userId = searchParams.get("userId");
-    const isAdmin = searchParams.get("isAdmin") === "true";
-    const email = searchParams.get("email");
+    const userId = searchParams.get('userId');
+    const isAdmin = searchParams.get('isAdmin') === 'true';
+    const email = searchParams.get('email');
 
     // 먼저 사용자가 관리자인지 확인
     let isAdminUser = isAdmin;
@@ -203,12 +193,8 @@ export async function GET(request: NextRequest) {
     if (email) {
       // 이메일로 사용자 정보와 관리자 여부 확인
       const [userInfo] = await withDb(
-        async (db) => {
-          return await db
-            .select()
-            .from(users)
-            .where(eq(users.email, email))
-            .limit(1);
+        async db => {
+          return await db.select().from(users).where(eq(users.email, email)).limit(1);
         },
         { isAdmin: true } // 관리자 권한으로 조회
       );
@@ -227,7 +213,7 @@ export async function GET(request: NextRequest) {
 
     // 적절한 권한으로 데이터베이스 조회 실행
     return await withDb(
-      async (db) => {
+      async db => {
         // 기본 쿼리 구성
         const query = db
           .select({
@@ -253,10 +239,7 @@ export async function GET(request: NextRequest) {
         }
 
         // 쿼리 실행 (where 조건 적용)
-        const results =
-          conditions.length > 0
-            ? await query.where(and(...conditions))
-            : await query;
+        const results = conditions.length > 0 ? await query.where(and(...conditions)) : await query;
 
         // 응답 형식 변환
         const formattedResults = results.map(({ measurementResult, user }) => ({
@@ -273,10 +256,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("측정 결과 조회 중 오류 발생:", error);
-    return NextResponse.json(
-      { error: "측정 결과 조회 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
+    console.error('측정 결과 조회 중 오류 발생:', error);
+    return NextResponse.json({ error: '측정 결과 조회 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
