@@ -1,11 +1,30 @@
 from http.server import BaseHTTPRequestHandler
 import json
-import numpy as np
 import os
 import sys
-import cv2
-from scipy import signal
-from scipy.signal import detrend
+import base64
+import time
+
+# Vercel 무료 티어의 패키지 크기 제한 대응을 위해 최적화된 임포트
+try:
+    import numpy as np
+except ImportError:
+    print("WARNING: numpy import failed, falling back to minimal mode")
+    np = None
+
+try:
+    import cv2
+except ImportError:
+    print("WARNING: cv2 import failed, falling back to minimal mode")
+    cv2 = None
+
+try:
+    from scipy import signal
+    from scipy.signal import detrend
+except ImportError:
+    print("WARNING: scipy import failed, falling back to minimal mode")
+    signal = None
+    detrend = None
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):

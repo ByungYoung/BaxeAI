@@ -1,8 +1,10 @@
-# BaxeAI 프로젝트 요구사항 (Python 3.9)
-numpy>=1.21.0,<2.0.0
-opencv-python-headless>=4.5.0,<4.12.0
-pandas>=2.0.0,<3.0.0
-matplotlib>=3.4.0,<3.8.0
-scipy>=1.11.2,<2.0.0
-scikit-learn>=1.0.0,<1.4.0
-numba>=0.53.0,<0.61.0
+# BaxeAI 프로젝트 요구사항 (Python 3.9) - Vercel 배포용 최적화
+# 패키지 버전을 고정하여 크기 최소화
+numpy==1.21.0
+opencv-python-headless==4.5.0
+scipy==1.7.0
+# 개발시에만 필요한 패키지들은 주석 처리
+# pandas==2.0.0
+# matplotlib==3.4.0
+# scikit-learn==1.0.0
+# numba==0.53.0

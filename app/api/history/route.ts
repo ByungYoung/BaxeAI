@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { withDb } from '@/lib/db';
-import { users, measurementResults } from '@/lib/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { measurementResults, users } from '@/lib/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from 'next/server';
+
+// Next.js 15 App Router API Route
+export const dynamic = 'force-dynamic'; // 라우팅 처리 명시적 선언
 
 // 측정 이력 조회 (GET)
 export async function GET(request: NextRequest) {

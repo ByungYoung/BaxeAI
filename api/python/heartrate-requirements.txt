@@ -1,0 +1,6 @@
+# Vercel Serverless Function (heartrate.py 전용)
+# 최소한의 패키지만 포함 - 무료 티어 250MB 제한
+# 버전을 엄격하게 고정하여 크기 최소화
+numpy==1.21.0
+opencv-python-headless==4.5.0
+scipy==1.7.0
