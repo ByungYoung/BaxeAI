@@ -91,14 +91,7 @@ export const RPPGCamera = ({
         stopCamera();
       }
     }
-  }, [
-    active,
-    startCamera,
-    stopCamera,
-    stopRecordingAndProcess,
-    onFrameCaptured,
-    captureFrameForExternal,
-  ]);
+  }, [active]);
 
   // 타이머 참조
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
