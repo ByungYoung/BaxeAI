@@ -1,5 +1,27 @@
 {
-  "runtime": "python3",
+  "runtime": "python3.9",
   "handler": "heartrate.handler",
-  "excludeFiles": ["__pycache__/**"]
+  "memory": 1024,
+  "maxDuration": 10,
+  "environment": {
+    "PYTHONPATH": ".",
+    "PIP_TARGET": ".",
+    "PIP_NO_CACHE_DIR": "1",
+    "PIP_NO_DEPENDENCIES": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONOPTIMIZE": "2"
+  },
+  "includeFiles": ["heartrate.py", "version.py"],
+  "excludeFiles": [
+    "__pycache__/**",
+    "*.pyc",
+    "*.pyo",
+    "*.pyd",
+    "**/test/**",
+    "**/tests/**",
+    "**/*.git*",
+    "**/doc/**",
+    "**/docs/**",
+    "**/examples/**"
+  ]
 }

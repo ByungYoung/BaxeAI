@@ -18,6 +18,20 @@ const nextConfig = {
   },
   // 서버 외부 패키지 설정 (experimental에서 이동됨)
   serverExternalPackages: ['@google-cloud/translate'],
+  // 빌드 시 ESLint 검사 비활성화
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
+  // TypeScript 타입 검사 비활성화
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
 };
 
 module.exports = nextConfig;

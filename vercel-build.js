@@ -131,11 +131,23 @@ try {
   });
   log('pip 업그레이드 완료');
 
-  // 환경 변수 설정
+  // 환경 변수 설정 - Vercel 배포 최적화
   const env = {
     ...process.env,
     PIP_DISABLE_PIP_VERSION_CHECK: '1',
     PIP_NO_WARN_SCRIPT_LOCATION: '1',
+    // 패키지 크기 최적화를 위한 추가 설정
+    PIP_NO_CACHE_DIR: '1', // 캐시 사용 안 함으로써 중복 설치 방지
+    PYTHONNOUSERSITE: '1', // 사용자 site-packages 무시
+    PIP_NO_BUILD_ISOLATION: '1', // 빌드 분리 비활성화하여 종속성 감소
+    PYTHONOPTIMIZE: '1', // Python 최적화 모드 활성화
+    // Vercel 배포 환경에서만 적용되는 설정
+    ...(process.env.VERCEL
+      ? {
+          PIP_NO_DEPENDENCIES: '1', // 가능한 경우 종속성 최소화
+          PYTHONDONTWRITEBYTECODE: '1', // .pyc 파일 생성 방지
+        }
+      : {}),
   };
 
   // 모든 환경에서 필요한 기본 도구 설치
@@ -176,19 +188,67 @@ try {
     }
   }
 
-  // requirements.txt 설치 - 속도와 효율성 최적화
+  // requirements.txt 파일 경로 확인 및 설치 - 크기 최적화 중점
   log('Python 패키지 설치 중...');
   try {
-    // 캐시 사용 및 최신 wheel 패키지 사용, 루트 사용자 경고 무시
-    execSync(
-      `${venvPythonCommand} -m pip install -r requirements.txt --prefer-binary --only-binary=:all: --upgrade-strategy eager --root-user-action=ignore`,
-      {
-        stdio: 'inherit',
-        env,
-        // 타임아웃 설정 단축 (5분)
-        timeout: 300000,
-      }
+    // API 특화 requirements.txt 먼저 시도 (우선순위 높음)
+    const apiRequirementsPath = path.join(process.cwd(), 'api', 'python', 'requirements.txt');
+    const heartRateRequirementsPath = path.join(
+      process.cwd(),
+      'api',
+      'python',
+      'heartrate-requirements.txt'
     );
+    const rootRequirementsPath = path.join(process.cwd(), 'requirements.txt');
+
+    let requirementsPath;
+
+    // 서버리스 함수별 특화된 requirements.txt 파일 확인
+    if (fs.existsSync(heartRateRequirementsPath) && process.env.VERCEL) {
+      log('HeartRate API 전용 requirements.txt 파일을 찾았습니다. (최소 설치)');
+      requirementsPath = heartRateRequirementsPath;
+
+      // 최적화 스크립트 사용 (Vercel만)
+      const optimizeScriptPath = path.join(process.cwd(), 'api', 'python', 'vercel-optimize.sh');
+      if (fs.existsSync(optimizeScriptPath)) {
+        log('최적화 스크립트 실행 (Serverless 250MB 제한 준수)');
+        try {
+          execSync(`bash ${optimizeScriptPath}`, {
+            stdio: 'inherit',
+            env,
+          });
+          log('최적화 스크립트 실행 완료');
+          return; // 최적화 스크립트가 성공적으로 실행되었으면 여기서 종료
+        } catch (optimizeError) {
+          log(`최적화 스크립트 실행 실패: ${optimizeError.message}`);
+          log('일반 패키지 설치로 계속 진행합니다.');
+          // 실패 시 일반 설치로 계속 진행
+        }
+      }
+    } else if (fs.existsSync(apiRequirementsPath)) {
+      log('API 전용 requirements.txt 파일을 찾았습니다.');
+      requirementsPath = apiRequirementsPath;
+    } else if (fs.existsSync(rootRequirementsPath)) {
+      log('루트 디렉토리의 requirements.txt 파일을 사용합니다.');
+      requirementsPath = rootRequirementsPath;
+    } else {
+      throw new Error('requirements.txt 파일을 찾을 수 없습니다.');
+    }
+
+    // Vercel 환경에서는 패키지 크기 제한 최적화를 위해 --no-deps 옵션 사용
+    const installOptions = process.env.VERCEL
+      ? '--prefer-binary --only-binary=:all: --no-deps --upgrade-strategy only-if-needed --no-cache-dir --root-user-action=ignore'
+      : '--prefer-binary --only-binary=:all: --upgrade-strategy eager --root-user-action=ignore';
+
+    log(`패키지 설치 옵션: ${installOptions}`);
+    log(`requirements 파일 경로: ${requirementsPath}`);
+
+    execSync(`${venvPythonCommand} -m pip install -r ${requirementsPath} ${installOptions}`, {
+      stdio: 'inherit',
+      env,
+      // 타임아웃 설정 단축 (5분)
+      timeout: 300000,
+    });
     log('Python 패키지 설치 완료');
   } catch (reqError) {
     log(`requirements.txt 설치 중 오류 발생: ${reqError.message}`);
@@ -196,18 +256,13 @@ try {
     // 필수 패키지만 빠르게 설치 시도
     log('필수 패키지만 간소화하여 설치 시도...');
     try {
-      // 핵심 패키지만 최적화하여 설치
-      const essentialPackages = [
-        'numpy>=1.21.0',
-        'opencv-python-headless>=4.5.0',
-        'scipy>=1.7.0',
-        'pandas>=2.0.0',
-      ];
+      // 핵심 패키지만 최적화하여 설치 - 고정 버전 사용하여 크기 최소화
+      const essentialPackages = ['numpy==1.21.0', 'opencv-python-headless==4.5.0', 'scipy==1.7.0'];
 
       execSync(
         `${venvPythonCommand} -m pip install ${essentialPackages.join(
           ' '
-        )} --prefer-binary --only-binary=:all: --root-user-action=ignore`,
+        )} --prefer-binary --only-binary=:all: --no-deps --root-user-action=ignore`,
         {
           stdio: 'inherit',
           env,

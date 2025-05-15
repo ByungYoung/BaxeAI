@@ -9,8 +9,18 @@
       "PYTHON_VERSION": "3.9",
       "PIP_TARGET": ".",
       "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+      "PIP_NO_CACHE_DIR": "1",
+      "PIP_NO_DEPENDENCIES": "1",
       "PYTHONPATH": ".",
-      "PYTHONUNBUFFERED": "1"
+      "PYTHONUNBUFFERED": "1",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTHONOPTIMIZE": "1"
+    }
+  },
+  "functions": {
+    "api/python/*.py": {
+      "maxDuration": 10,
+      "memory": 1024
     }
   }
 }

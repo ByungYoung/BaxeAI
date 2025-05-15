@@ -1,24 +1,24 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAppStore } from '@/lib/store';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import RPPGCamera from '@/components/rppg-camera';
-import { processWithPyVHR } from '@/lib/api-client';
-import { AlertCircle, ArrowLeft, Smile, Frown, Meh } from 'lucide-react';
+import { FaceMeasurementCamera } from '@/components/camera/face-measurement-camera';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { MoodState } from '@/lib/types';
+import { Progress } from '@/components/ui/progress';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { processWithPyVHR } from '@/lib/api-client';
 import {
-  loadFaceDetectionModels,
+  calculateMoodMatchScore,
   detectExpression,
   inferMoodFromExpression,
-  calculateMoodMatchScore,
+  loadFaceDetectionModels,
 } from '@/lib/face-detection';
-import { Progress } from '@/components/ui/progress';
+import { useAppStore } from '@/lib/store';
+import { MoodState } from '@/lib/types';
+import { AlertCircle, ArrowLeft, Frown, Meh, Smile } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 export default function MeasurePage() {
   const router = useRouter();
@@ -388,7 +388,7 @@ export default function MeasurePage() {
             </div>
 
             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg overflow-hidden relative">
-              <RPPGCamera
+              <FaceMeasurementCamera
                 onFramesCapture={handleFramesCapture}
                 isProcessing={isProcessing}
                 processText="측정 데이터를 분석 중입니다..."

@@ -1,7 +1,7 @@
-# 이 코멘트는 pip가 무시함
+# Vercel Serverless Functions 크기 제한(250MB)을 고려한 최소 요구사항
 werkzeug==1.0.1
-numpy>=1.21.0,<2.0.0
-opencv-python-headless>=4.5.0,<4.12.0
-scipy>=1.7.0,<1.12.0
+numpy==1.21.0
+opencv-python-headless==4.5.0
+scipy==1.7.0
 # Vercel 환경에서 필요한 추가 패키지
 setuptools>=49.0.0
