@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { UserInfo } from "../types";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { UserInfo } from '../types';
 
 interface UserState {
   // 사용자 정보
@@ -15,20 +15,19 @@ interface UserState {
 
 export const useUserStore = create<UserState>()(
   persist(
-    (set) => ({
+    set => ({
       // 상태
       userInfo: null,
       isAuthenticated: false,
 
       // 액션
-      setUserInfo: (info: UserInfo) =>
-        set({ userInfo: info, isAuthenticated: true }),
+      setUserInfo: (info: UserInfo) => set({ userInfo: info, isAuthenticated: true }),
       clearUserInfo: () => set({ userInfo: null, isAuthenticated: false }),
       setAuthenticated: (status: boolean) => set({ isAuthenticated: status }),
     }),
     {
-      name: "rppg-user-storage",
-      partialize: (state) => ({
+      name: 'rppg-user-storage',
+      partialize: state => ({
         userInfo: state.userInfo,
         isAuthenticated: state.isAuthenticated,
       }),

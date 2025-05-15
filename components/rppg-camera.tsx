@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Camera, HeartPulse, AlertCircle } from "lucide-react";
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Play, Pause, Camera, HeartPulse, AlertCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,9 +13,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useIsMobile } from "@/hooks/use-mobile";
+} from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // 측정 결과 콜백 타입 정의
 export interface RPPGCameraProps {
@@ -38,9 +38,9 @@ export const RPPGCamera = ({
   canvasRef: externalCanvasRef,
   videoRef: externalVideoRef,
   isProcessing = false,
-  processText = "처리 중...",
+  processText = '처리 중...',
   measurementTime = 30,
-  className = "",
+  className = '',
 }: RPPGCameraProps) => {
   // 모바일 디바이스 감지
   const isMobile = useIsMobile();
@@ -54,22 +54,16 @@ export const RPPGCamera = ({
   const framesRef = useRef<string[]>([]); // 프레임 데이터를 참조로 관리
 
   // 상태 변수
-  const [status, setStatus] = useState<
-    "idle" | "countdown" | "recording" | "processing"
-  >("idle");
+  const [status, setStatus] = useState<'idle' | 'countdown' | 'recording' | 'processing'>('idle');
   const [cameraActive, setCameraActive] = useState(false);
   const [countdown, setCountdown] = useState(5); // 5초 카운트다운
   const [remainingTime, setRemainingTime] = useState(measurementTime);
   const [progress, setProgress] = useState(0);
   const [frameCount, setFrameCount] = useState(0);
-  const [statusMessage, setStatusMessage] = useState(
-    "시작하려면 '측정 시작' 버튼을 클릭하세요"
-  );
+  const [statusMessage, setStatusMessage] = useState("시작하려면 '측정 시작' 버튼을 클릭하세요");
   const [showContinueDialog, setShowContinueDialog] = useState(false);
   const [faceDetected, setFaceDetected] = useState(false); // 얼굴 감지 상태
-  const [detectionQuality, setDetectionQuality] = useState<
-    "good" | "poor" | "none"
-  >("none"); // 감지 품질
+  const [detectionQuality, setDetectionQuality] = useState<'good' | 'poor' | 'none'>('none'); // 감지 품질
   const [showQualityAlert, setShowQualityAlert] = useState(false); // 품질 알림 표시 여부
   const [qualityChecks, setQualityChecks] = useState(0); // 품질 검사 횟수
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -77,7 +71,7 @@ export const RPPGCamera = ({
     video: {
       width: isMobile ? { ideal: 320 } : { ideal: 640 },
       height: isMobile ? { ideal: 240 } : { ideal: 480 },
-      facingMode: "user",
+      facingMode: 'user',
       frameRate: isMobile ? { ideal: 15, max: 20 } : { ideal: 30 },
     },
   });
@@ -89,11 +83,8 @@ export const RPPGCamera = ({
         startCamera();
         if (onFrameCaptured) {
           // 단일 프레임 캡처 모드로 설정
-          setStatus("recording");
-          captureIntervalRef.current = setInterval(
-            captureFrameForExternal,
-            100
-          );
+          setStatus('recording');
+          captureIntervalRef.current = setInterval(captureFrameForExternal, 100);
         }
       } else {
         stopRecordingAndProcess();
@@ -116,7 +107,7 @@ export const RPPGCamera = ({
 
     const video = videoRef.current;
     const canvas = actualCanvasRef.current;
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext('2d');
 
     if (!context || video.videoWidth === 0 || video.videoHeight === 0) return;
 
@@ -144,7 +135,7 @@ export const RPPGCamera = ({
 
     const video = videoRef.current;
     const canvas = faceCanvasRef.current;
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext('2d');
 
     if (!context || video.videoWidth === 0 || video.videoHeight === 0) return;
 
@@ -190,7 +181,7 @@ export const RPPGCamera = ({
     const qualityGood = avgBrightness > 100; // 좋은 밝기 기준
 
     setFaceDetected(faceFound);
-    setDetectionQuality(qualityGood ? "good" : faceFound ? "poor" : "none");
+    setDetectionQuality(qualityGood ? 'good' : faceFound ? 'poor' : 'none');
 
     // 감지 결과에 따라 시각적 피드백 제공
     context.lineWidth = 3;
@@ -202,11 +193,11 @@ export const RPPGCamera = ({
       const faceY = centerY - faceSize / 2;
 
       if (qualityGood) {
-        context.strokeStyle = "rgba(0, 255, 0, 0.8)"; // 좋음 - 초록색
-        context.fillStyle = "rgba(0, 255, 0, 0.2)";
+        context.strokeStyle = 'rgba(0, 255, 0, 0.8)'; // 좋음 - 초록색
+        context.fillStyle = 'rgba(0, 255, 0, 0.2)';
       } else {
-        context.strokeStyle = "rgba(255, 165, 0, 0.8)"; // 나쁨 - 주황색
-        context.fillStyle = "rgba(255, 165, 0, 0.2)";
+        context.strokeStyle = 'rgba(255, 165, 0, 0.8)'; // 나쁨 - 주황색
+        context.fillStyle = 'rgba(255, 165, 0, 0.2)';
       }
 
       context.beginPath();
@@ -215,21 +206,17 @@ export const RPPGCamera = ({
       context.fill();
 
       // 텍스트 표시
-      context.font = "16px sans-serif";
-      context.fillStyle = qualityGood ? "rgb(0, 200, 0)" : "rgb(255, 165, 0)";
-      context.fillText(
-        qualityGood ? "측정 품질: 좋음" : "측정 품질: 개선 필요",
-        10,
-        30
-      );
+      context.font = '16px sans-serif';
+      context.fillStyle = qualityGood ? 'rgb(0, 200, 0)' : 'rgb(255, 165, 0)';
+      context.fillText(qualityGood ? '측정 품질: 좋음' : '측정 품질: 개선 필요', 10, 30);
     } else {
-      context.strokeStyle = "rgba(255, 0, 0, 0.8)"; // 감지 안됨 - 빨간색
-      context.fillStyle = "rgba(255, 0, 0, 0.2)";
+      context.strokeStyle = 'rgba(255, 0, 0, 0.8)'; // 감지 안됨 - 빨간색
+      context.fillStyle = 'rgba(255, 0, 0, 0.2)';
 
       // 경고 메시지
-      context.font = "18px sans-serif";
-      context.fillStyle = "rgb(255, 50, 50)";
-      context.fillText("얼굴이 감지되지 않습니다", 10, 30);
+      context.font = '18px sans-serif';
+      context.fillStyle = 'rgb(255, 50, 50)';
+      context.fillText('얼굴이 감지되지 않습니다', 10, 30);
 
       // 화면 중앙에 얼굴 윤곽 가이드 표시
       const guideSize = Math.min(canvas.width, canvas.height) * 0.6;
@@ -245,8 +232,8 @@ export const RPPGCamera = ({
     }
 
     // 측정 중인 경우 품질 확인 및 알림
-    if (status === "recording") {
-      setQualityChecks((prev) => prev + 1);
+    if (status === 'recording') {
+      setQualityChecks(prev => prev + 1);
       if (qualityChecks > 10 && !qualityGood && !showQualityAlert) {
         setShowQualityAlert(true);
       }
@@ -266,26 +253,19 @@ export const RPPGCamera = ({
       setCameraError(null);
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia(
-          cameraConstraints
-        );
+        const stream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           setCameraActive(true);
-          setStatusMessage(
-            "카메라가 초기화되었습니다. '측정 시작' 버튼을 클릭하세요."
-          );
+          setStatusMessage("카메라가 초기화되었습니다. '측정 시작' 버튼을 클릭하세요.");
 
           // 얼굴 감지 타이머 시작 (모바일에서는 주기 증가)
           const detectionInterval = isMobile ? 500 : 200; // 모바일에서는 0.5초에 한 번
           faceDetectionRef.current = setInterval(detectFace, detectionInterval);
         }
       } catch (initialError) {
-        console.warn(
-          "기본 설정으로 카메라 접근 실패, 대체 설정 시도:",
-          initialError
-        );
+        console.warn('기본 설정으로 카메라 접근 실패, 대체 설정 시도:', initialError);
 
         // 기본 설정 실패 시 더 낮은 해상도로 시도
         try {
@@ -293,14 +273,12 @@ export const RPPGCamera = ({
             video: {
               width: { ideal: 240 },
               height: { ideal: 180 },
-              facingMode: "user",
+              facingMode: 'user',
               frameRate: { ideal: 10, max: 15 },
             },
           };
 
-          const stream = await navigator.mediaDevices.getUserMedia(
-            fallbackConstraints
-          );
+          const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
 
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
@@ -318,7 +296,7 @@ export const RPPGCamera = ({
 
       // 페이지 가시성 변경(백그라운드로 전환 등) 이벤트 처리기 등록
       const handleVisibilityChange = () => {
-        if (document.hidden && status === "recording") {
+        if (document.hidden && status === 'recording') {
           stopRecordingAndProcess();
         }
       };
@@ -332,18 +310,16 @@ export const RPPGCamera = ({
         }
       };
 
-      document.addEventListener("visibilitychange", handleVisibilityChange);
-      window.addEventListener("orientationchange", handleOrientationChange);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('orientationchange', handleOrientationChange);
 
       visibilityChangeRef.current = handleVisibilityChange;
       orientationChangeRef.current = handleOrientationChange;
     } catch (err) {
       setCameraError(
-        "카메라에 접근할 수 없습니다. 권한을 확인하거나 다른 브라우저로 시도해보세요."
+        '카메라에 접근할 수 없습니다. 권한을 확인하거나 다른 브라우저로 시도해보세요.'
       );
-      setStatusMessage(
-        "카메라 접근 오류. 카메라 권한이 부여되었는지 확인하세요."
-      );
+      setStatusMessage('카메라 접근 오류. 카메라 권한이 부여되었는지 확인하세요.');
     }
   };
 
@@ -351,7 +327,7 @@ export const RPPGCamera = ({
   const stopCamera = () => {
     if (videoRef.current?.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach(track => track.stop());
       videoRef.current.srcObject = null;
       setCameraActive(false);
     }
@@ -363,22 +339,16 @@ export const RPPGCamera = ({
     }
 
     // 이벤트 리스너 정리
-    document.removeEventListener(
-      "visibilitychange",
-      visibilityChangeRef.current
-    );
-    window.removeEventListener(
-      "orientationchange",
-      orientationChangeRef.current
-    );
+    document.removeEventListener('visibilitychange', visibilityChangeRef.current);
+    window.removeEventListener('orientationchange', orientationChangeRef.current);
   };
 
   // 측정 시작 버튼 클릭 처리
   const handleStartClick = () => {
-    if (status === "idle") {
+    if (status === 'idle') {
       // 얼굴 감지 여부에 상관없이 측정 시작
       startCountdown();
-    } else if (status === "recording") {
+    } else if (status === 'recording') {
       stopRecordingAndProcess();
     }
   };
@@ -386,12 +356,12 @@ export const RPPGCamera = ({
   // 카운트다운 시작
   const startCountdown = () => {
     // 상태 초기화
-    setStatus("countdown");
+    setStatus('countdown');
     setCountdown(5); // 5초 카운트다운
     setProgress(0);
     setFrameCount(0);
     framesRef.current = [];
-    setStatusMessage("측정 준비 중...");
+    setStatusMessage('측정 준비 중...');
     setShowQualityAlert(false);
     setQualityChecks(0);
 
@@ -410,9 +380,9 @@ export const RPPGCamera = ({
 
   // 녹화 시작
   const startRecording = () => {
-    setStatus("recording");
+    setStatus('recording');
     setRemainingTime(measurementTime);
-    setStatusMessage("측정 중...");
+    setStatusMessage('측정 중...');
     framesRef.current = []; // 프레임 배열 초기화
     setFrameCount(0); // 프레임 카운트 초기화
 
@@ -439,15 +409,13 @@ export const RPPGCamera = ({
     clearAllTimers();
 
     // 녹화 중지
-    setStatus("processing");
+    setStatus('processing');
     setStatusMessage(processText);
 
     // 캡처된 프레임이 충분하지 않은 경우 - 최소 요구사항을 5개로 낮춤
     if (framesRef.current.length < 5) {
-      setStatusMessage(
-        "오류: 충분한 프레임이 캡처되지 않았습니다. 다시 시도해주세요."
-      );
-      setStatus("idle");
+      setStatusMessage('오류: 충분한 프레임이 캡처되지 않았습니다. 다시 시도해주세요.');
+      setStatus('idle');
       return;
     }
 
@@ -467,7 +435,7 @@ export const RPPGCamera = ({
       framesRef.current = [];
     } else {
       // 콜백이 없는 경우 바로 idle 상태로 복귀
-      setStatus("idle");
+      setStatus('idle');
     }
   };
 
@@ -477,7 +445,7 @@ export const RPPGCamera = ({
 
     const video = videoRef.current;
     const canvas = actualCanvasRef.current;
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext('2d');
 
     if (!context || video.videoWidth === 0 || video.videoHeight === 0) return;
 
@@ -492,20 +460,17 @@ export const RPPGCamera = ({
 
       // 모바일에서는 더 높은 압축률 적용
       const imageQuality = isMobile ? 0.3 : 0.5;
-      const frameData = canvas.toDataURL("image/jpeg", imageQuality);
+      const frameData = canvas.toDataURL('image/jpeg', imageQuality);
 
       // 프레임 배열에 추가 및 카운트 증가
       framesRef.current.push(frameData);
-      setFrameCount((prev) => prev + 1);
+      setFrameCount(prev => prev + 1);
 
       // 메모리 사용량 모니터링 (모바일에서 메모리 문제 방지)
       if (isMobile && framesRef.current.length > 300) {
-        console.warn("프레임 수가 300개를 초과하여 일부 프레임을 삭제합니다");
+        console.warn('프레임 수가 300개를 초과하여 일부 프레임을 삭제합니다');
         // 첫 30%의 프레임만 유지하고 나머지는 제거
-        framesRef.current = framesRef.current.slice(
-          0,
-          Math.floor(framesRef.current.length * 0.3)
-        );
+        framesRef.current = framesRef.current.slice(0, Math.floor(framesRef.current.length * 0.3));
       }
     } catch (e) {}
   };
@@ -531,10 +496,8 @@ export const RPPGCamera = ({
     clearAllTimers();
     framesRef.current = [];
     setFrameCount(0);
-    setStatus("idle");
-    setStatusMessage(
-      "카메라가 초기화되었습니다. '측정 시작' 버튼을 클릭하세요."
-    );
+    setStatus('idle');
+    setStatusMessage("카메라가 초기화되었습니다. '측정 시작' 버튼을 클릭하세요.");
     setShowQualityAlert(false);
     setQualityChecks(0);
     startCamera();
@@ -542,7 +505,7 @@ export const RPPGCamera = ({
 
   // 외부 처리 상태 변경 감지
   useEffect(() => {
-    if (status === "processing" && !isProcessing) {
+    if (status === 'processing' && !isProcessing) {
       // 처리가 완료되면 대화상자 표시
       setShowContinueDialog(true);
     }
@@ -556,7 +519,7 @@ export const RPPGCamera = ({
 
   const handleCancel = () => {
     setShowContinueDialog(false);
-    setStatus("idle");
+    setStatus('idle');
     startCamera();
   };
 
@@ -580,7 +543,7 @@ export const RPPGCamera = ({
       video: {
         width: isMobile ? { ideal: 320 } : { ideal: 640 },
         height: isMobile ? { ideal: 240 } : { ideal: 480 },
-        facingMode: "user",
+        facingMode: 'user',
         frameRate: isMobile ? { ideal: 15, max: 20 } : { ideal: 30 },
       },
     });
@@ -595,15 +558,15 @@ export const RPPGCamera = ({
   // 버튼 텍스트 설정
   const getButtonText = () => {
     switch (status) {
-      case "recording":
+      case 'recording':
         return (
           <>
             <Pause className="h-4 w-4 mr-2" />
             측정 중단
           </>
         );
-      case "countdown":
-      case "processing":
+      case 'countdown':
+      case 'processing':
         return (
           <>
             <Play className="h-4 w-4 mr-2" />
@@ -621,23 +584,14 @@ export const RPPGCamera = ({
   };
 
   // 버튼 비활성화 조건
-  const isButtonDisabled = status === "countdown" || status === "processing";
+  const isButtonDisabled = status === 'countdown' || status === 'processing';
 
   // 외부에서 활성화/비활성화를 제어하는 경우에는 UI 컨트롤 숨기기
   if (active !== undefined) {
     return (
       <div className={className}>
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-full object-cover"
-        />
-        <canvas
-          ref={actualCanvasRef}
-          className="absolute top-0 left-0 w-full h-full opacity-0"
-        />
+        <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+        <canvas ref={actualCanvasRef} className="absolute top-0 left-0 w-full h-full opacity-0" />
       </div>
     );
   }
@@ -653,18 +607,13 @@ export const RPPGCamera = ({
               autoPlay
               playsInline
               muted
-              className={`w-full h-full object-cover ${
-                !cameraActive && "hidden"
-              }`}
+              className={`w-full h-full object-cover ${!cameraActive && 'hidden'}`}
             />
             <canvas
               ref={actualCanvasRef}
               className="absolute top-0 left-0 w-full h-full opacity-0"
             />
-            <canvas
-              ref={faceCanvasRef}
-              className="absolute top-0 left-0 w-full h-full"
-            />
+            <canvas ref={faceCanvasRef} className="absolute top-0 left-0 w-full h-full" />
 
             {/* 카메라 비활성화 시 검은 화면 */}
             {!cameraActive && <div className="absolute inset-0 bg-black"></div>}
@@ -691,7 +640,7 @@ export const RPPGCamera = ({
             )}
 
             {/* 카운트다운 오버레이 */}
-            {status === "countdown" && (
+            {status === 'countdown' && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60">
                 <div className="text-white text-center">
                   <div className="text-6xl font-bold mb-2">{countdown}</div>
@@ -701,7 +650,7 @@ export const RPPGCamera = ({
             )}
 
             {/* 처리 중 오버레이 */}
-            {status === "processing" && (
+            {status === 'processing' && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                 <div className="text-white text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto mb-2"></div>
@@ -711,7 +660,7 @@ export const RPPGCamera = ({
             )}
 
             {/* 진행 상태 표시 */}
-            {status === "recording" && (
+            {status === 'recording' && (
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
                 <div
                   className="h-full bg-red-500 transition-all duration-200"
@@ -721,14 +670,14 @@ export const RPPGCamera = ({
             )}
 
             {/* 녹화 시간 표시 */}
-            {status === "recording" && (
+            {status === 'recording' && (
               <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full">
                 <span className="font-mono">{remainingTime}초</span>
               </div>
             )}
 
             {/* 녹화 중 표시 */}
-            {status === "recording" && (
+            {status === 'recording' && (
               <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/70 text-white px-3 py-1 rounded-full">
                 <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
                 <span>측정 중</span>
@@ -737,11 +686,8 @@ export const RPPGCamera = ({
           </div>
 
           {/* 품질 알림 */}
-          {showQualityAlert && status === "recording" && (
-            <Alert
-              variant="default"
-              className="mt-2 bg-amber-50 border-amber-300"
-            >
+          {showQualityAlert && status === 'recording' && (
+            <Alert variant="default" className="mt-2 bg-amber-50 border-amber-300">
               <AlertCircle className="h-4 w-4 text-amber-600" />
               <AlertTitle className="text-amber-700">측정 품질 낮음</AlertTitle>
               <AlertDescription className="text-amber-600">
@@ -754,8 +700,8 @@ export const RPPGCamera = ({
             <div className="text-sm">
               <p className="font-medium">{statusMessage}</p>
               <p className="text-muted-foreground">
-                {frameCount > 0 ? `캡처된 프레임: ${frameCount}` : ""}
-                {isMobile && " (모바일 모드)"}
+                {frameCount > 0 ? `캡처된 프레임: ${frameCount}` : ''}
+                {isMobile && ' (모바일 모드)'}
               </p>
             </div>
 
@@ -764,7 +710,7 @@ export const RPPGCamera = ({
                 variant="outline"
                 size="sm"
                 onClick={resetApp}
-                disabled={isButtonDisabled || status === "recording"}
+                disabled={isButtonDisabled || status === 'recording'}
               >
                 <Camera className="h-4 w-4 mr-2" />
                 재설정
@@ -773,7 +719,7 @@ export const RPPGCamera = ({
               <Button
                 onClick={handleStartClick}
                 size="sm"
-                variant={status === "recording" ? "destructive" : "default"}
+                variant={status === 'recording' ? 'destructive' : 'default'}
                 disabled={isButtonDisabled || !!cameraError}
               >
                 {getButtonText()}
@@ -783,10 +729,7 @@ export const RPPGCamera = ({
 
           {/* 모바일 사용자를 위한 추가 팁 */}
           {isMobile && (
-            <Alert
-              variant="default"
-              className="mt-2 bg-blue-50 border-blue-200"
-            >
+            <Alert variant="default" className="mt-2 bg-blue-50 border-blue-200">
               <AlertCircle className="h-4 w-4 text-blue-600" />
               <AlertTitle className="text-blue-800">모바일 사용 팁</AlertTitle>
               <AlertDescription className="text-blue-700 text-xs">
@@ -804,10 +747,7 @@ export const RPPGCamera = ({
       </Card>
 
       {/* 측정 반복 확인 대화상자 */}
-      <AlertDialog
-        open={showContinueDialog}
-        onOpenChange={setShowContinueDialog}
-      >
+      <AlertDialog open={showContinueDialog} onOpenChange={setShowContinueDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>측정 완료</AlertDialogTitle>

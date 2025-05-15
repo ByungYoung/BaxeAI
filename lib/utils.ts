@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { MeasurementResult } from "./types";
-import { use, useEffect, useLayoutEffect } from "react";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { MeasurementResult } from './types';
+import { use, useEffect, useLayoutEffect } from 'react';
 
 // 서버 사이드 렌더링에서 useLayoutEffect 경고를 방지하기 위한 유틸리티 함수
 export const useIsomorphicLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,14 +16,14 @@ export function cn(...inputs: ClassValue[]) {
 // 측정 결과를 DB에 저장하는 함수
 export async function saveMeasurementToDB(result: MeasurementResult) {
   if (!result || !result.userInfo.id) {
-    throw new Error("사용자 정보 없이 결과를 저장할 수 없습니다");
+    throw new Error('사용자 정보 없이 결과를 저장할 수 없습니다');
   }
 
   try {
-    const response = await fetch("/api/measurements", {
-      method: "POST",
+    const response = await fetch('/api/measurements', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         userId: result.userInfo.id,
@@ -39,7 +39,7 @@ export async function saveMeasurementToDB(result: MeasurementResult) {
     });
 
     if (!response.ok) {
-      throw new Error("측정 결과 저장 실패");
+      throw new Error('측정 결과 저장 실패');
     }
 
     return await response.json();
@@ -49,16 +49,12 @@ export async function saveMeasurementToDB(result: MeasurementResult) {
 }
 
 // 사용자 정보를 DB에 저장하는 함수
-export async function saveUserToDB(
-  email: string,
-  name: string | undefined,
-  company: string
-) {
+export async function saveUserToDB(email: string, name: string | undefined, company: string) {
   try {
-    const response = await fetch("/api/users", {
-      method: "POST",
+    const response = await fetch('/api/users', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         email,
@@ -68,7 +64,7 @@ export async function saveUserToDB(
     });
 
     if (!response.ok) {
-      throw new Error("사용자 정보 저장 실패");
+      throw new Error('사용자 정보 저장 실패');
     }
 
     return await response.json();
@@ -115,14 +111,14 @@ export function calculateStressLevel(heartRate: number, hrv: number): number {
  */
 export function getStressLevelText(stressLevel: number): string {
   if (stressLevel < 20) {
-    return "매우 낮음";
+    return '매우 낮음';
   } else if (stressLevel < 40) {
-    return "낮음";
+    return '낮음';
   } else if (stressLevel < 60) {
-    return "보통";
+    return '보통';
   } else if (stressLevel < 80) {
-    return "높음";
+    return '높음';
   } else {
-    return "매우 높음";
+    return '매우 높음';
   }
 }

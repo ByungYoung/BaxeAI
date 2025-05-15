@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext } from 'react';
 // 서버 API를 사용하도록 직접적인 Google Translate 임포트 제거
 
 type LanguageContextType = {
@@ -15,26 +15,24 @@ const translationCache: Record<string, Record<string, string>> = {};
 
 // 번역 키에 대한 기본 텍스트 (한국어)
 const translations: Record<string, string> = {
-  home: "홈",
-  start_measurement: "측정 시작",
-  history: "측정 기록",
-  hrv_measurement: "Baxe AI 측정",
-  start_now: "지금 시작하기",
-  learn_more: "자세히 알아보기",
-  features: "서비스 특징",
-  contactless_measurement: "비접촉식 측정",
-  hrv_analysis: "Baxe AI 분석",
-  health_index: "건강 지표",
-  quick_measurement: "빠른 측정",
-  start_right_now: "지금 바로 시작하세요",
-  terms_of_service: "이용약관",
-  privacy_policy: "개인정보처리방침",
+  home: '홈',
+  start_measurement: '측정 시작',
+  history: '측정 기록',
+  hrv_measurement: 'Baxe AI 측정',
+  start_now: '지금 시작하기',
+  learn_more: '자세히 알아보기',
+  features: '서비스 특징',
+  contactless_measurement: '비접촉식 측정',
+  hrv_analysis: 'Baxe AI 분석',
+  health_index: '건강 지표',
+  quick_measurement: '빠른 측정',
+  start_right_now: '지금 바로 시작하세요',
+  terms_of_service: '이용약관',
+  privacy_policy: '개인정보처리방침',
   // 더 많은 번역 키를 추가할 수 있습니다
 };
 
-const LanguageContext = createContext<LanguageContextType | undefined>(
-  undefined
-);
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 // API 라우트를 통해 번역하는 새로운 함수
 const translateViaAPI = async (
@@ -43,10 +41,10 @@ const translateViaAPI = async (
   sourceLanguage?: string
 ): Promise<string> => {
   try {
-    const response = await fetch("/api/translate", {
-      method: "POST",
+    const response = await fetch('/api/translate', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         text,
@@ -67,13 +65,13 @@ const translateViaAPI = async (
 };
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = useState("ko");
+  const [locale, setLocale] = useState('ko');
 
   // 컴포넌트 마운트 시 로컬스토리지에서 언어 설정 불러오기
   useEffect(() => {
     // 클라이언트 사이드에서만 실행
-    if (typeof window !== "undefined") {
-      const savedLocale = localStorage.getItem("language");
+    if (typeof window !== 'undefined') {
+      const savedLocale = localStorage.getItem('language');
       if (savedLocale) {
         setLocale(savedLocale);
       }
@@ -82,15 +80,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // 언어 변경 시 로컬스토리지에 저장
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("language", locale);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('language', locale);
     }
   }, [locale]);
 
   // 텍스트 번역 함수 - API 라우트 사용
   const translate = async (text: string): Promise<string> => {
     // 한국어인 경우 번역하지 않음
-    if (locale === "ko") {
+    if (locale === 'ko') {
       return text;
     }
 
@@ -121,7 +119,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const originalText = translations[key] || key;
 
     // 한국어인 경우 바로 반환
-    if (locale === "ko") {
+    if (locale === 'ko') {
       return originalText;
     }
 
@@ -144,7 +142,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
+    throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
 };

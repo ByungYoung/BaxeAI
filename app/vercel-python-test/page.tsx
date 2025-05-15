@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useRef, useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useRef, useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -9,11 +9,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { Loader2, CheckCircle, AlertCircle, HeartPulse } from "lucide-react";
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { Loader2, CheckCircle, AlertCircle, HeartPulse } from 'lucide-react';
 
 export default function VercelPythonTest() {
   const [serverStatus, setServerStatus] = useState<any>(null);
@@ -30,7 +30,7 @@ export default function VercelPythonTest() {
   const checkServerStatus = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/vercel-python");
+      const response = await fetch('/api/vercel-python');
       const data = await response.json();
       setServerStatus(data);
       setError(null);
@@ -67,10 +67,10 @@ export default function VercelPythonTest() {
         });
 
       // API 호출
-      const response = await fetch("/api/vercel-python", {
-        method: "POST",
+      const response = await fetch('/api/vercel-python', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           frames: dummyFrames,
@@ -118,16 +118,11 @@ export default function VercelPythonTest() {
                 <div className="flex items-center">
                   <div
                     className={`w-3 h-3 rounded-full mr-2 ${
-                      serverStatus.api_status === "connected"
-                        ? "bg-green-500"
-                        : "bg-red-500"
+                      serverStatus.api_status === 'connected' ? 'bg-green-500' : 'bg-red-500'
                     }`}
                   ></div>
                   <span className="font-medium">
-                    상태:{" "}
-                    {serverStatus.api_status === "connected"
-                      ? "연결됨"
-                      : "연결 안됨"}
+                    상태: {serverStatus.api_status === 'connected' ? '연결됨' : '연결 안됨'}
                   </span>
                 </div>
 
@@ -136,29 +131,27 @@ export default function VercelPythonTest() {
                     <Separator />
                     <div className="space-y-2">
                       <div>
-                        <span className="font-medium">Python 버전:</span>{" "}
-                        {serverStatus.python_version?.split(" ")[0]}
+                        <span className="font-medium">Python 버전:</span>{' '}
+                        {serverStatus.python_version?.split(' ')[0]}
                       </div>
                       <div>
-                        <span className="font-medium">NumPy 버전:</span>{" "}
+                        <span className="font-medium">NumPy 버전:</span>{' '}
                         {serverStatus.numpy_version}
                       </div>
                       <div>
-                        <span className="font-medium">OpenCV 버전:</span>{" "}
+                        <span className="font-medium">OpenCV 버전:</span>{' '}
                         {serverStatus.opencv_version}
                       </div>
                       <div>
-                        <span className="font-medium">Vercel 환경:</span>{" "}
-                        {serverStatus.environment?.vercel ? "예" : "아니오"}
+                        <span className="font-medium">Vercel 환경:</span>{' '}
+                        {serverStatus.environment?.vercel ? '예' : '아니오'}
                       </div>
                     </div>
                   </>
                 )}
               </div>
             ) : (
-              <div className="text-center py-4 text-gray-500">
-                서버 상태 정보 없음
-              </div>
+              <div className="text-center py-4 text-gray-500">서버 상태 정보 없음</div>
             )}
           </CardContent>
 
@@ -169,7 +162,7 @@ export default function VercelPythonTest() {
               ) : (
                 <CheckCircle className="mr-2 h-4 w-4" />
               )}
-              {loading ? "확인 중..." : "상태 다시 확인"}
+              {loading ? '확인 중...' : '상태 다시 확인'}
             </Button>
           </CardFooter>
         </Card>
@@ -202,20 +195,18 @@ export default function VercelPythonTest() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-center">
                       <HeartPulse className="h-12 w-12 text-red-500" />
-                      <span className="text-3xl font-bold ml-2">
-                        {result.heartRate.toFixed(1)}
-                      </span>
+                      <span className="text-3xl font-bold ml-2">{result.heartRate.toFixed(1)}</span>
                       <span className="text-xl text-gray-500 ml-1">BPM</span>
                     </div>
 
                     <div className="space-y-2">
                       <div>
-                        <span className="font-medium">신뢰도:</span>{" "}
+                        <span className="font-medium">신뢰도:</span>{' '}
                         {(result.confidence * 100).toFixed(1)}%
                       </div>
                       <div>
-                        <span className="font-medium">처리됨:</span>{" "}
-                        {result.processed ? "예" : "아니오"}
+                        <span className="font-medium">처리됨:</span>{' '}
+                        {result.processed ? '예' : '아니오'}
                       </div>
                     </div>
                   </div>
@@ -236,7 +227,7 @@ export default function VercelPythonTest() {
               ) : (
                 <HeartPulse className="mr-2 h-4 w-4" />
               )}
-              {testing ? "분석 중..." : "테스트 실행"}
+              {testing ? '분석 중...' : '테스트 실행'}
             </Button>
           </CardFooter>
         </Card>

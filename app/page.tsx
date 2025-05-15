@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Heart, Clock, BarChart2, Camera } from "lucide-react";
-import Link from "next/link";
-import { useAppStore } from "@/lib/store";
-import { useEffect, useState } from "react";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Heart, Clock, BarChart2, Camera } from 'lucide-react';
+import Link from 'next/link';
+import { useAppStore } from '@/lib/store';
+import { useEffect, useState } from 'react';
 
 export default function HomePage() {
   const { userInfo } = useAppStore();
@@ -17,7 +17,7 @@ export default function HomePage() {
   }, [userInfo]);
 
   // 측정 페이지 경로 결정 (로그인 상태에 따라)
-  const measurePath = isLoggedIn ? "/measure" : "/register";
+  const measurePath = isLoggedIn ? '/measure' : '/register';
 
   return (
     <div className="space-y-8">
@@ -30,14 +30,12 @@ export default function HomePage() {
                 Baxe AI로 심박수와 스트레스를 측정하세요
               </h1>
               <p className="text-muted-foreground md:text-lg">
-                스마트폰이나 웹캠 카메라만으로 당신의 현재 상태를 측정하고
-                스트레스 수준을 분석해 보세요.
+                스마트폰이나 웹캠 카메라만으로 당신의 현재 상태를 측정하고 스트레스 수준을 분석해
+                보세요.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link href={measurePath}>
-                  <Button size="lg">
-                    {isLoggedIn ? "측정 시작하기" : "회원가입 후 시작하기"}
-                  </Button>
+                  <Button size="lg">{isLoggedIn ? '측정 시작하기' : '회원가입 후 시작하기'}</Button>
                 </Link>
                 <Link href="#features">
                   <Button variant="outline" size="lg">
@@ -63,8 +61,8 @@ export default function HomePage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-3">서비스 특징</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              카메라를 활용한 비접촉식 측정으로 편리하게 심박수와 심박변이도를
-              분석하여 건강 상태와 스트레스 수준을 확인할 수 있습니다.
+              카메라를 활용한 비접촉식 측정으로 편리하게 심박수와 심박변이도를 분석하여 건강 상태와
+              스트레스 수준을 확인할 수 있습니다.
             </p>
           </div>
 
@@ -78,8 +76,8 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-sm">
-                  특별한 장비 없이 일반 카메라만으로 얼굴의 미세한 색상 변화를
-                  감지하여 심박수와 심박변이도를 측정합니다.
+                  특별한 장비 없이 일반 카메라만으로 얼굴의 미세한 색상 변화를 감지하여 심박수와
+                  심박변이도를 측정합니다.
                 </p>
               </CardContent>
             </Card>
@@ -93,8 +91,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-sm">
-                  심박 간격의 변화를 분석하여 자율신경계 기능과 스트레스 대응
-                  능력을 평가합니다.
+                  심박 간격의 변화를 분석하여 자율신경계 기능과 스트레스 대응 능력을 평가합니다.
                 </p>
               </CardContent>
             </Card>
@@ -108,8 +105,8 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-sm">
-                  측정된 데이터를 기반으로 스트레스 수준과 자율신경계 균형
-                  상태를 쉽게 이해할 수 있도록 시각화하여 제공합니다.
+                  측정된 데이터를 기반으로 스트레스 수준과 자율신경계 균형 상태를 쉽게 이해할 수
+                  있도록 시각화하여 제공합니다.
                 </p>
               </CardContent>
             </Card>
@@ -123,8 +120,8 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-sm">
-                  단 30초 만에 측정이 완료되며, 즉시 결과를 확인할 수 있어 일상
-                  속에서 쉽게 건강을 체크할 수 있습니다.
+                  단 30초 만에 측정이 완료되며, 즉시 결과를 확인할 수 있어 일상 속에서 쉽게 건강을
+                  체크할 수 있습니다.
                 </p>
               </CardContent>
             </Card>
@@ -137,12 +134,12 @@ export default function HomePage() {
         <div className="container px-4 md:px-6 text-center">
           <h2 className="text-2xl font-bold mb-3">지금 바로 시작하세요</h2>
           <p className="mb-6 max-w-2xl mx-auto">
-            간단한 정보 입력 후 카메라만으로 심박변이도를 측정하고 당신의
-            스트레스 수준과 건강 상태를 확인해 보세요.
+            간단한 정보 입력 후 카메라만으로 심박변이도를 측정하고 당신의 스트레스 수준과 건강
+            상태를 확인해 보세요.
           </p>
           <Link href={measurePath}>
             <Button size="lg" variant="secondary" className="font-semibold">
-              {isLoggedIn ? "측정 시작하기" : "측정 정보 등록"}
+              {isLoggedIn ? '측정 시작하기' : '측정 정보 등록'}
             </Button>
           </Link>
         </div>

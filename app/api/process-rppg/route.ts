@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
-import { spawn } from "child_process";
-import fs from "fs/promises";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
+import { NextResponse } from 'next/server';
+import { spawn } from 'child_process';
+import fs from 'fs/promises';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 // Edge API 구성 - 서버리스 함수의 타임아웃을 늘리기 위한 설정
-export const runtime = "nodejs";
+export const runtime = 'nodejs';
 export const maxDuration = 60; // 최대 실행 시간 (초)
 
 // This is a server-side route handler that will process the frames using pyVHR
@@ -14,10 +14,7 @@ export async function POST(request: Request) {
     const { frames } = await request.json();
 
     if (!frames || !Array.isArray(frames) || frames.length === 0) {
-      return NextResponse.json(
-        { error: "Invalid or missing frames data" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid or missing frames data' }, { status: 400 });
     }
 
     console.log(`Received ${frames.length} frames for processing`);
@@ -26,48 +23,45 @@ export async function POST(request: Request) {
     const sessionId = uuidv4();
     // Vercel 환경에서는 /tmp 디렉토리를 사용
     const tempDir =
-      process.env.VERCEL === "1"
-        ? path.join("/tmp", sessionId)
-        : path.join(process.cwd(), "tmp", sessionId);
+      process.env.VERCEL === '1'
+        ? path.join('/tmp', sessionId)
+        : path.join(process.cwd(), 'tmp', sessionId);
 
     try {
       await fs.mkdir(tempDir, { recursive: true });
 
       // Save frames as images
       for (let i = 0; i < frames.length; i++) {
-        const base64Data = frames[i].replace(/^data:image\/jpeg;base64,/, "");
-        const filePath = path.join(
-          tempDir,
-          `frame_${i.toString().padStart(5, "0")}.jpg`
-        );
-        await fs.writeFile(filePath, base64Data, "base64");
+        const base64Data = frames[i].replace(/^data:image\/jpeg;base64,/, '');
+        const filePath = path.join(tempDir, `frame_${i.toString().padStart(5, '0')}.jpg`);
+        await fs.writeFile(filePath, base64Data, 'base64');
       }
 
       // 항상 실제 pyVHR 처리 시도
       const result = await runPyVHR(tempDir);
 
       // Clean up temporary files
-      await fs.rm(tempDir, { recursive: true, force: true }).catch((err) => {
-        console.warn("Failed to clean up temp directory:", err);
+      await fs.rm(tempDir, { recursive: true, force: true }).catch(err => {
+        console.warn('Failed to clean up temp directory:', err);
       });
 
       return NextResponse.json(result);
     } catch (error) {
-      console.error("Error processing frames:", error);
+      console.error('Error processing frames:', error);
 
       // Clean up on error
       try {
         await fs.rm(tempDir, { recursive: true, force: true });
       } catch (cleanupError) {
-        console.error("Error cleaning up temp files:", cleanupError);
+        console.error('Error cleaning up temp files:', cleanupError);
       }
 
       // 에러 발생 시에도 시뮬레이션 결과 제공
-      console.log("Error occurred, returning simulated result");
+      console.log('Error occurred, returning simulated result');
       return NextResponse.json(createSimulatedResult(`처리 오류: ${error}`));
     }
   } catch (error) {
-    console.error("Error in process-rppg API route:", error);
+    console.error('Error in process-rppg API route:', error);
 
     // 모든 예외 상황에서 시뮬레이션된 결과 반환
     return NextResponse.json(createSimulatedResult(`API 오류: ${error}`));
@@ -81,26 +75,26 @@ async function runPyVHR(
   framesDir: string
 ): Promise<{ heartRate: number; confidence: number; hrv?: any }> {
   // Vercel 환경 감지 로직 변경 - 실행 시도
-  if (process.env.VERCEL === "1") {
-    console.log("runPyVHR: Vercel 환경에서 Python 스크립트 실행 시도");
+  if (process.env.VERCEL === '1') {
+    console.log('runPyVHR: Vercel 환경에서 Python 스크립트 실행 시도');
     // Vercel 환경에서는 /tmp 디렉토리의 python3을 시도
     const pythonPaths = [
-      "/var/task/python/bin/python3",   // Vercel의 Python 런타임 경로 (lambda layers)
-      "/var/lang/bin/python3",          // AWS Lambda Python 3
-      "/opt/python/bin/python3",        // 다른 가능한 경로
-      "/tmp/python/bin/python3",        // 사용자 정의 설치 경로
-      "python3",                        // 환경 변수 PATH에 있는 python3
-      "python"                          // 환경 변수 PATH에 있는 python
+      '/var/task/python/bin/python3', // Vercel의 Python 런타임 경로 (lambda layers)
+      '/var/lang/bin/python3', // AWS Lambda Python 3
+      '/opt/python/bin/python3', // 다른 가능한 경로
+      '/tmp/python/bin/python3', // 사용자 정의 설치 경로
+      'python3', // 환경 변수 PATH에 있는 python3
+      'python', // 환경 변수 PATH에 있는 python
     ];
-    
+
     return new Promise((resolve, reject) => {
       // Path to Python script that uses pyVHR
-      const pythonScript = path.join(process.cwd(), "scripts", "process_rppg.py");
+      const pythonScript = path.join(process.cwd(), 'scripts', 'process_rppg.py');
 
       // 15초 타임아웃 설정 (Vercel에서는 조금 더 길게)
       const timeout = setTimeout(() => {
-        console.error("Python 스크립트 실행 시간 초과 (Vercel)");
-        resolve(createSimulatedResult("스크립트 실행 시간 초과 (Vercel)"));
+        console.error('Python 스크립트 실행 시간 초과 (Vercel)');
+        resolve(createSimulatedResult('스크립트 실행 시간 초과 (Vercel)'));
       }, 15000);
 
       // 스크립트 존재 여부 먼저 확인
@@ -109,43 +103,41 @@ async function runPyVHR(
           // 먼저 Vercel 환경에서 Python 실행 가능한지 로그 출력
           console.log(`Python 스크립트 경로: ${pythonScript}`);
           console.log(`프레임 디렉토리 경로: ${framesDir}`);
-          
+
           // Vercel 환경에 맞춘 Python 경로 시도
           findWorkingPython(
             pythonPaths,
             0,
             pythonScript,
             framesDir,
-            (result) => {
+            result => {
               clearTimeout(timeout);
               resolve(result);
             },
-            (error) => {
+            error => {
               clearTimeout(timeout);
-              console.error("Vercel에서 Python 처리 실패, 시뮬레이션 결과 사용:", error.message);
+              console.error('Vercel에서 Python 처리 실패, 시뮬레이션 결과 사용:', error.message);
               resolve(createSimulatedResult(error.message));
             }
           );
         })
-        .catch((err) => {
+        .catch(err => {
           clearTimeout(timeout);
-          console.error(
-            `Python script not found at ${pythonScript}. Error: ${err.message}`
-          );
+          console.error(`Python script not found at ${pythonScript}. Error: ${err.message}`);
           resolve(createSimulatedResult(`스크립트를 찾을 수 없음: ${err.message}`));
         });
     });
   }
-  
+
   // 로컬 환경 처리 (기존 코드 유지)
   return new Promise((resolve, reject) => {
     // Path to Python script that uses pyVHR
-    const pythonScript = path.join(process.cwd(), "scripts", "process_rppg.py");
+    const pythonScript = path.join(process.cwd(), 'scripts', 'process_rppg.py');
 
     // 10초 타임아웃 설정
     const timeout = setTimeout(() => {
-      console.error("Python 스크립트 실행 시간 초과");
-      resolve(createSimulatedResult("스크립트 실행 시간 초과"));
+      console.error('Python 스크립트 실행 시간 초과');
+      resolve(createSimulatedResult('스크립트 실행 시간 초과'));
     }, 10000);
 
     // 스크립트 존재 여부 먼저 확인
@@ -153,15 +145,15 @@ async function runPyVHR(
       .then(() => {
         // Path to Python executable options - try multiple paths for Vercel compatibility
         const pythonPaths = [
-          path.join(process.cwd(), "venv", "bin", "python3"), // Local venv python3 (Mac/Linux)
-          path.join(process.cwd(), "venv", "bin", "python"),  // Local venv python (Mac/Linux)
-          path.join(process.cwd(), "venv", "Scripts", "python.exe"), // Local venv (Windows)
-          "/usr/local/bin/python3", // Homebrew Python3 (Mac)
-          "/usr/bin/python3", // Standard Python3 path
-          "python3", // System Python3
-          "/usr/bin/python", // Standard Linux path
-          "python", // System Python
-          "/var/lang/bin/python", // AWS Lambda Python
+          path.join(process.cwd(), 'venv', 'bin', 'python3'), // Local venv python3 (Mac/Linux)
+          path.join(process.cwd(), 'venv', 'bin', 'python'), // Local venv python (Mac/Linux)
+          path.join(process.cwd(), 'venv', 'Scripts', 'python.exe'), // Local venv (Windows)
+          '/usr/local/bin/python3', // Homebrew Python3 (Mac)
+          '/usr/bin/python3', // Standard Python3 path
+          'python3', // System Python3
+          '/usr/bin/python', // Standard Linux path
+          'python', // System Python
+          '/var/lang/bin/python', // AWS Lambda Python
         ];
 
         // 첫 번째 실행 가능한 Python을 찾아서 사용
@@ -170,22 +162,20 @@ async function runPyVHR(
           0,
           pythonScript,
           framesDir,
-          (result) => {
+          result => {
             clearTimeout(timeout);
             resolve(result);
           },
-          (error) => {
+          error => {
             clearTimeout(timeout);
-            console.error("Python 처리 실패, 시뮬레이션 결과 사용:", error.message);
+            console.error('Python 처리 실패, 시뮬레이션 결과 사용:', error.message);
             resolve(createSimulatedResult(error.message));
           }
         );
       })
-      .catch((err) => {
+      .catch(err => {
         clearTimeout(timeout);
-        console.error(
-          `Python script not found at ${pythonScript}. Error: ${err.message}`
-        );
+        console.error(`Python script not found at ${pythonScript}. Error: ${err.message}`);
         resolve(createSimulatedResult(`스크립트를 찾을 수 없음: ${err.message}`));
       });
   });
@@ -246,8 +236,8 @@ function findWorkingPython(
   reject: (reason: Error) => void
 ) {
   if (index >= pythonPaths.length) {
-    console.error("No working Python interpreter found");
-    reject(new Error("No working Python interpreter found"));
+    console.error('No working Python interpreter found');
+    reject(new Error('No working Python interpreter found'));
     return;
   }
 
@@ -261,55 +251,27 @@ function findWorkingPython(
           executePython(pythonPath, scriptPath, framesDir, resolve, reject);
         })
         .catch(() => {
-          findWorkingPython(
-            pythonPaths,
-            index + 1,
-            scriptPath,
-            framesDir,
-            resolve,
-            reject
-          );
+          findWorkingPython(pythonPaths, index + 1, scriptPath, framesDir, resolve, reject);
         });
     } else {
       // 시스템 경로의 Python인 경우 바로 실행 시도
-      const testProcess = spawn(pythonPath, ["--version"]);
+      const testProcess = spawn(pythonPath, ['--version']);
 
-      testProcess.on("error", (err) => {
-        findWorkingPython(
-          pythonPaths,
-          index + 1,
-          scriptPath,
-          framesDir,
-          resolve,
-          reject
-        );
+      testProcess.on('error', err => {
+        findWorkingPython(pythonPaths, index + 1, scriptPath, framesDir, resolve, reject);
       });
 
-      testProcess.on("close", (code) => {
+      testProcess.on('close', code => {
         if (code === 0) {
           executePython(pythonPath, scriptPath, framesDir, resolve, reject);
         } else {
-          findWorkingPython(
-            pythonPaths,
-            index + 1,
-            scriptPath,
-            framesDir,
-            resolve,
-            reject
-          );
+          findWorkingPython(pythonPaths, index + 1, scriptPath, framesDir, resolve, reject);
         }
       });
     }
   } catch (error) {
     console.error(`Error checking Python at ${pythonPath}: ${error}`);
-    findWorkingPython(
-      pythonPaths,
-      index + 1,
-      scriptPath,
-      framesDir,
-      resolve,
-      reject
-    );
+    findWorkingPython(pythonPaths, index + 1, scriptPath, framesDir, resolve, reject);
   }
 }
 
@@ -320,35 +282,29 @@ function executePython(
   pythonCommand: string,
   scriptPath: string,
   framesDir: string,
-  resolve: (value: {
-    heartRate: number;
-    confidence: number;
-    hrv?: any;
-  }) => void,
+  resolve: (value: { heartRate: number; confidence: number; hrv?: any }) => void,
   reject: (reason: Error) => void
 ) {
   // Spawn Python process
   const pythonProcess = spawn(pythonCommand, [scriptPath, framesDir]);
 
-  let resultData = "";
-  let errorData = "";
+  let resultData = '';
+  let errorData = '';
 
-  pythonProcess.stdout.on("data", (data) => {
+  pythonProcess.stdout.on('data', data => {
     resultData += data.toString();
   });
 
-  pythonProcess.stderr.on("data", (data) => {
+  pythonProcess.stderr.on('data', data => {
     errorData += data.toString();
     console.error(`Python stderr: ${data.toString()}`);
   });
 
-  pythonProcess.on("close", (code) => {
+  pythonProcess.on('close', code => {
     if (code !== 0) {
       console.error(`Python process exited with code ${code}`);
       console.error(`Python stderr: ${errorData}`);
-      reject(
-        new Error(`Python process failed with code ${code}: ${errorData}`)
-      );
+      reject(new Error(`Python process failed with code ${code}: ${errorData}`));
       return;
     }
 

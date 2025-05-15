@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useAppStore } from "@/lib/store";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAppStore } from '@/lib/store';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -9,12 +9,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
-import { useState, useEffect } from "react";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { useState, useEffect } from 'react';
 import {
   Heart,
   Calendar,
@@ -28,13 +28,13 @@ import {
   BarChart as BarChartIcon,
   Users,
   Eye,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,26 +42,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   LineChart,
   BarChart,
   defaultLineChartOptions,
   defaultBarChartOptions,
-} from "@/components/ui/chart";
-import * as XLSX from "xlsx";
-import { useMeasurementHistory, useUsers } from "@/hooks/use-queries";
-import { useQueryClient } from "@tanstack/react-query";
-import { fetchMeasurementHistory } from "@/lib/api"; // fetchMeasurementHistory 함수 가져오기
+} from '@/components/ui/chart';
+import * as XLSX from 'xlsx';
+import { useMeasurementHistory, useUsers } from '@/hooks/use-queries';
+import { useQueryClient } from '@tanstack/react-query';
+import { fetchMeasurementHistory } from '@/lib/api'; // fetchMeasurementHistory 함수 가져오기
 
-type SortField = "timestamp" | "heartRate";
+type SortField = 'timestamp' | 'heartRate';
 
 interface MeasurementResult {
   id: string;
@@ -92,16 +87,16 @@ interface MeasurementResult {
   lfHfRatio?: number;
   pnn50?: number;
 }
-type SortOrder = "asc" | "desc";
-type ViewMode = "list" | "card" | "graph";
+type SortOrder = 'asc' | 'desc';
+type ViewMode = 'list' | 'card' | 'graph';
 
 export default function HistoryPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { userInfo, setCurrentResult } = useAppStore();
-  const [sortField, setSortField] = useState<SortField>("timestamp");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [view, setView] = useState<ViewMode>("list");
+  const [sortField, setSortField] = useState<SortField>('timestamp');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [view, setView] = useState<ViewMode>('list');
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [showAllUsers, setShowAllUsers] = useState(false); // 모든 사용자 데이터 표시 여부
@@ -124,7 +119,7 @@ export default function HistoryPage() {
     isLoading: isLoadingUsers,
     error: usersError,
   } = useUsers(undefined, {
-    queryKey: ["users", undefined],
+    queryKey: ['users', undefined],
     enabled: isAdmin,
     staleTime: 5 * 60 * 1000, // 5분 동안 캐시 유지
   });
@@ -133,18 +128,14 @@ export default function HistoryPage() {
   const userId = userInfo?.id;
   // 관리자인 경우: 특정 사용자를 선택했거나 모든 사용자 데이터를 표시하는 경우
   // 일반 사용자인 경우: 자신의 데이터만 표시
-  const queryUserId = isAdmin
-    ? showAllUsers
-      ? undefined
-      : selectedUser || undefined
-    : userId;
+  const queryUserId = isAdmin ? (showAllUsers ? undefined : selectedUser || undefined) : userId;
 
   const {
     data: results = [],
     isLoading,
     error,
   } = useMeasurementHistory(queryUserId, {
-    queryKey: ["measurementHistory", queryUserId, isAdmin],
+    queryKey: ['measurementHistory', queryUserId, isAdmin],
     queryFn: () => fetchMeasurementHistory(queryUserId, isAdmin), // isAdmin 파라미터 추가
     enabled: true, // 항상 쿼리 활성화
     refetchOnWindowFocus: false,
@@ -153,16 +144,14 @@ export default function HistoryPage() {
 
   // 정렬 함수
   const sortedResults = [...results].sort((a, b) => {
-    if (sortField === "timestamp") {
+    if (sortField === 'timestamp') {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
-      return sortOrder === "asc"
+      return sortOrder === 'asc'
         ? dateA.getTime() - dateB.getTime()
         : dateB.getTime() - dateA.getTime();
-    } else if (sortField === "heartRate") {
-      return sortOrder === "asc"
-        ? a.heartRate - b.heartRate
-        : b.heartRate - a.heartRate;
+    } else if (sortField === 'heartRate') {
+      return sortOrder === 'asc' ? a.heartRate - b.heartRate : b.heartRate - a.heartRate;
     }
     return 0;
   });
@@ -171,11 +160,11 @@ export default function HistoryPage() {
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // 같은 필드를 클릭한 경우 정렬 순서만 변경
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       // 다른 필드를 클릭한 경우 필드 변경 및 내림차순 기본
       setSortField(field);
-      setSortOrder("desc");
+      setSortOrder('desc');
     }
   };
 
@@ -197,7 +186,7 @@ export default function HistoryPage() {
       },
       userInfo: {
         id: result.userId || result.user?.id,
-        company: result.user?.company || "",
+        company: result.user?.company || '',
         email: result.email || result.user?.email,
         name: result.user?.name,
       },
@@ -206,57 +195,45 @@ export default function HistoryPage() {
     });
 
     // 결과 페이지로 이동
-    router.push("/results");
+    router.push('/results');
   };
 
   // 엑셀로 내보내기 함수 (관리자만)
   const exportToExcel = () => {
     // 테이블에 표시되는 데이터만 추출
-    const exportData = sortedResults.map((result) => ({
-      측정일시: format(new Date(result.timestamp), "yyyy-MM-dd HH:mm", {
+    const exportData = sortedResults.map(result => ({
+      측정일시: format(new Date(result.timestamp), 'yyyy-MM-dd HH:mm', {
         locale: ko,
       }),
-      "심박수(BPM)": result.heartRate?.toFixed(1) ?? "-",
-      "신뢰도(%)":
-        result.confidence !== undefined
-          ? (result.confidence * 100).toFixed(0)
-          : "-",
+      '심박수(BPM)': result.heartRate?.toFixed(1) ?? '-',
+      '신뢰도(%)': result.confidence !== undefined ? (result.confidence * 100).toFixed(0) : '-',
       RMSSD:
         result.hrv?.rmssd !== null && result.hrv?.rmssd !== undefined
           ? result.hrv.rmssd.toFixed(2)
-          : "-",
+          : '-',
       SDNN:
         result.hrv?.sdnn !== null && result.hrv?.sdnn !== undefined
           ? result.hrv.sdnn.toFixed(2)
-          : "-",
-      LF:
-        result.hrv?.lf !== null && result.hrv?.lf !== undefined
-          ? result.hrv.lf.toFixed(2)
-          : "-",
-      HF:
-        result.hrv?.hf !== null && result.hrv?.hf !== undefined
-          ? result.hrv.hf.toFixed(2)
-          : "-",
-      "LF/HF":
+          : '-',
+      LF: result.hrv?.lf !== null && result.hrv?.lf !== undefined ? result.hrv.lf.toFixed(2) : '-',
+      HF: result.hrv?.hf !== null && result.hrv?.hf !== undefined ? result.hrv.hf.toFixed(2) : '-',
+      'LF/HF':
         result.hrv?.lfHfRatio !== null && result.hrv?.lfHfRatio !== undefined
           ? result.hrv.lfHfRatio.toFixed(2)
-          : "-",
+          : '-',
       pNN50:
         result.hrv?.pnn50 !== null && result.hrv?.pnn50 !== undefined
           ? result.hrv.pnn50.toFixed(2)
-          : "-",
-      기분: result.mood ? moodToText(result.mood) : "-",
-      사용자: result.userInfo?.name || "-",
-      이메일: result.userInfo?.email || "-",
-      소속: result.userInfo?.company || "-",
+          : '-',
+      기분: result.mood ? moodToText(result.mood) : '-',
+      사용자: result.userInfo?.name || '-',
+      이메일: result.userInfo?.email || '-',
+      소속: result.userInfo?.company || '-',
     }));
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "측정이력");
-    XLSX.writeFile(
-      wb,
-      `측정이력_${format(new Date(), "yyyyMMdd_HHmmss")}.xlsx`
-    );
+    XLSX.utils.book_append_sheet(wb, ws, '측정이력');
+    XLSX.writeFile(wb, `측정이력_${format(new Date(), 'yyyyMMdd_HHmmss')}.xlsx`);
   };
 
   // 뷰 전환 핸들러
@@ -283,43 +260,42 @@ export default function HistoryPage() {
 
     // 시간순 정렬 (오래된 순)
     const timeOrderedResults = [...results].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
     // 날짜 라벨 생성
-    const labels = timeOrderedResults.map((result) =>
-      format(new Date(result.timestamp), "MM/dd HH:mm")
+    const labels = timeOrderedResults.map(result =>
+      format(new Date(result.timestamp), 'MM/dd HH:mm')
     );
 
     // 심박수, RMSSD, SDNN 데이터
-    const heartRateData = timeOrderedResults.map((r) => r.heartRate);
-    const rmssdData = timeOrderedResults.map((r) => r.hrv?.rmssd ?? null);
-    const sdnnData = timeOrderedResults.map((r) => r.hrv?.sdnn ?? null);
+    const heartRateData = timeOrderedResults.map(r => r.heartRate);
+    const rmssdData = timeOrderedResults.map(r => r.hrv?.rmssd ?? null);
+    const sdnnData = timeOrderedResults.map(r => r.hrv?.sdnn ?? null);
 
     return {
       labels,
       datasets: [
         {
-          label: "심박수 (BPM)",
+          label: '심박수 (BPM)',
           data: heartRateData,
-          borderColor: "rgb(255, 99, 132)",
-          backgroundColor: "rgba(255, 99, 132, 0.5)",
-          yAxisID: "y",
+          borderColor: 'rgb(255, 99, 132)',
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+          yAxisID: 'y',
         },
         {
-          label: "RMSSD (ms)",
+          label: 'RMSSD (ms)',
           data: rmssdData,
-          borderColor: "rgb(53, 162, 235)",
-          backgroundColor: "rgba(53, 162, 235, 0.5)",
-          yAxisID: "y1",
+          borderColor: 'rgb(53, 162, 235)',
+          backgroundColor: 'rgba(53, 162, 235, 0.5)',
+          yAxisID: 'y1',
         },
         {
-          label: "SDNN (ms)",
+          label: 'SDNN (ms)',
           data: sdnnData,
-          borderColor: "rgb(75, 192, 192)",
-          backgroundColor: "rgba(75, 192, 192, 0.5)",
-          yAxisID: "y1",
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgba(75, 192, 192, 0.5)',
+          yAxisID: 'y1',
         },
       ],
     };
@@ -331,49 +307,48 @@ export default function HistoryPage() {
 
     // 시간순 정렬 (오래된 순)
     const timeOrderedResults = [...results].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
     // 날짜 라벨 생성
-    const labels = timeOrderedResults.map((result) =>
-      format(new Date(result.timestamp), "MM/dd HH:mm")
+    const labels = timeOrderedResults.map(result =>
+      format(new Date(result.timestamp), 'MM/dd HH:mm')
     );
 
     // LF/HF 비율 데이터
-    const lfData = timeOrderedResults.map((r) => r.hrv?.lf ?? null);
-    const hfData = timeOrderedResults.map((r) => r.hrv?.hf ?? null);
-    const lfhfData = timeOrderedResults.map((r) => r.hrv?.lfHfRatio ?? null);
-    const pnn50Data = timeOrderedResults.map((r) => r.hrv?.pnn50 ?? null);
+    const lfData = timeOrderedResults.map(r => r.hrv?.lf ?? null);
+    const hfData = timeOrderedResults.map(r => r.hrv?.hf ?? null);
+    const lfhfData = timeOrderedResults.map(r => r.hrv?.lfHfRatio ?? null);
+    const pnn50Data = timeOrderedResults.map(r => r.hrv?.pnn50 ?? null);
 
     return {
       labels,
       datasets: [
         {
-          label: "LF/HF 비율",
+          label: 'LF/HF 비율',
           data: lfhfData,
-          borderColor: "rgb(153, 102, 255)",
-          backgroundColor: "rgba(153, 102, 255, 0.5)",
+          borderColor: 'rgb(153, 102, 255)',
+          backgroundColor: 'rgba(153, 102, 255, 0.5)',
         },
         {
-          label: "LF (ms²)",
+          label: 'LF (ms²)',
           data: lfData,
-          borderColor: "rgb(255, 159, 64)",
-          backgroundColor: "rgba(255, 159, 64, 0.5)",
+          borderColor: 'rgb(255, 159, 64)',
+          backgroundColor: 'rgba(255, 159, 64, 0.5)',
           hidden: true,
         },
         {
-          label: "HF (ms²)",
+          label: 'HF (ms²)',
           data: hfData,
-          borderColor: "rgb(201, 203, 207)",
-          backgroundColor: "rgba(201, 203, 207, 0.5)",
+          borderColor: 'rgb(201, 203, 207)',
+          backgroundColor: 'rgba(201, 203, 207, 0.5)',
           hidden: true,
         },
         {
-          label: "pNN50 (%)",
+          label: 'pNN50 (%)',
           data: pnn50Data,
-          borderColor: "rgb(255, 205, 86)",
-          backgroundColor: "rgba(255, 205, 86, 0.5)",
+          borderColor: 'rgb(255, 205, 86)',
+          backgroundColor: 'rgba(255, 205, 86, 0.5)',
           hidden: true,
         },
       ],
@@ -391,22 +366,22 @@ export default function HistoryPage() {
         },
       },
       y: {
-        type: "linear" as const,
-        position: "left" as const,
+        type: 'linear' as const,
+        position: 'left' as const,
         title: {
           display: true,
-          text: "심박수 (BPM)",
+          text: '심박수 (BPM)',
         },
       },
       y1: {
-        type: "linear" as const,
-        position: "right" as const,
+        type: 'linear' as const,
+        position: 'right' as const,
         grid: {
           drawOnChartArea: false,
         },
         title: {
           display: true,
-          text: "변이도 (ms)",
+          text: '변이도 (ms)',
         },
       },
     },
@@ -425,7 +400,7 @@ export default function HistoryPage() {
         beginAtZero: true,
         title: {
           display: true,
-          text: "값",
+          text: '값',
         },
       },
     },
@@ -451,11 +426,9 @@ export default function HistoryPage() {
           <AlertTriangle className="mx-auto h-10 w-10 text-destructive mb-4" />
           <h1 className="text-2xl font-bold mb-4">오류 발생</h1>
           <p className="text-muted-foreground mb-6">
-            {error instanceof Error ? error.message : "로그인이 필요합니다."}
+            {error instanceof Error ? error.message : '로그인이 필요합니다.'}
           </p>
-          <Button onClick={() => router.push("/measure")}>
-            측정 페이지로 이동
-          </Button>
+          <Button onClick={() => router.push('/measure')}>측정 페이지로 이동</Button>
         </div>
       </div>
     );
@@ -468,13 +441,8 @@ export default function HistoryPage() {
         <div className="p-6 text-center">
           <Heart className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
           <h1 className="text-2xl font-bold mb-4">저장된 이력이 없습니다</h1>
-          <p className="text-muted-foreground mb-6">
-            심박수를 측정하고 결과를 저장해보세요
-          </p>
-          <Button
-            onClick={() => router.push("/measure")}
-            className="flex items-center gap-2"
-          >
+          <p className="text-muted-foreground mb-6">심박수를 측정하고 결과를 저장해보세요</p>
+          <Button onClick={() => router.push('/measure')} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             <span>측정하러 가기</span>
           </Button>
@@ -503,14 +471,13 @@ export default function HistoryPage() {
           <h1 className="text-xl md:text-3xl font-bold ml-2">
             {isAdmin
               ? showAllUsers
-                ? "전체 사용자 측정 기록"
+                ? '전체 사용자 측정 기록'
                 : selectedUser
-                ? `사용자 측정 기록: ${
-                    userList.find((u) => u.id === selectedUser)?.name ||
-                    "선택된 사용자"
-                  }`
-                : "측정 기록"
-              : "내 측정 기록"}
+                  ? `사용자 측정 기록: ${
+                      userList.find(u => u.id === selectedUser)?.name || '선택된 사용자'
+                    }`
+                  : '측정 기록'
+              : '내 측정 기록'}
           </h1>
         </div>
 
@@ -523,12 +490,12 @@ export default function HistoryPage() {
                   <Users className="h-4 w-4" />
                   <span>
                     {showAllUsers
-                      ? "모든 사용자"
+                      ? '모든 사용자'
                       : selectedUser
-                      ? userList.find((u) => u.id === selectedUser)?.name ||
-                        userList.find((u) => u.id === selectedUser)?.email ||
-                        "선택된 사용자"
-                      : "사용자 선택"}
+                        ? userList.find(u => u.id === selectedUser)?.name ||
+                          userList.find(u => u.id === selectedUser)?.email ||
+                          '선택된 사용자'
+                        : '사용자 선택'}
                   </span>
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
@@ -538,22 +505,16 @@ export default function HistoryPage() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => handleUserSelect(null)}
-                  className={
-                    showAllUsers ? "bg-accent text-accent-foreground" : ""
-                  }
+                  className={showAllUsers ? 'bg-accent text-accent-foreground' : ''}
                 >
                   모든 사용자
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {userList.map((user) => (
+                {userList.map(user => (
                   <DropdownMenuItem
                     key={user.id}
                     onClick={() => handleUserSelect(user.id)}
-                    className={
-                      selectedUser === user.id
-                        ? "bg-accent text-accent-foreground"
-                        : ""
-                    }
+                    className={selectedUser === user.id ? 'bg-accent text-accent-foreground' : ''}
                   >
                     {user.name || user.email || `사용자 ID: ${user.id}`}
                   </DropdownMenuItem>
@@ -565,9 +526,7 @@ export default function HistoryPage() {
                   </DropdownMenuItem>
                 )}
                 {userList.length === 0 && !isLoadingUsers && (
-                  <DropdownMenuItem disabled>
-                    사용자가 없습니다
-                  </DropdownMenuItem>
+                  <DropdownMenuItem disabled>사용자가 없습니다</DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -578,27 +537,23 @@ export default function HistoryPage() {
           {/* 뷰 전환 버튼 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 md:h-10 flex items-center gap-1"
-              >
-                {view === "list" && <span>목록</span>}
-                {view === "card" && <span>카드</span>}
-                {view === "graph" && <span>그래프</span>}
+              <Button variant="outline" size="sm" className="h-8 md:h-10 flex items-center gap-1">
+                {view === 'list' && <span>목록</span>}
+                {view === 'card' && <span>카드</span>}
+                {view === 'graph' && <span>그래프</span>}
                 <ChevronDown className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>보기 방식</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleViewChange("list")}>
+              <DropdownMenuItem onClick={() => handleViewChange('list')}>
                 목록 보기
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleViewChange("card")}>
+              <DropdownMenuItem onClick={() => handleViewChange('card')}>
                 카드 보기
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleViewChange("graph")}>
+              <DropdownMenuItem onClick={() => handleViewChange('graph')}>
                 그래프 보기
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -607,11 +562,7 @@ export default function HistoryPage() {
           {/* 정렬 드롭다운 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 md:h-10 flex items-center gap-1"
-              >
+              <Button variant="outline" size="sm" className="h-8 md:h-10 flex items-center gap-1">
                 <ArrowUpDown className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">정렬</span>
               </Button>
@@ -619,13 +570,11 @@ export default function HistoryPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>정렬 기준</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleSort("timestamp")}>
-                날짜{" "}
-                {sortField === "timestamp" && (sortOrder === "asc" ? "↑" : "↓")}
+              <DropdownMenuItem onClick={() => handleSort('timestamp')}>
+                날짜 {sortField === 'timestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSort("heartRate")}>
-                심박수{" "}
-                {sortField === "heartRate" && (sortOrder === "asc" ? "↑" : "↓")}
+              <DropdownMenuItem onClick={() => handleSort('heartRate')}>
+                심박수 {sortField === 'heartRate' && (sortOrder === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -646,7 +595,7 @@ export default function HistoryPage() {
           <Button
             size="sm"
             className="h-8 md:h-10 flex items-center gap-1"
-            onClick={() => router.push("/measure")}
+            onClick={() => router.push('/measure')}
           >
             <Plus className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">새 측정</span>
@@ -654,7 +603,7 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      {view === "graph" && (
+      {view === 'graph' && (
         <div className="space-y-6">
           {/* 심박수 및 기본 HRV 지표 그래프 */}
           <Card>
@@ -663,9 +612,7 @@ export default function HistoryPage() {
             </CardHeader>
             <CardContent className="p-4">
               <div className="h-80">
-                {chartData && (
-                  <LineChart data={chartData} options={chartOptions} />
-                )}
+                {chartData && <LineChart data={chartData} options={chartOptions} />}
               </div>
             </CardContent>
           </Card>
@@ -677,16 +624,14 @@ export default function HistoryPage() {
             </CardHeader>
             <CardContent className="p-4">
               <div className="h-80">
-                {hrvChartData && (
-                  <LineChart data={hrvChartData} options={hrvChartOptions} />
-                )}
+                {hrvChartData && <LineChart data={hrvChartData} options={hrvChartOptions} />}
               </div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {view === "list" && (
+      {view === 'list' && (
         // 목록 뷰 (테이블)
         <div className="bg-card rounded-lg border overflow-hidden">
           {/* 데스크탑 테이블 뷰 - 모바일에서 숨김 */}
@@ -694,31 +639,25 @@ export default function HistoryPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead
-                    className="cursor-pointer"
-                    onClick={() => handleSort("timestamp")}
-                  >
+                  <TableHead className="cursor-pointer" onClick={() => handleSort('timestamp')}>
                     <div className="flex items-center">
                       측정일시
-                      {sortField === "timestamp" && (
+                      {sortField === 'timestamp' && (
                         <ChevronDown
                           className={`ml-1 h-4 w-4 ${
-                            sortOrder === "asc" ? "rotate-180 transform" : ""
+                            sortOrder === 'asc' ? 'rotate-180 transform' : ''
                           }`}
                         />
                       )}
                     </div>
                   </TableHead>
-                  <TableHead
-                    className="cursor-pointer"
-                    onClick={() => handleSort("heartRate")}
-                  >
+                  <TableHead className="cursor-pointer" onClick={() => handleSort('heartRate')}>
                     <div className="flex items-center">
                       심박수
-                      {sortField === "heartRate" && (
+                      {sortField === 'heartRate' && (
                         <ChevronDown
                           className={`ml-1 h-4 w-4 ${
-                            sortOrder === "asc" ? "rotate-180 transform" : ""
+                            sortOrder === 'asc' ? 'rotate-180 transform' : ''
                           }`}
                         />
                       )}
@@ -736,42 +675,40 @@ export default function HistoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedResults.map((result) => (
+                {sortedResults.map(result => (
                   <TableRow key={result.id} className="hover:bg-muted/50">
                     <TableCell>
-                      {format(new Date(result.timestamp), "yyyy-MM-dd HH:mm", {
+                      {format(new Date(result.timestamp), 'yyyy-MM-dd HH:mm', {
                         locale: ko,
                       })}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {result.heartRate?.toFixed(1) ?? "-"} BPM
+                      {result.heartRate?.toFixed(1) ?? '-'} BPM
                     </TableCell>
                     <TableCell>
                       {result.confidence !== undefined
-                        ? (result.confidence * 100).toFixed(0) + "%"
-                        : "-"}
+                        ? (result.confidence * 100).toFixed(0) + '%'
+                        : '-'}
                     </TableCell>
                     <TableCell>
-                      {getHrvValue(result, "rmssd") !== null
-                        ? getHrvValue(result, "rmssd")?.toFixed(2)
-                        : "-"}
+                      {getHrvValue(result, 'rmssd') !== null
+                        ? getHrvValue(result, 'rmssd')?.toFixed(2)
+                        : '-'}
                     </TableCell>
                     <TableCell>
-                      {getHrvValue(result, "sdnn") !== null
-                        ? getHrvValue(result, "sdnn")?.toFixed(2)
-                        : "-"}
+                      {getHrvValue(result, 'sdnn') !== null
+                        ? getHrvValue(result, 'sdnn')?.toFixed(2)
+                        : '-'}
                     </TableCell>
                     <TableCell>
-                      {getHrvValue(result, "lfHfRatio") !== null
-                        ? getHrvValue(result, "lfHfRatio")?.toFixed(2)
-                        : "-"}
+                      {getHrvValue(result, 'lfHfRatio') !== null
+                        ? getHrvValue(result, 'lfHfRatio')?.toFixed(2)
+                        : '-'}
                     </TableCell>
-                    <TableCell>
-                      {result.mood ? moodToText(result.mood) : "-"}
-                    </TableCell>
-                    <TableCell>{getUserValue(result, "name")}</TableCell>
-                    <TableCell>{getUserValue(result, "email")}</TableCell>
-                    <TableCell>{getUserValue(result, "company")}</TableCell>
+                    <TableCell>{result.mood ? moodToText(result.mood) : '-'}</TableCell>
+                    <TableCell>{getUserValue(result, 'name')}</TableCell>
+                    <TableCell>{getUserValue(result, 'email')}</TableCell>
+                    <TableCell>{getUserValue(result, 'company')}</TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"
@@ -801,23 +738,19 @@ export default function HistoryPage() {
                         </div>
                         <div>
                           <div className="font-medium">
-                            {result.heartRate?.toFixed(1) ?? "-"} BPM
+                            {result.heartRate?.toFixed(1) ?? '-'} BPM
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {format(
-                              new Date(result.timestamp),
-                              "yyyy-MM-dd HH:mm",
-                              {
-                                locale: ko,
-                              }
-                            )}
+                            {format(new Date(result.timestamp), 'yyyy-MM-dd HH:mm', {
+                              locale: ko,
+                            })}
                           </div>
                         </div>
                       </div>
                       <div className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">
                         {result.confidence !== undefined
-                          ? (result.confidence * 100).toFixed(0) + "%"
-                          : "-"}
+                          ? (result.confidence * 100).toFixed(0) + '%'
+                          : '-'}
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -826,69 +759,67 @@ export default function HistoryPage() {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">사용자</div>
-                          <div>{getUserValue(result, "name")}</div>
+                          <div>{getUserValue(result, 'name')}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">이메일</div>
-                          <div>{getUserValue(result, "email")}</div>
+                          <div>{getUserValue(result, 'email')}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">소속</div>
-                          <div>{getUserValue(result, "company")}</div>
+                          <div>{getUserValue(result, 'company')}</div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">RMSSD</div>
                           <div>
-                            {getHrvValue(result, "rmssd") !== null
-                              ? getHrvValue(result, "rmssd")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'rmssd') !== null
+                              ? getHrvValue(result, 'rmssd')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">SDNN</div>
                           <div>
-                            {getHrvValue(result, "sdnn") !== null
-                              ? getHrvValue(result, "sdnn")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'sdnn') !== null
+                              ? getHrvValue(result, 'sdnn')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">LF</div>
                           <div>
-                            {getHrvValue(result, "lf") !== null
-                              ? getHrvValue(result, "lf")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'lf') !== null
+                              ? getHrvValue(result, 'lf')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">HF</div>
                           <div>
-                            {getHrvValue(result, "hf") !== null
-                              ? getHrvValue(result, "hf")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'hf') !== null
+                              ? getHrvValue(result, 'hf')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">LF/HF</div>
                           <div>
-                            {getHrvValue(result, "lfHfRatio") !== null
-                              ? getHrvValue(result, "lfHfRatio")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'lfHfRatio') !== null
+                              ? getHrvValue(result, 'lfHfRatio')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div className="border-b pb-1">
                           <div className="text-muted-foreground">pNN50</div>
                           <div>
-                            {getHrvValue(result, "pnn50") !== null
-                              ? getHrvValue(result, "pnn50")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'pnn50') !== null
+                              ? getHrvValue(result, 'pnn50')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div className="border-b pb-1 col-span-2">
                           <div className="text-muted-foreground">기분 상태</div>
-                          <div>
-                            {result.mood ? moodToText(result.mood) : "-"}
-                          </div>
+                          <div>{result.mood ? moodToText(result.mood) : '-'}</div>
                         </div>
                       </div>
 
@@ -911,10 +842,10 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {view === "card" && (
+      {view === 'card' && (
         // 카드 뷰
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sortedResults.map((result) => (
+          {sortedResults.map(result => (
             <Card
               key={result.id}
               className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
@@ -926,12 +857,12 @@ export default function HistoryPage() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg">
-                    {result.heartRate?.toFixed(1) ?? "-"} BPM
+                    {result.heartRate?.toFixed(1) ?? '-'} BPM
                   </CardTitle>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     <span>
-                      {format(new Date(result.timestamp), "yyyy-MM-dd HH:mm", {
+                      {format(new Date(result.timestamp), 'yyyy-MM-dd HH:mm', {
                         locale: ko,
                       })}
                     </span>
@@ -942,8 +873,8 @@ export default function HistoryPage() {
                     <TooltipTrigger asChild>
                       <div className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">
                         {result.confidence !== undefined
-                          ? (result.confidence * 100).toFixed(0) + "%"
-                          : "-"}
+                          ? (result.confidence * 100).toFixed(0) + '%'
+                          : '-'}
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -967,25 +898,25 @@ export default function HistoryPage() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">사용자</span>
                         <span className="font-medium truncate ml-2">
-                          {getUserValue(result, "name")}
+                          {getUserValue(result, 'name')}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">이메일</span>
                         <span className="font-medium truncate ml-2">
-                          {getUserValue(result, "email")}
+                          {getUserValue(result, 'email')}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">소속</span>
                         <span className="font-medium truncate ml-2">
-                          {getUserValue(result, "company")}
+                          {getUserValue(result, 'company')}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">기분</span>
                         <span className="font-medium truncate ml-2">
-                          {result.mood ? moodToText(result.mood) : "-"}
+                          {result.mood ? moodToText(result.mood) : '-'}
                         </span>
                       </div>
                     </div>
@@ -996,33 +927,33 @@ export default function HistoryPage() {
                         <div>
                           <span className="text-muted-foreground">RMSSD</span>
                           <div className="font-medium">
-                            {getHrvValue(result, "rmssd") !== null
-                              ? getHrvValue(result, "rmssd")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'rmssd') !== null
+                              ? getHrvValue(result, 'rmssd')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">SDNN</span>
                           <div className="font-medium">
-                            {getHrvValue(result, "sdnn") !== null
-                              ? getHrvValue(result, "sdnn")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'sdnn') !== null
+                              ? getHrvValue(result, 'sdnn')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">LF/HF</span>
                           <div className="font-medium">
-                            {getHrvValue(result, "lfHfRatio") !== null
-                              ? getHrvValue(result, "lfHfRatio")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'lfHfRatio') !== null
+                              ? getHrvValue(result, 'lfHfRatio')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">pNN50</span>
                           <div className="font-medium">
-                            {getHrvValue(result, "pnn50") !== null
-                              ? getHrvValue(result, "pnn50")?.toFixed(2)
-                              : "-"}
+                            {getHrvValue(result, 'pnn50') !== null
+                              ? getHrvValue(result, 'pnn50')?.toFixed(2)
+                              : '-'}
                           </div>
                         </div>
                       </div>
@@ -1068,45 +999,37 @@ function getHrvValue(result: any, key: string): number | null {
 // 사용자 정보를 안전하게 추출하는 헬퍼 함수
 function getUserValue(result: any, key: string): string {
   // 1. userInfo 객체에서 확인 (표준 형식)
-  if (
-    result.userInfo &&
-    result.userInfo[key] !== undefined &&
-    result.userInfo[key] !== null
-  ) {
+  if (result.userInfo && result.userInfo[key] !== undefined && result.userInfo[key] !== null) {
     return result.userInfo[key];
   }
 
   // 2. user 객체에서 확인 (API 응답 형식)
-  if (
-    result.user &&
-    result.user[key] !== undefined &&
-    result.user[key] !== null
-  ) {
+  if (result.user && result.user[key] !== undefined && result.user[key] !== null) {
     return result.user[key];
   }
 
   // 3. 특수 케이스: email은 루트 레벨에서도 확인
-  if (key === "email" && result.email !== undefined && result.email !== null) {
+  if (key === 'email' && result.email !== undefined && result.email !== null) {
     return result.email;
   }
 
   // 4. 값을 찾을 수 없는 경우
-  return "-";
+  return '-';
 }
 
 // 기분 상태 텍스트로 변환
 function moodToText(mood: string): string {
   switch (mood) {
-    case "happy":
-      return "행복함";
-    case "sad":
-      return "우울함";
-    case "stressed":
-      return "스트레스";
-    case "relaxed":
-      return "편안함";
-    case "neutral":
-      return "보통";
+    case 'happy':
+      return '행복함';
+    case 'sad':
+      return '우울함';
+    case 'stressed':
+      return '스트레스';
+    case 'relaxed':
+      return '편안함';
+    case 'neutral':
+      return '보통';
     default:
       return mood;
   }

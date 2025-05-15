@@ -22,12 +22,12 @@ export const rls = {
     enable: true,
     policies: [
       {
-        name: "admin_all_access",
-        using: "true",
-        check: "true",
+        name: 'admin_all_access',
+        using: 'true',
+        check: 'true',
       },
       {
-        name: "user_self_access",
+        name: 'user_self_access',
         using: "id = current_setting('app.user_id', true)::varchar",
         check: "id = current_setting('app.user_id', true)::varchar",
       },
@@ -39,14 +39,14 @@ export const rls = {
     enable: true,
     policies: [
       {
-        name: "admin_all_access",
-        using: "true",
-        check: "true",
+        name: 'admin_all_access',
+        using: 'true',
+        check: 'true',
       },
       {
-        name: "user_self_access",
-        using: "\"userId\" = current_setting('app.user_id', true)::varchar",
-        check: "\"userId\" = current_setting('app.user_id', true)::varchar",
+        name: 'user_self_access',
+        using: '"userId" = current_setting(\'app.user_id\', true)::varchar',
+        check: '"userId" = current_setting(\'app.user_id\', true)::varchar',
       },
     ],
   },

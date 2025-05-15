@@ -1,8 +1,8 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { v4 as uuidv4 } from "uuid";
-import { MeasurementResult, MoodState } from "../types";
-import { HRVMetrics } from "../api-client";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { v4 as uuidv4 } from 'uuid';
+import { MeasurementResult, MoodState } from '../types';
+import { HRVMetrics } from '../api-client';
 
 interface MeasurementState {
   // 현재 측정 결과
@@ -44,10 +44,7 @@ export const useMeasurementStore = create<MeasurementState>()(
         moodMatchScore?: number
       ) => {
         // 만약 객체가 들어왔다면 그대로 사용
-        if (
-          typeof resultOrHeartRate === "object" &&
-          resultOrHeartRate !== null
-        ) {
+        if (typeof resultOrHeartRate === 'object' && resultOrHeartRate !== null) {
           set({ currentResult: resultOrHeartRate });
           return;
         }
@@ -68,7 +65,7 @@ export const useMeasurementStore = create<MeasurementState>()(
               email: '',
               company: '',
             }, // 임시 userInfo 객체 생성
-            mood: mood || "unknown",
+            mood: mood || 'unknown',
             detectedMood,
             moodMatchScore,
           },
@@ -93,7 +90,7 @@ export const useMeasurementStore = create<MeasurementState>()(
         const current = get().currentResult;
         if (!current) return;
 
-        set((state) => ({
+        set(state => ({
           historyResults: [current, ...state.historyResults],
         }));
       },
@@ -101,12 +98,11 @@ export const useMeasurementStore = create<MeasurementState>()(
       clearHistory: () => set({ historyResults: [] }),
 
       // 서버에서 가져온 데이터로 로컬 상태를 업데이트
-      updateHistoryFromServer: (results: MeasurementResult[]) =>
-        set({ historyResults: results }),
+      updateHistoryFromServer: (results: MeasurementResult[]) => set({ historyResults: results }),
     }),
     {
-      name: "rppg-measurement-storage",
-      partialize: (state) => ({
+      name: 'rppg-measurement-storage',
+      partialize: state => ({
         historyResults: state.historyResults,
       }),
     }

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useAppStore } from "@/lib/store";
-import { LogIn, LogOut, User } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useAppStore } from '@/lib/store';
+import { LogIn, LogOut, User } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 export function AuthButtons() {
   const { isAuthenticated, userInfo, clearUserInfo } = useAppStore();
@@ -25,15 +25,15 @@ export function AuthButtons() {
 
     try {
       // 서버에 로그아웃 요청
-      await fetch("/api/auth/logout", {
-        method: "POST",
+      await fetch('/api/auth/logout', {
+        method: 'POST',
       });
 
       // 로컬 상태 초기화
       clearUserInfo();
 
       // 홈 페이지로 이동
-      router.push("/");
+      router.push('/');
     } finally {
       setIsLoggingOut(false);
     }
@@ -42,11 +42,7 @@ export function AuthButtons() {
   if (!isAuthenticated) {
     return (
       <Link href="/login">
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden sm:flex items-center gap-1"
-        >
+        <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-1">
           <LogIn className="h-4 w-4 mr-1" />
           로그인
         </Button>
@@ -60,13 +56,9 @@ export function AuthButtons() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden sm:flex items-center gap-1"
-        >
+        <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-1">
           <User className="h-4 w-4 mr-1" />
-          {userInfo?.name || userInfo?.email?.split("@")[0] || "사용자"}
+          {userInfo?.name || userInfo?.email?.split('@')[0] || '사용자'}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuTrigger asChild>
@@ -91,7 +83,7 @@ export function AuthButtons() {
           className="text-red-500 focus:text-red-500"
         >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>{isLoggingOut ? "로그아웃 중..." : "로그아웃"}</span>
+          <span>{isLoggingOut ? '로그아웃 중...' : '로그아웃'}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

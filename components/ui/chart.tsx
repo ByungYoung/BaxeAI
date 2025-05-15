@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useMemo } from "react";
-import * as RechartsPrimitive from "recharts";
+import * as React from 'react';
+import { useMemo } from 'react';
+import * as RechartsPrimitive from 'recharts';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 import {
   Chart as ChartJS,
@@ -18,8 +18,8 @@ import {
   BarElement,
   ChartData,
   ChartOptions,
-} from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
 
 // Chart.js 등록
 ChartJS.register(
@@ -35,8 +35,8 @@ ChartJS.register(
 
 // 라인 차트 컴포넌트
 interface LineChartProps {
-  data: ChartData<"line">;
-  options?: ChartOptions<"line">;
+  data: ChartData<'line'>;
+  options?: ChartOptions<'line'>;
   height?: number;
 }
 
@@ -46,8 +46,8 @@ function LineChart({ data, options, height }: Readonly<LineChartProps>) {
 
 // 바 차트 컴포넌트
 interface BarChartProps {
-  data: ChartData<"bar">;
-  options?: ChartOptions<"bar">;
+  data: ChartData<'bar'>;
+  options?: ChartOptions<'bar'>;
   height?: number;
 }
 
@@ -56,15 +56,15 @@ function BarChart({ data, options, height }: Readonly<BarChartProps>) {
 }
 
 // 기본 차트 옵션
-const defaultLineChartOptions: ChartOptions<"line"> = {
+const defaultLineChartOptions: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: "top" as const,
+      position: 'top' as const,
     },
     tooltip: {
-      mode: "index",
+      mode: 'index',
       intersect: false,
     },
   },
@@ -76,12 +76,12 @@ const defaultLineChartOptions: ChartOptions<"line"> = {
 };
 
 // 기본 바 차트 옵션
-const defaultBarChartOptions: ChartOptions<"bar"> = {
+const defaultBarChartOptions: ChartOptions<'bar'> = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: "top" as const,
+      position: 'top' as const,
     },
   },
   scales: {
@@ -92,7 +92,7 @@ const defaultBarChartOptions: ChartOptions<"bar"> = {
 };
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: "", dark: ".dark" } as const;
+const THEMES = { light: '', dark: '.dark' } as const;
 
 export type ChartConfig = {
   [k in string]: {
@@ -114,7 +114,7 @@ function useChart() {
   const context = React.useContext(ChartContext);
 
   if (!context) {
-    throw new Error("useChart must be used within a <ChartContainer />");
+    throw new Error('useChart must be used within a <ChartContainer />');
   }
 
   return context;
@@ -122,15 +122,13 @@ function useChart() {
 
 const ChartContainer = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> & {
+  React.ComponentProps<'div'> & {
     config: ChartConfig;
-    children: React.ComponentProps<
-      typeof RechartsPrimitive.ResponsiveContainer
-    >["children"];
+    children: React.ComponentProps<typeof RechartsPrimitive.ResponsiveContainer>['children'];
   }
 >(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId();
-  const chartId = `chart-${id ?? uniqueId.replace(/:/g, "")}`;
+  const chartId = `chart-${id ?? uniqueId.replace(/:/g, '')}`;
 
   const memoizedValue = useMemo(() => ({ config }), [config]);
 
@@ -146,19 +144,15 @@ const ChartContainer = React.forwardRef<
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>
-          {children}
-        </RechartsPrimitive.ResponsiveContainer>
+        <RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
       </div>
     </ChartContext.Provider>
   );
 });
-ChartContainer.displayName = "Chart";
+ChartContainer.displayName = 'Chart';
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
-  const colorConfig = Object.entries(config).filter(
-    ([_, config]) => config.theme || config.color
-  );
+  const colorConfig = Object.entries(config).filter(([_, config]) => config.theme || config.color);
 
   if (!colorConfig.length) {
     return null;
@@ -173,12 +167,10 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ??
-      itemConfig.color;
+    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ?? itemConfig.color;
 
     if (!color) {
-      return "";
+      return '';
     }
 
     return `
@@ -186,11 +178,11 @@ ${colorConfig
   --chart-${key}-50: ${color}50;
 `;
   })
-  .join("")}
+  .join('')}
 }
 `
           )
-          .join("")
+          .join('')
           .trim(),
       }}
     />

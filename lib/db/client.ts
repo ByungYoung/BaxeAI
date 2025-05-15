@@ -1,6 +1,6 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import * as schema from "./schema";
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from './schema';
 
 // 환경 변수에서 데이터베이스 URL 가져오기
 const connectionString = process.env.POSTGRES_PRISMA_URL;
@@ -8,12 +8,12 @@ const connectionString = process.env.POSTGRES_PRISMA_URL;
 // 연결 문자열이 없으면 오류 발생
 if (!connectionString) {
   throw new Error(
-    "데이터베이스 연결 URL이 제공되지 않았습니다. POSTGRES_PRISMA_URL 환경 변수를 설정해주세요."
+    '데이터베이스 연결 URL이 제공되지 않았습니다. POSTGRES_PRISMA_URL 환경 변수를 설정해주세요.'
   );
 }
 
 // 개발 환경에서의 DB 연결 로깅
-const logQuery = process.env.NODE_ENV === "development";
+const logQuery = process.env.NODE_ENV === 'development';
 
 // postgres 클라이언트 생성
 const client = postgres(connectionString, {

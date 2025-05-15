@@ -1,8 +1,8 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { v4 as uuidv4 } from "uuid";
-import { MeasurementResult, UserInfo, MoodState } from "./types";
-import { HRVMetrics } from "./api-client";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { v4 as uuidv4 } from 'uuid';
+import { MeasurementResult, UserInfo, MoodState } from './types';
+import { HRVMetrics } from './api-client';
 
 interface AppState {
   // 사용자 정보
@@ -38,8 +38,7 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       // 사용자 정보
       userInfo: null,
-      setUserInfo: (info: UserInfo) =>
-        set({ userInfo: info, isAuthenticated: true }),
+      setUserInfo: (info: UserInfo) => set({ userInfo: info, isAuthenticated: true }),
       clearUserInfo: () => set({ userInfo: null, isAuthenticated: false }),
 
       // 로그인 상태
@@ -57,10 +56,7 @@ export const useAppStore = create<AppState>()(
         moodMatchScore?: number
       ) => {
         // 만약 객체가 들어왔다면 그대로 사용
-        if (
-          typeof resultOrHeartRate === "object" &&
-          resultOrHeartRate !== null
-        ) {
+        if (typeof resultOrHeartRate === 'object' && resultOrHeartRate !== null) {
           set({ currentResult: resultOrHeartRate });
           return;
         }
@@ -70,7 +66,7 @@ export const useAppStore = create<AppState>()(
         if (!userInfo) return;
 
         // 기본값으로 "unknown" 사용
-        const actualMood = mood || "unknown";
+        const actualMood = mood || 'unknown';
 
         set({
           currentResult: {
@@ -105,15 +101,15 @@ export const useAppStore = create<AppState>()(
         const current = get().currentResult;
         if (!current) return;
 
-        set((state) => ({
+        set(state => ({
           historyResults: [current, ...state.historyResults],
         }));
       },
       clearHistory: () => set({ historyResults: [] }),
     }),
     {
-      name: "rppg-app-storage", // 로컬 스토리지 키 이름
-      partialize: (state) => ({
+      name: 'rppg-app-storage', // 로컬 스토리지 키 이름
+      partialize: state => ({
         userInfo: state.userInfo,
         isAuthenticated: state.isAuthenticated,
         historyResults: state.historyResults,

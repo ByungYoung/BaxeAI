@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -14,7 +14,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -22,33 +22,31 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useAppStore } from "@/lib/store";
-import { AlertCircle, ArrowLeft } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import Link from "next/link";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from '@/components/ui/form';
+import { useAppStore } from '@/lib/store';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import Link from 'next/link';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // 회원가입 유효성 검사 스키마
 const signupSchema = z
   .object({
     name: z.string().optional(),
-    email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요." }),
-    password: z
-      .string()
-      .min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다." }),
+    email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
+    password: z.string().min(6, { message: '비밀번호는 최소 6자 이상이어야 합니다.' }),
     confirmPassword: z.string(),
     company: z.string().optional(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "비밀번호가 일치하지 않습니다.",
-    path: ["confirmPassword"],
+  .refine(data => data.password === data.confirmPassword, {
+    message: '비밀번호가 일치하지 않습니다.',
+    path: ['confirmPassword'],
   });
 
 // 측정 정보 유효성 검사 스키마
 const measureInfoSchema = z.object({
-  company: z.string().min(1, { message: "회사명을 입력해주세요." }),
-  email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요." }),
+  company: z.string().min(1, { message: '회사명을 입력해주세요.' }),
+  email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
   name: z.string().optional(),
 });
 
@@ -56,18 +54,18 @@ export default function RegisterPage() {
   const router = useRouter();
   const { setUserInfo } = useAppStore();
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("signup");
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('signup');
 
   // 회원가입 폼 초기화
   const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      company: "",
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      company: '',
     },
   });
 
@@ -75,9 +73,9 @@ export default function RegisterPage() {
   const measureForm = useForm<z.infer<typeof measureInfoSchema>>({
     resolver: zodResolver(measureInfoSchema),
     defaultValues: {
-      company: "",
-      email: "",
-      name: "",
+      company: '',
+      email: '',
+      name: '',
     },
   });
 
@@ -85,13 +83,13 @@ export default function RegisterPage() {
   async function onSignupSubmit(values: z.infer<typeof signupSchema>) {
     try {
       setSubmitting(true);
-      setError("");
+      setError('');
 
       // API 호출하여 사용자 회원가입 처리
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           name: values.name,
@@ -103,7 +101,7 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         // 서버에서 내려준 에러 메시지 추출
-        let errorMsg = "회원가입 중 오류가 발생했습니다";
+        let errorMsg = '회원가입 중 오류가 발생했습니다';
         try {
           const errorData = await response.json();
           if (errorData?.error) errorMsg = errorData.error;
@@ -119,37 +117,35 @@ export default function RegisterPage() {
       });
 
       // 측정 페이지로 이동
-      router.push("/measure");
+      router.push('/measure');
     } catch (err: any) {
-      setError(err.message || "회원가입 중 오류가 발생했습니다.");
-      console.error("Form submission error:", err);
+      setError(err.message || '회원가입 중 오류가 발생했습니다.');
+      console.error('Form submission error:', err);
     } finally {
       setSubmitting(false);
     }
   }
 
   // 측정 정보 폼 제출 처리
-  async function onMeasureInfoSubmit(
-    values: z.infer<typeof measureInfoSchema>
-  ) {
+  async function onMeasureInfoSubmit(values: z.infer<typeof measureInfoSchema>) {
     try {
       setSubmitting(true);
-      setError("");
+      setError('');
 
       // 사용자 정보 로컬 상태에 저장 (게스트 모드)
       setUserInfo({
         id: `guest-${Date.now()}`, // 고유한 게스트 ID 부여
         email: values.email,
-        name: values.name || values.email.split("@")[0],
+        name: values.name || values.email.split('@')[0],
         company: values.company,
         isGuest: true,
       });
 
       // 측정 페이지로 이동
-      router.push("/measure");
+      router.push('/measure');
     } catch (err) {
-      setError("정보 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
-      console.error("Form submission error:", err);
+      setError('정보 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error('Form submission error:', err);
     } finally {
       setSubmitting(false);
     }
@@ -174,9 +170,7 @@ export default function RegisterPage() {
           <Card>
             <CardHeader>
               <CardTitle>Baxe AI 정보 등록</CardTitle>
-              <CardDescription>
-                Baxe AI 서비스 사용을 위한 정보를 등록해주세요.
-              </CardDescription>
+              <CardDescription>Baxe AI 서비스 사용을 위한 정보를 등록해주세요.</CardDescription>
             </CardHeader>
             <CardContent>
               {error && (
@@ -200,10 +194,7 @@ export default function RegisterPage() {
 
                 <TabsContent value="signup" className="mt-6">
                   <Form {...signupForm}>
-                    <form
-                      onSubmit={signupForm.handleSubmit(onSignupSubmit)}
-                      className="space-y-4"
-                    >
+                    <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
                       <FormField
                         control={signupForm.control}
                         name="email"
@@ -250,8 +241,7 @@ export default function RegisterPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              비밀번호 확인{" "}
-                              <span className="text-red-500">*</span>
+                              비밀번호 확인 <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -272,10 +262,7 @@ export default function RegisterPage() {
                           <FormItem>
                             <FormLabel>이름</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="이름을 입력하세요 (선택사항)"
-                                {...field}
-                              />
+                              <Input placeholder="이름을 입력하세요 (선택사항)" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -289,22 +276,15 @@ export default function RegisterPage() {
                           <FormItem>
                             <FormLabel>소속(회사/기관)</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="소속을 입력하세요 (선택사항)"
-                                {...field}
-                              />
+                              <Input placeholder="소속을 입력하세요 (선택사항)" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
 
-                      <Button
-                        type="submit"
-                        className="w-full mt-2"
-                        disabled={submitting}
-                      >
-                        {submitting ? "등록 중..." : "회원가입 후 측정하기"}
+                      <Button type="submit" className="w-full mt-2" disabled={submitting}>
+                        {submitting ? '등록 중...' : '회원가입 후 측정하기'}
                       </Button>
                     </form>
                   </Form>
@@ -342,14 +322,10 @@ export default function RegisterPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              소속(회사/기관){" "}
-                              <span className="text-red-500">*</span>
+                              소속(회사/기관) <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="소속을 입력하세요"
-                                {...field}
-                              />
+                              <Input placeholder="소속을 입력하세요" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -363,22 +339,15 @@ export default function RegisterPage() {
                           <FormItem>
                             <FormLabel>이름</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="이름을 입력하세요 (선택사항)"
-                                {...field}
-                              />
+                              <Input placeholder="이름을 입력하세요 (선택사항)" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
 
-                      <Button
-                        type="submit"
-                        className="w-full mt-2"
-                        disabled={submitting}
-                      >
-                        {submitting ? "등록 중..." : "빠른 측정 시작하기"}
+                      <Button type="submit" className="w-full mt-2" disabled={submitting}>
+                        {submitting ? '등록 중...' : '빠른 측정 시작하기'}
                       </Button>
                     </form>
                   </Form>
@@ -394,7 +363,7 @@ export default function RegisterPage() {
 
           <div className="mt-4 text-center text-sm text-muted-foreground">
             <p>
-              이미 계정이 있으신가요?{" "}
+              이미 계정이 있으신가요?{' '}
               <Link href="/login" className="text-primary hover:underline">
                 로그인하기
               </Link>

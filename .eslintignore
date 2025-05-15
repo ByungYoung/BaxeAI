@@ -1,0 +1,18 @@
+# ESLint 무시할 파일 및 디렉토리
+.next
+node_modules
+public
+build
+dist
+*.lock
+.vercel
+api/python
+.git
+venv
+.vscode
+*.d.ts
+next-env.d.ts
+coverage
+.husky
+tmp
+pnpm-lock.yaml

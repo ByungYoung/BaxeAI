@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   useMutation,
@@ -6,7 +6,7 @@ import {
   UseMutationOptions,
   UseQueryOptions,
   QueryClient,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query';
 import {
   fetchMeasurementHistory,
   fetchUsers,
@@ -18,15 +18,15 @@ import {
   fetchMeasurementDetail,
   processRPPGFrames,
   generateCaricature,
-} from "@/lib/api";
-import { MeasurementResult, UserInfo } from "@/lib/types";
+} from '@/lib/api';
+import { MeasurementResult, UserInfo } from '@/lib/types';
 
 // 쿼리 키 상수
 export const QUERY_KEYS = {
-  MEASUREMENT_HISTORY: "measurementHistory",
-  MEASUREMENT_DETAIL: "measurementDetail",
-  USERS: "users",
-  USER: "user",
+  MEASUREMENT_HISTORY: 'measurementHistory',
+  MEASUREMENT_DETAIL: 'measurementDetail',
+  USERS: 'users',
+  USER: 'user',
 };
 
 /**
@@ -47,10 +47,7 @@ export function useMeasurementHistory(
 /**
  * 측정 결과 상세 조회 훅
  */
-export function useMeasurementDetail(
-  id?: string,
-  options?: UseQueryOptions<MeasurementResult>
-) {
+export function useMeasurementDetail(id?: string, options?: UseQueryOptions<MeasurementResult>) {
   return useQuery({
     queryKey: [QUERY_KEYS.MEASUREMENT_DETAIL, id],
     queryFn: () => fetchMeasurementDetail(id!),
@@ -62,10 +59,7 @@ export function useMeasurementDetail(
 /**
  * 사용자 목록 조회 훅
  */
-export function useUsers(
-  email?: string,
-  options?: UseQueryOptions<UserInfo[]>
-) {
+export function useUsers(email?: string, options?: UseQueryOptions<UserInfo[]>) {
   return useQuery({
     queryKey: [QUERY_KEYS.USERS, email],
     queryFn: () => fetchUsers(email),
@@ -96,7 +90,7 @@ export function useRegisterUser(
   >
 ) {
   return useMutation({
-    mutationFn: (data) => registerUser(data),
+    mutationFn: data => registerUser(data),
     ...options,
   });
 }
@@ -118,7 +112,7 @@ export function useUpdateUser(
   >
 ) {
   return useMutation({
-    mutationFn: (data) => updateUser(data),
+    mutationFn: data => updateUser(data),
     ...options,
   });
 }
@@ -126,11 +120,9 @@ export function useUpdateUser(
 /**
  * 사용자 삭제 훅 (mutation)
  */
-export function useDeleteUser(
-  options?: UseMutationOptions<{ deletedId: string }, Error, string>
-) {
+export function useDeleteUser(options?: UseMutationOptions<{ deletedId: string }, Error, string>) {
   return useMutation({
-    mutationFn: (id) => deleteUser(id),
+    mutationFn: id => deleteUser(id),
     ...options,
   });
 }
@@ -138,9 +130,7 @@ export function useDeleteUser(
 /**
  * 측정 결과 저장 훅 (mutation)
  */
-export function useSaveMeasurement(
-  options?: UseMutationOptions<MeasurementResult, Error, any>
-) {
+export function useSaveMeasurement(options?: UseMutationOptions<MeasurementResult, Error, any>) {
   return useMutation({
     mutationFn: (data: any) => saveMeasurementResult(data),
     ...options,
@@ -150,9 +140,7 @@ export function useSaveMeasurement(
 /**
  * rPPG 프레임 처리 훅 (mutation)
  */
-export function useProcessRPPG(
-  options?: UseMutationOptions<any, Error, string[]>
-) {
+export function useProcessRPPG(options?: UseMutationOptions<any, Error, string[]>) {
   return useMutation({
     mutationFn: (frames: string[]) => processRPPGFrames(frames),
     ...options,
@@ -178,10 +166,7 @@ export function useGenerateCaricature(
 /**
  * 쿼리 무효화 유틸리티 함수
  */
-export const invalidateQueries = async (
-  queryClient: QueryClient,
-  queryKey: string | string[]
-) => {
+export const invalidateQueries = async (queryClient: QueryClient, queryKey: string | string[]) => {
   const key = Array.isArray(queryKey) ? queryKey : [queryKey];
   await queryClient.invalidateQueries({ queryKey: key });
 };
