@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// 폴백 캐리커처 함수 - OpenAI API 호출이 실패할 경우 사용
+/**
+ * Returns a JSON response with a randomly selected fallback caricature image URL based on the specified mood.
+ *
+ * If the provided mood is not recognized, a neutral caricature image is used.
+ *
+ * @param mood - The mood category for selecting a caricature image. Defaults to 'neutral'.
+ * @returns A JSON response containing the caricature image URL and flags indicating it is a fallback and not AI-generated.
+ */
 function useFallbackCaricature(mood: string = 'neutral') {
   // 기분에 따른 다양한 미리 준비된 캐리커처 이미지
   const caricatureStyles: Record<string, string[]> = {
@@ -43,6 +50,15 @@ function useFallbackCaricature(mood: string = 'neutral') {
   });
 }
 
+/**
+ * Handles POST requests to generate a mood-based caricature image from an uploaded photo.
+ *
+ * Extracts the image file, mood, and user name from the form data. If the OpenAI API key is available, generates a caricature using DALL-E 3 with a prompt tailored to the specified mood and user name. If the API key is missing, the image generation fails, or the response is invalid, returns a fallback caricature image matching the mood.
+ *
+ * The response JSON includes the caricature image URL, a success flag, and an indicator of whether the image was AI-generated.
+ *
+ * @returns A JSON response containing the caricature image URL and status flags.
+ */
 export async function POST(request: Request) {
   try {
     const data = await request.formData();

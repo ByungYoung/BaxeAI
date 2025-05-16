@@ -13,6 +13,11 @@ import {
 } from '@/components/ui/select';
 import { useRef, useState } from 'react';
 
+/**
+ * Renders a client-side page for testing the caricature generation API, allowing users to upload an image, select a mood, and enter a user name to generate a caricature.
+ *
+ * Provides an interface for uploading an image file, previewing it, selecting a mood, and submitting the data to the `/api/caricature` endpoint. Displays the API response, including the generated caricature image if available, and indicates whether the image was AI-generated or a fallback.
+ */
 export default function ApiTestPage() {
   const [image, setImage] = useState<File | null>(null);
   const [mood, setMood] = useState<string>('neutral');

@@ -71,7 +71,14 @@ export async function analyzeHealthStatus(result: MeasurementResult): Promise<st
 }
 
 /**
- * 선택한 기분 상태에 맞는 간략한 관리 팁 제공
+ * Generates practical mood management tips based on the user's current mood and, if available, the detected facial expression and their degree of alignment.
+ *
+ * If the user's selected mood and detected facial expression differ, the tips include an analysis of this mismatch and advice for managing emotional incongruence. If they match, the tips are tailored to the degree of alignment. The response is provided in Korean.
+ *
+ * @param mood - The user's self-reported mood state.
+ * @param detectedMood - The mood state detected from the user's facial expression (optional).
+ * @param moodMatchScore - The percentage indicating how closely the detected mood matches the user's reported mood (optional).
+ * @returns Practical mood management tips in Korean, or an error message if the API key is missing or an error occurs.
  */
 export async function getMoodManagementTips(
   mood: MoodState,
@@ -161,7 +168,16 @@ export async function getMoodManagementTips(
 }
 
 /**
- * DALL-E 3를 사용하여 사용자 이미지로부터 캐리커처 생성
+ * Generates a digital caricature image of the user using DALL·E 3, styled according to the specified mood.
+ *
+ * The function takes a base64-encoded user image, applies a mood-based stylistic prompt, and requests DALL·E 3 to create an upper-body caricature with exaggerated but recognizable features. Returns the URL of the generated image or null if unsuccessful.
+ *
+ * @param imageBase64 - The user's image encoded in base64 format.
+ * @param mood - The mood state to influence the caricature's style. Defaults to 'neutral'.
+ * @param userName - The user's name for personalized prompt context. Defaults to '사용자'.
+ * @returns The URL of the generated caricature image, or null if generation fails.
+ *
+ * @remark Returns null if the OpenAI API key is missing or if the image URL cannot be retrieved from the response.
  */
 export async function generateCaricatureWithDALLE(
   imageBase64: string,
@@ -221,7 +237,12 @@ export async function generateCaricatureWithDALLE(
   }
 }
 
-// 도우미 함수: 기분 상태 텍스트 반환
+/**
+ * Returns the Korean descriptive text for a given mood state.
+ *
+ * @param mood - The mood state to convert.
+ * @returns The corresponding Korean description for the mood, or '알 수 없음' if the mood is undefined or unrecognized.
+ */
 function getMoodText(mood?: MoodState): string {
   switch (mood) {
     case 'happy':

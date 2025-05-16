@@ -13,7 +13,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// 측정 결과를 DB에 저장하는 함수
+/**
+ * Saves a measurement result to the database via a POST request.
+ *
+ * @param result - The measurement result containing user information and biometric data to be saved.
+ * @returns The parsed JSON response from the server.
+ *
+ * @throws {Error} If {@link result} is missing or does not contain a user ID, or if the server response is not OK.
+ */
 export async function saveMeasurementToDB(result: MeasurementResult) {
   if (!result || !result.userInfo.id) {
     throw new Error('사용자 정보 없이 결과를 저장할 수 없습니다');
