@@ -93,7 +93,7 @@ export default function MeasurePage() {
             ): void => {
               if (!detection || !canvas) return;
 
-              const ctx = canvas.getContext('2d');
+              const ctx = canvas.getContext('2d', { willReadFrequently: true });
               if (!ctx) return;
 
               // 캔버스 초기화

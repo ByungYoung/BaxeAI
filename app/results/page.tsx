@@ -176,7 +176,6 @@ export default function ResultsPage() {
         });
     }
   }, [currentResult, healthAnalysis, moodTips]);
-
   useEffect(() => {
     const loadFont = async () => {
       if (typeof window === 'undefined' || fontLoaded) return;
@@ -184,24 +183,39 @@ export default function ResultsPage() {
       try {
         // jsPDF에 폰트 추가
         if (pdfLanguage === 'ko' || pdfLanguage === 'ja') {
-          // 직접 파일 경로를 사용하여 폰트 로드
-          const fontUrl = `/fonts/NotoSansCJKkr-Regular.ttf`;
+          let fontBase64 = '';
+          let fontName = pdfLanguage === 'ko' ? 'NotoSansKR' : 'NotoSansJP';
 
-          // URL 객체로 폰트 가져오기
-          const fontResponse = await fetch(fontUrl);
+          try {
+            // 직접 파일 경로를 사용하여 폰트 로드
+            const fontUrl = `/fonts/NotoSansCJKkr-Regular.ttf`;
 
-          if (!fontResponse.ok) {
-            throw new Error(`폰트를 로드하지 못했습니다: ${fontResponse.statusText}`);
+            // URL 객체로 폰트 가져오기
+            const fontResponse = await fetch(fontUrl);
+
+            if (!fontResponse.ok) {
+              console.warn(
+                `폰트 파일을 불러오지 못했습니다: ${fontResponse.statusText}. 기본 폰트를 사용합니다.`
+              );
+              setFontLoaded(true);
+              return;
+            }
+
+            const fontData = await fontResponse.arrayBuffer();
+            fontBase64 = arrayBufferToBase64(fontData);
+          } catch (fontError) {
+            console.warn('폰트 로드 중 오류가 발생했습니다. 기본 폰트를 사용합니다.', fontError);
+            setFontLoaded(true);
+            return;
           }
 
-          const fontData = await fontResponse.arrayBuffer();
-          const fontBase64 = arrayBufferToBase64(fontData);
-
-          // jsPDF에 폰트 등록
-          const fontName = pdfLanguage === 'ko' ? 'NotoSansKR' : 'NotoSansJP';
-
-          if (window.jspdf && window.jspdf.addFont) {
-            window.jspdf.addFont(fontBase64, fontName, 'normal');
+          // 폰트 데이터가 정상적으로 로드된 경우에만 addFont 시도
+          if (fontBase64 && window.jspdf && window.jspdf.addFont) {
+            try {
+              window.jspdf.addFont(fontBase64, fontName, 'normal');
+            } catch (addFontError) {
+              console.warn('폰트 추가 중 오류가 발생했습니다:', addFontError);
+            }
           } else {
             console.warn('jsPDF 인스턴스가 없거나 addFont 메서드를 찾을 수 없습니다');
           }
@@ -317,7 +331,7 @@ export default function ResultsPage() {
         captureCanvasRef.current.height = videoRef.current.videoHeight || 480;
       }
 
-      const context = captureCanvasRef.current.getContext('2d');
+      const context = captureCanvasRef.current.getContext('2d', { willReadFrequently: true });
       if (context) {
         context.drawImage(
           videoRef.current,
