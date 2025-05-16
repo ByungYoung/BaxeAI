@@ -371,6 +371,16 @@ export default function ResultsPage() {
       const formData = new FormData();
       formData.append('image', blob, 'captured-image.jpg');
 
+      // 사용자의 기분과 이름 정보 추가
+      if (currentResult?.mood) {
+        formData.append('mood', currentResult.mood);
+      }
+
+      // 사용자 이름 추가 (사용자 정보가 있는 경우)
+      const userData = useAppStore.getState().userData;
+      const userName = userData?.name || userData?.username || '사용자';
+      formData.append('userName', userName);
+
       const response = await fetch('/api/caricature', {
         method: 'POST',
         body: formData,
