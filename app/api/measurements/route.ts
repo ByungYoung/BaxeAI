@@ -4,7 +4,15 @@ import { createId } from '@paralleldrive/cuid2';
 import { and, desc, eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-// 새로운 측정 결과 저장
+/**
+ * Handles POST requests to save a new measurement result and manage user information.
+ *
+ * Validates required fields (`heartRate`, `confidence`, `temperature`, and either `userEmail` or `userId`). Resolves the user by email or ID, creating or updating user records as needed, or assigns an anonymous user if necessary. Stores the measurement result with all provided biometric and mood-related fields, and returns the saved result along with user details.
+ *
+ * @returns A JSON response containing the newly created measurement result and associated user information, with HTTP status 201 on success.
+ *
+ * @throws {Error} If an unexpected error occurs during user or measurement result processing.
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

@@ -52,6 +52,12 @@ declare global {
   }
 }
 
+/**
+ * Returns the Korean label for a given stress level.
+ *
+ * @param level - The stress level identifier.
+ * @returns The corresponding Korean text for the stress level, or '분석 불가' if the level is unrecognized.
+ */
 function getStressLevelText(level: string): string {
   switch (level) {
     case '낮음':
@@ -108,6 +114,11 @@ function calculateStressLevel(rmssd: number): string {
   }
 }
 
+/**
+ * Displays and manages the results of a user's health and mood measurements, providing interactive features for analysis, face masking, caricature generation, and PDF report export.
+ *
+ * This component presents heart rate, temperature, stress level, mood, HRV metrics, and AI-generated insights. Users can capture facial images, generate AI caricatures, save results, and export detailed multilingual PDF reports. It integrates face detection, AI analysis, and PDF generation with robust error handling and user feedback.
+ */
 export default function ResultsPage() {
   const router = useRouter();
   const { currentResult, addToHistory, setCurrentResult } = useAppStore();
