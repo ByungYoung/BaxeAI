@@ -1,8 +1,16 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useAppStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -11,29 +19,29 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { toast } from '@/components/ui/use-toast';
+import { detectExpression, drawMoodMask, loadFaceDetectionModels } from '@/lib/face-detection';
+import { analyzeHealthStatus, getMoodManagementTips } from '@/lib/openai-client';
+import { useAppStore } from '@/lib/store';
+import { MoodState } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { jsPDF } from 'jspdf';
 import {
-  Smile,
-  Frown,
-  Meh,
   AlertCircle,
   Camera,
-  ImageIcon,
-  FileText,
   Download,
-  Loader2,
+  FileText,
+  Frown,
   Globe,
+  ImageIcon,
+  Loader2,
+  Meh,
+  Smile,
 } from 'lucide-react';
-import { MoodState } from '@/lib/types';
-import { toast } from '@/components/ui/use-toast';
-import { analyzeHealthStatus, getMoodManagementTips } from '@/lib/openai-client';
-import { loadFaceDetectionModels, detectExpression, drawMoodMask } from '@/lib/face-detection';
-import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
-import { jsPDF } from 'jspdf';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 // Extend the Window interface to include jspdf
 declare global {
@@ -43,15 +51,6 @@ declare global {
     };
   }
 }
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
-import { useLanguage } from '@/hooks/use-language';
 
 function getStressLevelText(level: string): string {
   switch (level) {
@@ -177,7 +176,6 @@ export default function ResultsPage() {
         });
     }
   }, [currentResult, healthAnalysis, moodTips]);
-
   useEffect(() => {
     const loadFont = async () => {
       if (typeof window === 'undefined' || fontLoaded) return;
@@ -185,24 +183,39 @@ export default function ResultsPage() {
       try {
         // jsPDF에 폰트 추가
         if (pdfLanguage === 'ko' || pdfLanguage === 'ja') {
-          // 직접 파일 경로를 사용하여 폰트 로드
-          const fontUrl = `/fonts/NotoSansCJKkr-Regular.ttf`;
+          let fontBase64 = '';
+          let fontName = pdfLanguage === 'ko' ? 'NotoSansKR' : 'NotoSansJP';
 
-          // URL 객체로 폰트 가져오기
-          const fontResponse = await fetch(fontUrl);
+          try {
+            // 직접 파일 경로를 사용하여 폰트 로드
+            const fontUrl = `/fonts/NotoSansCJKkr-Regular.ttf`;
 
-          if (!fontResponse.ok) {
-            throw new Error(`폰트를 로드하지 못했습니다: ${fontResponse.statusText}`);
+            // URL 객체로 폰트 가져오기
+            const fontResponse = await fetch(fontUrl);
+
+            if (!fontResponse.ok) {
+              console.warn(
+                `폰트 파일을 불러오지 못했습니다: ${fontResponse.statusText}. 기본 폰트를 사용합니다.`
+              );
+              setFontLoaded(true);
+              return;
+            }
+
+            const fontData = await fontResponse.arrayBuffer();
+            fontBase64 = arrayBufferToBase64(fontData);
+          } catch (fontError) {
+            console.warn('폰트 로드 중 오류가 발생했습니다. 기본 폰트를 사용합니다.', fontError);
+            setFontLoaded(true);
+            return;
           }
 
-          const fontData = await fontResponse.arrayBuffer();
-          const fontBase64 = arrayBufferToBase64(fontData);
-
-          // jsPDF에 폰트 등록
-          const fontName = pdfLanguage === 'ko' ? 'NotoSansKR' : 'NotoSansJP';
-
-          if (window.jspdf && window.jspdf.addFont) {
-            window.jspdf.addFont(fontBase64, fontName, 'normal');
+          // 폰트 데이터가 정상적으로 로드된 경우에만 addFont 시도
+          if (fontBase64 && window.jspdf && window.jspdf.addFont) {
+            try {
+              window.jspdf.addFont(fontBase64, fontName, 'normal');
+            } catch (addFontError) {
+              console.warn('폰트 추가 중 오류가 발생했습니다:', addFontError);
+            }
           } else {
             console.warn('jsPDF 인스턴스가 없거나 addFont 메서드를 찾을 수 없습니다');
           }
@@ -318,7 +331,7 @@ export default function ResultsPage() {
         captureCanvasRef.current.height = videoRef.current.videoHeight || 480;
       }
 
-      const context = captureCanvasRef.current.getContext('2d');
+      const context = captureCanvasRef.current.getContext('2d', { willReadFrequently: true });
       if (context) {
         context.drawImage(
           videoRef.current,
@@ -371,6 +384,16 @@ export default function ResultsPage() {
 
       const formData = new FormData();
       formData.append('image', blob, 'captured-image.jpg');
+
+      // 사용자의 기분과 이름 정보 추가
+      if (currentResult?.mood) {
+        formData.append('mood', currentResult.mood);
+      }
+
+      // 사용자 이름 추가 (사용자 정보가 있는 경우)
+      const userData = useAppStore.getState().userData;
+      const userName = userData?.name || userData?.username || '사용자';
+      formData.append('userName', userName);
 
       const response = await fetch('/api/caricature', {
         method: 'POST',
@@ -433,6 +456,7 @@ export default function ResultsPage() {
           userCompany: userData.company,
           heartRate: currentResult?.heartRate,
           confidence: currentResult?.confidence,
+          temperature: currentResult?.temperature, // 온도 정보 추가
           rmssd: currentResult?.hrv?.rmssd,
           sdnn: currentResult?.hrv?.sdnn,
           lf: currentResult?.hrv?.lf,
@@ -631,6 +655,18 @@ export default function ResultsPage() {
         yPos
       );
       yPos += lineHeight;
+
+      // 온도 정보 추가
+      if (currentResult.temperature) {
+        const temperatureText =
+          pdfLanguage === 'ko' ? '체온' : pdfLanguage === 'ja' ? '体温' : 'Temperature';
+        pdf.text(
+          temperatureText + ': ' + currentResult.temperature.toFixed(1) + '°C',
+          margin + 10,
+          yPos
+        );
+        yPos += lineHeight;
+      }
 
       const stressLevel =
         currentResult.hrv && currentResult.hrv.rmssd !== undefined
@@ -1111,6 +1147,12 @@ export default function ResultsPage() {
                   <span className="text-gray-500">심박수</span>
                   <span>{heartRate.toFixed(1)} BPM</span>
                 </div>
+                {currentResult.temperature !== undefined && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">체온</span>
+                    <span>{currentResult.temperature.toFixed(1)} °C</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-500">스트레스 레벨</span>
                   <span className={getStressLevelColor(stressLevel)}>

@@ -3,7 +3,7 @@ import { MeasurementResult, MoodState } from './types';
 
 // OpenAI API 클라이언트 초기화
 const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
   dangerouslyAllowBrowser: true, // 브라우저에서 사용 허용 (주의: 프로덕션에서는 서버 측 호출 권장)
 });
 
@@ -157,6 +157,67 @@ export async function getMoodManagementTips(
     return response.choices[0].message.content || '팁을 제공할 수 없습니다.';
   } catch (error) {
     return '팁을 가져오는 중 오류가 발생했습니다.';
+  }
+}
+
+/**
+ * DALL-E 3를 사용하여 사용자 이미지로부터 캐리커처 생성
+ */
+export async function generateCaricatureWithDALLE(
+  imageBase64: string,
+  mood: MoodState = 'neutral',
+  userName: string = '사용자'
+): Promise<string | null> {
+  try {
+    if (!process.env.NEXT_PUBLIC_OPENAI_API_KEY && !process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API 키가 설정되지 않았습니다.');
+      return null;
+    }
+
+    // 기분에 따른 스타일 설명 추가
+    let moodDescription = '';
+    switch (mood) {
+      case 'happy':
+        moodDescription = '행복하고 긍정적인 분위기의 밝은 색조와 활기찬';
+        break;
+      case 'sad':
+        moodDescription = '감성적이고 조금 쓸쓸한 느낌의 차분한';
+        break;
+      case 'stressed':
+        moodDescription = '긴장감이 느껴지는 역동적인';
+        break;
+      case 'relaxed':
+        moodDescription = '편안하고 여유로운 파스텔 톤의';
+        break;
+      default:
+        moodDescription = '균형잡힌 자연스러운';
+    }
+
+    // 캐리커처 생성 요청
+    const response = await openai.images.generate({
+      model: 'dall-e-3',
+      prompt: `다음 사진에 기반하여 ${moodDescription} 디지털 캐리커처 스타일로 재해석해주세요. 
+              인물의 특징적인 얼굴 생김새는 유지하되 약간 과장되고 캐릭터화된 귀여운 스타일로 그려주세요. 
+              밝고 깨끗한 배경에 머리부터 어깨까지 보이는 상반신 캐리커처로 만들어주세요. 
+              ${userName}님의 특징을 살린 매력적인 캐리커처를 만들어주세요.`,
+      n: 1,
+      size: '1024x1024',
+      quality: 'standard',
+      user: `user_${Date.now()}`,
+    });
+
+    if (response && response.data && response.data.length > 0) {
+      const imageUrl = response.data[0].url;
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+
+    console.error('DALL-E 응답에서 이미지 URL을 찾을 수 없습니다.');
+    return null;
+  } catch (error) {
+    console.error('캐리커처 생성 중 오류:', error);
+    return null;
   }
 }
 

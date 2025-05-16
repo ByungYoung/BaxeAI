@@ -107,7 +107,7 @@ export const RPPGCamera = ({
 
     const video = videoRef.current;
     const canvas = actualCanvasRef.current;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
 
     if (!context || video.videoWidth === 0 || video.videoHeight === 0) return;
 
@@ -135,7 +135,7 @@ export const RPPGCamera = ({
 
     const video = videoRef.current;
     const canvas = faceCanvasRef.current;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
 
     if (!context || video.videoWidth === 0 || video.videoHeight === 0) return;
 
@@ -445,7 +445,7 @@ export const RPPGCamera = ({
 
     const video = videoRef.current;
     const canvas = actualCanvasRef.current;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
 
     if (!context || video.videoWidth === 0 || video.videoHeight === 0) return;
 

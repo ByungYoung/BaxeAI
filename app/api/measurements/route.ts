@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { withDb } from '@/lib/db';
-import { users, measurementResults } from '@/lib/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { measurementResults, users } from '@/lib/db/schema';
 import { createId } from '@paralleldrive/cuid2';
+import { and, desc, eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from 'next/server';
 
 // 새로운 측정 결과 저장
 export async function POST(request: NextRequest) {
@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
       userCompany,
       heartRate,
       confidence,
+      temperature, // 온도 필드 추가
       rmssd,
       sdnn,
       lf,
@@ -22,11 +23,24 @@ export async function POST(request: NextRequest) {
       lfHfRatio,
       pnn50,
       mood, // 기분 상태 필드 추가
+      caricatureUrl, // 캐리커처 URL 필드 추가
     } = body;
 
     // 필수 항목 확인
     if (heartRate === undefined || confidence === undefined) {
       return NextResponse.json({ error: '심박수, 신뢰도는 필수 항목입니다.' }, { status: 400 });
+    }
+
+    // 온도와 이메일이 필수 항목으로 변경됨
+    if (temperature === undefined) {
+      return NextResponse.json({ error: '체온 정보는 필수 항목입니다.' }, { status: 400 });
+    }
+
+    if (!userEmail && !userId) {
+      return NextResponse.json(
+        { error: '사용자 이메일 또는 ID는 필수 항목입니다.' },
+        { status: 400 }
+      );
     }
 
     // withDb를 사용하여 데이터베이스 작업 수행 (관리자 권한으로 수행)
@@ -136,9 +150,10 @@ export async function POST(request: NextRequest) {
           .values({
             id: resultId,
             userId: finalUserId,
-            email: userEmail || (userInfo?.email ?? 'unknown@email.com'), // null 체크 추가
+            email: userEmail || (userInfo?.email ?? 'unknown@email.com'), // 이메일은 null 불가
             heartRate,
             confidence,
+            temperature: temperature || 36.5, // 온도 저장 (기본값 36.5)
             rmssd: rmssd || null,
             sdnn: sdnn || null,
             lf: lf || null,
@@ -146,6 +161,7 @@ export async function POST(request: NextRequest) {
             lfHfRatio: lfHfRatio || null,
             pnn50: pnn50 || null,
             mood: mood || null, // 기분 상태 저장
+            caricatureUrl: caricatureUrl || null, // 캐리커처 URL 저장
             timestamp: new Date(),
             createdAt: new Date(),
           })

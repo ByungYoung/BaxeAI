@@ -17,6 +17,7 @@ export interface MeasurementResult {
   timestamp: string;
   heartRate: number;
   confidence: number;
+  temperature?: number; // 온도 측정 필드 추가
   hrv?: HRVMetrics;
   userInfo: UserInfo;
   mood?: MoodState; // 사용자가 선택한 기분 상태

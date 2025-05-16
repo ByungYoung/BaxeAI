@@ -93,7 +93,7 @@ export default function MeasurePage() {
             ): void => {
               if (!detection || !canvas) return;
 
-              const ctx = canvas.getContext('2d');
+              const ctx = canvas.getContext('2d', { willReadFrequently: true });
               if (!ctx) return;
 
               // 캔버스 초기화
@@ -230,14 +230,19 @@ export default function MeasurePage() {
         );
       }
 
-      // 상태 저장 (기분 상태 포함)
+      // 온도 측정 (예: 체온을 시뮬레이션, 실제로는 온도 센서 데이터를 사용)
+      const randomTemp = 36.5 + (Math.random() * 1.0 - 0.5); // 36.0°C ~ 37.0°C 범위의 체온
+      const temperature = parseFloat(randomTemp.toFixed(1));
+
+      // 상태 저장 (기분 상태 및 온도 포함)
       setCurrentResult(
         result.heartRate,
         result.confidence,
         result.hrv,
         selectedMood,
         detectedMood || undefined,
-        moodMatchScore !== null ? moodMatchScore : undefined
+        moodMatchScore !== null ? moodMatchScore : undefined,
+        temperature
       );
 
       // 결과 페이지로 이동

@@ -1,15 +1,6 @@
-import {
-  pgTable,
-  varchar,
-  timestamp,
-  boolean,
-  text,
-  pgEnum,
-  real,
-  uniqueIndex,
-} from 'drizzle-orm/pg-core';
-import { relations, sql } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
+import { relations, sql } from 'drizzle-orm';
+import { boolean, pgEnum, pgTable, real, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // 기분 상태를 위한 enum 타입 정의
 export const moodEnum = pgEnum('mood', ['happy', 'sad', 'stressed', 'relaxed', 'neutral']);
@@ -40,6 +31,7 @@ export const measurementResults = pgTable('MeasurementResult', {
   timestamp: timestamp('timestamp').notNull().defaultNow(),
   heartRate: real('heartRate').notNull(),
   confidence: real('confidence').notNull(),
+  temperature: real('temperature').notNull(), // 온도 측정 필드 추가 (null 불가)
   rmssd: real('rmssd'),
   sdnn: real('sdnn'),
   lf: real('lf'),
@@ -47,11 +39,12 @@ export const measurementResults = pgTable('MeasurementResult', {
   lfHfRatio: real('lfHfRatio'),
   pnn50: real('pnn50'),
   mood: varchar('mood'),
+  caricatureUrl: varchar('caricatureUrl'), // 캐리커처 URL 필드 추가
   userId: varchar('userId')
     .notNull()
     .references(() => users.id),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
-  email: varchar('email'),
+  email: varchar('email').notNull(), // 이메일은 null 불가
 });
 
 // 관계 정의

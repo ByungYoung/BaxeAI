@@ -1,9 +1,9 @@
 'use client';
 
 import { type ClassValue, clsx } from 'clsx';
+import { useEffect, useLayoutEffect } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { MeasurementResult } from './types';
-import { use, useEffect, useLayoutEffect } from 'react';
 
 // 서버 사이드 렌더링에서 useLayoutEffect 경고를 방지하기 위한 유틸리티 함수
 export const useIsomorphicLayoutEffect =
@@ -29,12 +29,14 @@ export async function saveMeasurementToDB(result: MeasurementResult) {
         userId: result.userInfo.id,
         heartRate: result.heartRate,
         confidence: result.confidence,
+        temperature: result.temperature, // 온도 추가
         rmssd: result.hrv?.rmssd,
         sdnn: result.hrv?.sdnn,
         lf: result.hrv?.lf,
         hf: result.hrv?.hf,
         lfHfRatio: result.hrv?.lfHfRatio,
         pnn50: result.hrv?.pnn50,
+        mood: result.mood,
       }),
     });
 

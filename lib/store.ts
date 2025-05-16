@@ -1,8 +1,8 @@
+import { v4 as uuidv4 } from 'uuid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { v4 as uuidv4 } from 'uuid';
-import { MeasurementResult, UserInfo, MoodState } from './types';
 import { HRVMetrics } from './api-client';
+import { MeasurementResult, MoodState, UserInfo } from './types';
 
 interface AppState {
   // 사용자 정보
@@ -22,7 +22,8 @@ interface AppState {
     hrv?: HRVMetrics,
     mood?: MoodState,
     detectedMood?: MoodState,
-    moodMatchScore?: number
+    moodMatchScore?: number,
+    temperature?: number
   ) => void;
   updateCurrentMood: (mood: MoodState) => void;
   resetCurrentResult: () => void;
@@ -53,7 +54,8 @@ export const useAppStore = create<AppState>()(
         hrv?: HRVMetrics,
         mood?: MoodState,
         detectedMood?: MoodState,
-        moodMatchScore?: number
+        moodMatchScore?: number,
+        temperature?: number
       ) => {
         // 만약 객체가 들어왔다면 그대로 사용
         if (typeof resultOrHeartRate === 'object' && resultOrHeartRate !== null) {
@@ -74,6 +76,7 @@ export const useAppStore = create<AppState>()(
             timestamp: new Date().toISOString(),
             heartRate,
             confidence: confidence || 0,
+            temperature,
             hrv,
             userInfo,
             mood: actualMood,
