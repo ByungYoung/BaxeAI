@@ -306,7 +306,13 @@ export const FaceMeasurementCamera = ({
   // 카운트다운 인터벌 참조 (컴포넌트 최상위 레벨에서 선언)
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 녹화 시작 함수는 startCountdown에 통합되었습니다  // 카운트다운 시작 - 안정성 개선 버전
+  /**
+   * Initiates a 5-second countdown before starting the recording phase for facial measurement.
+   *
+   * Resets all timers, frame data, and temperature history, then updates the component state to reflect the countdown. When the countdown completes, transitions to the recording phase, starts frame capture at a device-dependent interval, and begins the measurement timer.
+   *
+   * @returns A cleanup function to stop the countdown if the component unmounts or the countdown is interrupted.
+   */
   function startCountdown() {
     // 카운트다운 로그 제거
 
@@ -388,7 +394,9 @@ export const FaceMeasurementCamera = ({
     };
   }
 
-  // 측정 타이머 시작 (별도 함수로 분리)
+  /**
+   * Starts the measurement timer, updating remaining time and progress each second, and stops recording when the duration elapses.
+   */
   function startMeasurementTimer() {
     setRemainingTime(measurementTime);
     // 측정 로그 제거

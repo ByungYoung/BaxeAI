@@ -294,6 +294,30 @@ try {
       execSync(`chmod +x ${pythonScriptPath}`);
       log('스크립트 실행 권한 설정 완료');
 
+      // Vercel 배포를 위해 스크립트 파일을 여러 위치에 복사
+      const additionalPaths = [
+        path.join(process.cwd(), 'process_rppg.py'),
+        path.join(process.cwd(), 'api', 'python', 'process_rppg.py'),
+      ];
+
+      additionalPaths.forEach(destPath => {
+        try {
+          // 대상 디렉토리 생성 (없는 경우)
+          const destDir = path.dirname(destPath);
+          if (!fs.existsSync(destDir)) {
+            fs.mkdirSync(destDir, { recursive: true });
+            log(`디렉토리 생성됨: ${destDir}`);
+          }
+
+          // 파일 복사
+          fs.copyFileSync(pythonScriptPath, destPath);
+          execSync(`chmod +x ${destPath}`);
+          log(`스크립트 복사 완료: ${destPath}`);
+        } catch (copyError) {
+          log(`스크립트 복사 실패 (${destPath}): ${copyError.message}`);
+        }
+      });
+
       // 스크립트 테스트 실행 (오류 캡처용)
       log('process_rppg.py 스크립트 테스트 실행...');
       try {
@@ -314,6 +338,81 @@ try {
   } else {
     log('경고: scripts 디렉토리를 찾을 수 없습니다.');
   }
+
+  // Python 스크립트 파일을 Vercel 환경에서 접근 가능한 위치로 복사
+  function copyPythonScripts() {
+    log('Python 스크립트 파일을 Vercel 환경에 복사합니다...');
+
+    // 소스 및 대상 경로
+    const scriptSrcPath = path.join(process.cwd(), 'scripts', 'process_rppg.py');
+    const scriptDestPath = path.join(process.cwd(), 'process_rppg.py');
+
+    try {
+      // 스크립트 파일이 존재하는지 확인
+      if (fs.existsSync(scriptSrcPath)) {
+        // 파일 복사
+        fs.copyFileSync(scriptSrcPath, scriptDestPath);
+        log(`스크립트 파일을 복사했습니다: ${scriptSrcPath} -> ${scriptDestPath}`);
+
+        // 실행 권한 부여 (Linux/Mac 환경)
+        if (process.platform !== 'win32') {
+          try {
+            execSync(`chmod +x ${scriptDestPath}`);
+            log(`스크립트 파일에 실행 권한을 부여했습니다: ${scriptDestPath}`);
+          } catch (error) {
+            log(`실행 권한 부여 실패: ${error.message}`);
+          }
+        }
+      } else {
+        log(`스크립트 파일이 존재하지 않습니다: ${scriptSrcPath}`);
+      }
+    } catch (error) {
+      log(`스크립트 파일 복사 중 오류가 발생했습니다: ${error.message}`);
+    }
+  }
+
+  // 폰트 파일을 Vercel 환경에서 접근 가능한 위치로 복사
+  function copyFontFiles() {
+    log('폰트 파일을 Vercel 환경에 복사합니다...');
+
+    const fontFiles = ['NotoSansCJKkr-Regular.ttf', 'NanumGothic-Regular.ttf'];
+    const fontSrcDir = path.join(process.cwd(), 'public', 'fonts');
+    const fontDestDirs = [
+      path.join(process.cwd(), 'fonts'),
+      path.join(process.cwd(), '.vercel', 'output', 'static', 'fonts'),
+      path.join(process.cwd(), '.next', 'server', 'fonts'),
+      path.join(process.cwd(), '.next', 'static', 'fonts'),
+    ];
+
+    // 각 폰트 파일 복사
+    fontFiles.forEach(fontFile => {
+      const fontSrcPath = path.join(fontSrcDir, fontFile);
+
+      if (fs.existsSync(fontSrcPath)) {
+        // 각 대상 디렉토리에 복사
+        fontDestDirs.forEach(destDir => {
+          try {
+            // 대상 디렉토리 생성 (없는 경우)
+            if (!fs.existsSync(destDir)) {
+              fs.mkdirSync(destDir, { recursive: true });
+              log(`폰트 디렉토리 생성됨: ${destDir}`);
+            }
+
+            const fontDestPath = path.join(destDir, fontFile);
+            fs.copyFileSync(fontSrcPath, fontDestPath);
+            log(`폰트 파일 복사 완료: ${fontSrcPath} -> ${fontDestPath}`);
+          } catch (copyError) {
+            log(`폰트 파일 복사 실패 (${destDir}/${fontFile}): ${copyError.message}`);
+          }
+        });
+      } else {
+        log(`폰트 파일이 존재하지 않습니다: ${fontSrcPath}`);
+      }
+    });
+  }
+
+  copyPythonScripts();
+  copyFontFiles();
 
   log('Python 환경 설정 완료');
 } catch (error) {

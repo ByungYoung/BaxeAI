@@ -2,6 +2,7 @@
 """
 This script processes a sequence of frames using simplified rPPG extraction for Mac M1.
 Additional HRV metrics calculation is implemented.
+Vercel deployment considerations added.
 """
 
 import sys
@@ -14,6 +15,13 @@ from scipy import signal
 from scipy import interpolate
 from scipy.signal import detrend
 from scipy.integrate import trapezoid  # trapz 대신 trapezoid 함수 import
+
+# Vercel 환경에서 디버그 정보 출력
+print(f"Python 버전: {sys.version}", file=sys.stderr)
+print(f"실행 경로: {os.getcwd()}", file=sys.stderr)
+print(f"스크립트 경로: {__file__}", file=sys.stderr)
+print(f"시스템 경로: {sys.path}", file=sys.stderr)
+print(f"명령행 인수: {sys.argv}", file=sys.stderr)
 
 # 시뮬레이션된 결과 생성 함수 추가 - 오류 발생 시 대체 데이터로 사용
 def generate_simulated_results(error_message):

@@ -20,6 +20,13 @@ import { AlertCircle, ArrowLeft, Frown, Meh, Smile } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+/**
+ * Renders the biometric and mental wellness measurement page, enabling users to select their mood, analyze facial expressions, and capture video frames for heart rate and biomarker analysis.
+ *
+ * Integrates camera input, AI-based face and mood detection, and backend processing to provide real-time feedback and measurement results. Displays visual overlays for detected mood and navigates to the results page upon successful measurement.
+ *
+ * @returns The measurement interface React component.
+ */
 export default function MeasurePage() {
   const router = useRouter();
   const { userInfo, setCurrentResult } = useAppStore();

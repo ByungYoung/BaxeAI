@@ -52,6 +52,12 @@ declare global {
   }
 }
 
+/**
+ * Returns the Korean label for a given stress level.
+ *
+ * @param level - The stress level identifier.
+ * @returns The corresponding Korean text for the stress level, or '분석 불가' if the level is unrecognized.
+ */
 function getStressLevelText(level: string): string {
   switch (level) {
     case '낮음':
@@ -108,6 +114,11 @@ function calculateStressLevel(rmssd: number): string {
   }
 }
 
+/**
+ * Displays and manages the results of a user's health and mood measurements, providing interactive features for analysis, face masking, caricature generation, and PDF report export.
+ *
+ * This component presents heart rate, temperature, stress level, mood, HRV metrics, and AI-generated insights. Users can capture facial images, generate AI caricatures, save results, and export detailed multilingual PDF reports. It integrates face detection, AI analysis, and PDF generation with robust error handling and user feedback.
+ */
 export default function ResultsPage() {
   const router = useRouter();
   const { currentResult, addToHistory, setCurrentResult } = useAppStore();
@@ -186,25 +197,44 @@ export default function ResultsPage() {
           let fontBase64 = '';
           let fontName = pdfLanguage === 'ko' ? 'NotoSansKR' : 'NotoSansJP';
 
-          try {
-            // 직접 파일 경로를 사용하여 폰트 로드
-            const fontUrl = `/fonts/NotoSansCJKkr-Regular.ttf`;
+          // 여러 가능한 경로를 시도
+          const possibleFontPaths = [
+            `/fonts/NotoSansCJKkr-Regular.ttf`,
+            `/NotoSansCJKkr-Regular.ttf`,
+            `fonts/NotoSansCJKkr-Regular.ttf`,
+            `./fonts/NotoSansCJKkr-Regular.ttf`,
+            `../fonts/NotoSansCJKkr-Regular.ttf`,
+            `/public/fonts/NotoSansCJKkr-Regular.ttf`,
+            // 대체 폰트 경로도 시도
+            `/fonts/NanumGothic-Regular.ttf`,
+            `/NanumGothic-Regular.ttf`,
+          ];
 
-            // URL 객체로 폰트 가져오기
-            const fontResponse = await fetch(fontUrl);
+          let isFontLoaded = false;
+          console.log('폰트 로드 시도 시작...');
 
-            if (!fontResponse.ok) {
-              console.warn(
-                `폰트 파일을 불러오지 못했습니다: ${fontResponse.statusText}. 기본 폰트를 사용합니다.`
-              );
-              setFontLoaded(true);
-              return;
+          // 가능한 모든 경로 시도
+          for (const fontUrl of possibleFontPaths) {
+            try {
+              console.log(`폰트 로드 시도: ${fontUrl}`);
+              const fontResponse = await fetch(fontUrl);
+
+              if (fontResponse.ok) {
+                console.log(`폰트 로드 성공: ${fontUrl}`);
+                const fontData = await fontResponse.arrayBuffer();
+                fontBase64 = arrayBufferToBase64(fontData);
+                isFontLoaded = true;
+                break;
+              } else {
+                console.warn(`폰트 파일 로드 실패 (${fontUrl}): ${fontResponse.statusText}`);
+              }
+            } catch (fetchError) {
+              console.warn(`폰트 파일 경로 오류 (${fontUrl}): ${(fetchError as Error).message}`);
             }
+          }
 
-            const fontData = await fontResponse.arrayBuffer();
-            fontBase64 = arrayBufferToBase64(fontData);
-          } catch (fontError) {
-            console.warn('폰트 로드 중 오류가 발생했습니다. 기본 폰트를 사용합니다.', fontError);
+          if (!isFontLoaded) {
+            console.warn('모든 폰트 경로 시도 실패. 기본 폰트를 사용합니다.');
             setFontLoaded(true);
             return;
           }
@@ -213,6 +243,7 @@ export default function ResultsPage() {
           if (fontBase64 && window.jspdf && window.jspdf.addFont) {
             try {
               window.jspdf.addFont(fontBase64, fontName, 'normal');
+              console.log(`폰트 정상 추가됨: ${fontName}`);
             } catch (addFontError) {
               console.warn('폰트 추가 중 오류가 발생했습니다:', addFontError);
             }
@@ -391,8 +422,8 @@ export default function ResultsPage() {
       }
 
       // 사용자 이름 추가 (사용자 정보가 있는 경우)
-      const userData = useAppStore.getState().userData;
-      const userName = userData?.name || userData?.username || '사용자';
+      const userInfo = currentResult?.userInfo;
+      const userName = userInfo?.name || '사용자';
       formData.append('userName', userName);
 
       const response = await fetch('/api/caricature', {
@@ -504,6 +535,18 @@ export default function ResultsPage() {
         unit: 'mm',
         format: 'a4',
       });
+
+      // PDF에 사용할 폰트 설정 (폰트 로드 시도)
+      if (pdfLanguage === 'ko' || pdfLanguage === 'ja') {
+        try {
+          // 내장 폰트를 사용하도록 설정
+          pdf.setFont('helvetica');
+          console.log('PDF에 기본 폰트 설정됨: helvetica');
+        } catch (fontError) {
+          console.warn('PDF에 폰트 설정 중 오류:', fontError);
+          // 오류가 발생해도 계속 진행
+        }
+      }
 
       // PDF 언어에 따른 텍스트 설정
       const headerText =
@@ -927,7 +970,7 @@ export default function ResultsPage() {
                     '現在休息・回復モードが活性化された状態です。心身をリフレッシュするのに良い状態ですが、重要な業務や意思決定が必要な場合は集中力を高める活動が役立つ可能性があります。'
                   )
                   .replace(
-                    '긴장과 휴식 사이에서 균형이 잘 잡힌 상태입니다. 현재 업무와 휴식을 적절히 병行할 수 있는 이상적인 상태입니다。',
+                    '긴장과 휴식 사이에서 균형이 잘 잡힌 상태입니다. 현재 업무와 휴식을 적절히 병행할 수 있는 이상적인 상태입니다。',
                     '緊張と休息の間でバランスが取れている状態です。現在、業務と休息を適切に両立できる理想的な状態です。'
                   )
                   .replace(
