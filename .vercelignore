@@ -12,7 +12,6 @@ _.tar.gz
 \*.egg-info
 models/
 datasets/
-public/fonts/
 public/models/
 api/python/build.sh
 api/python/version.py

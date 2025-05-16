@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import fs from 'fs/promises';
+import { NextResponse } from 'next/server';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -89,7 +89,16 @@ async function runPyVHR(
 
     return new Promise((resolve, reject) => {
       // Path to Python script that uses pyVHR
-      const pythonScript = path.join(process.cwd(), 'scripts', 'process_rppg.py');
+      // Vercel 환경에서는 경로가 다를 수 있으므로 다중 경로 확인
+      const possibleScriptPaths = [
+        path.join(process.cwd(), 'scripts', 'process_rppg.py'),
+        path.join('/var', 'task', 'scripts', 'process_rppg.py'),
+        path.join('/var', 'task', 'process_rppg.py'),
+        path.join(process.cwd(), 'process_rppg.py'),
+      ];
+
+      console.log('실행 경로:', process.cwd());
+      console.log('가능한 스크립트 경로:', possibleScriptPaths);
 
       // 15초 타임아웃 설정 (Vercel에서는 조금 더 길게)
       const timeout = setTimeout(() => {
@@ -97,18 +106,18 @@ async function runPyVHR(
         resolve(createSimulatedResult('스크립트 실행 시간 초과 (Vercel)'));
       }, 15000);
 
-      // 스크립트 존재 여부 먼저 확인
-      fs.access(pythonScript)
-        .then(() => {
+      // 모든 가능한 경로 확인 및 첫 번째 찾은 스크립트 사용
+      findScriptPath(possibleScriptPaths, 0)
+        .then(foundScriptPath => {
           // 먼저 Vercel 환경에서 Python 실행 가능한지 로그 출력
-          console.log(`Python 스크립트 경로: ${pythonScript}`);
+          console.log(`Python 스크립트 경로: ${foundScriptPath}`);
           console.log(`프레임 디렉토리 경로: ${framesDir}`);
 
           // Vercel 환경에 맞춘 Python 경로 시도
           findWorkingPython(
             pythonPaths,
             0,
-            pythonScript,
+            foundScriptPath,
             framesDir,
             result => {
               clearTimeout(timeout);
@@ -123,7 +132,7 @@ async function runPyVHR(
         })
         .catch(err => {
           clearTimeout(timeout);
-          console.error(`Python script not found at ${pythonScript}. Error: ${err.message}`);
+          console.error(`Python script not found. Error: ${err.message}`);
           resolve(createSimulatedResult(`스크립트를 찾을 수 없음: ${err.message}`));
         });
     });
@@ -222,6 +231,25 @@ function createSimulatedResult(errorReason?: string): {
     simulatedData: true,
     error: errorReason,
   };
+}
+
+/**
+ * 모든 가능한 스크립트 경로를 확인하고 첫 번째 존재하는 스크립트를 찾음
+ */
+async function findScriptPath(scriptPaths: string[], index: number): Promise<string> {
+  if (index >= scriptPaths.length) {
+    throw new Error('사용 가능한 Python 스크립트를 찾을 수 없습니다');
+  }
+
+  const scriptPath = scriptPaths[index];
+  try {
+    await fs.access(scriptPath);
+    console.log(`스크립트를 찾았습니다: ${scriptPath}`);
+    return scriptPath;
+  } catch (error) {
+    console.log(`스크립트가 존재하지 않습니다: ${scriptPath}`);
+    return findScriptPath(scriptPaths, index + 1);
+  }
 }
 
 /**
