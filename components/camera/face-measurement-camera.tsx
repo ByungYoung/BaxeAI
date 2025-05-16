@@ -413,9 +413,8 @@ export const FaceMeasurementCamera = ({
 
       const elapsedSecs = measurementTime - timerState.timeRemaining;
       const elapsedMs = Date.now() - startTime;
-      // 로그 제거 (
-        `남은 시간: ${timerState.timeRemaining}초 (경과: ${elapsedSecs}s / ${elapsedMs}ms)`
-      );
+      // 로그 제거
+      // console.log(`남은 시간: ${timerState.timeRemaining}초 (경과: ${elapsedSecs}s / ${elapsedMs}ms)`);
 
       // 상태 업데이트 (함수형 업데이트로 클로저 문제 방지)
       setRemainingTime(timerState.timeRemaining);
@@ -481,13 +480,6 @@ export const FaceMeasurementCamera = ({
       return;
     }
 
-    // 진행 중인 모든 작업 상태 확인
-    // 카메라 로그 제거
-    // 얼굴 감지 로그 제거
-    // 카운트다운 로그 제거
-    // 로그 제거
-    // 로그 제거
-
     // 모든 타이머 정리
     clearAllTimers();
 
@@ -501,9 +493,7 @@ export const FaceMeasurementCamera = ({
         // 각 트랙을 개별적으로 중지
         tracks.forEach(track => {
           try {
-            // 로그 제거 (
-              `카메라 트랙 중지: ${track.kind}, ${track.label || 'label 없음'}, 활성: ${track.enabled}`
-            );
+            `카메라 트랙 중지: ${track.kind}, ${track.label || 'label 없음'}, 활성: ${track.enabled}`;
             track.stop();
           } catch (trackErr) {
             console.warn('트랙 중지 중 오류 발생:', trackErr);
@@ -513,17 +503,14 @@ export const FaceMeasurementCamera = ({
         // 비디오 요소에서 스트림 제거
         videoRef.current.srcObject = null;
         setCameraActive(false);
-        // 카메라 로그 제거
       } catch (streamErr) {
         console.error('스트림 정리 중 오류 발생:', streamErr);
       }
     } else {
-      // 카메라 로그 제거
     }
 
     // 얼굴 감지 타이머 정리 - 중복 정리 방지 로직 추가
     if (faceDetectionRef.current) {
-      // 얼굴 감지 로그 제거
       clearInterval(faceDetectionRef.current);
       faceDetectionRef.current = null;
     }
@@ -681,33 +668,20 @@ export const FaceMeasurementCamera = ({
     try {
       // 기존 카메라 스트림이 있다면 정리
       if (videoRef.current?.srcObject) {
-        // 카메라 로그 제거
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => {
           track.stop();
-          // 카메라 로그 제거
         });
         videoRef.current.srcObject = null;
       }
 
-      // 카메라 로그 제거
       setCameraError(null);
 
       try {
-        // 카메라 로그 제거
         const stream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
-        // 카메라 로그 제거
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => {
-            // 로그 제거 (
-              '비디오 메타데이터 로드됨, 해상도:',
-              videoRef.current?.videoWidth,
-              'x',
-              videoRef.current?.videoHeight
-            );
-          };
 
           setCameraActive(true);
           setStatusMessage("카메라가 초기화되었습니다. '측정 시작' 버튼을 클릭하세요.");
@@ -774,7 +748,6 @@ export const FaceMeasurementCamera = ({
         if (cameraActive) {
           if (!videoRef.current?.srcObject) {
             // 카메라 로그 제거
-
             // 연결 유지 확인만 하고 카메라는 재시작하지 않음
             // 심각한 연결 문제가 있을 때만 로그 기록
             // 카메라 로그 제거
@@ -882,19 +855,16 @@ export const FaceMeasurementCamera = ({
           .getUserMedia(cameraConstraints)
           .then(stream => {
             if (!videoRef.current) {
-              // 로그 제거
               stream.getTracks().forEach(track => track.stop());
               return;
             }
 
             // 이미 초기화되었는지 재확인 (비동기 처리 중 변경 가능성)
             if (videoRef.current.srcObject) {
-              // 로그 제거
               stream.getTracks().forEach(track => track.stop());
               return;
             }
 
-            // 카메라 로그 제거
             videoRef.current.srcObject = stream;
             setCameraActive(true);
             setStatusMessage("카메라가 초기화되었습니다. '측정 시작' 버튼을 클릭하세요.");
@@ -902,7 +872,6 @@ export const FaceMeasurementCamera = ({
             // 얼굴 감지 타이머 - 기존 타이머가 없을 때만 시작
             if (!faceDetectionRef.current) {
               const detectionInterval = isMobile ? 500 : 200;
-              // 얼굴 감지 로그 제거
               faceDetectionRef.current = setInterval(detectFace, detectionInterval);
             }
           })
@@ -917,16 +886,12 @@ export const FaceMeasurementCamera = ({
 
       // 프레임 캡처 모드 설정
       if (onFrameCaptured && !captureIntervalRef.current) {
-        // 로그 제거
         setStatus('recording');
         captureIntervalRef.current = setInterval(captureFrameForExternal, 100);
       }
     } else if (!active && isCameraCurrentlyActive) {
-      // 카메라 로그 제거
-
       // 측정 중이면 중지
       if (status === 'recording' || status === 'countdown') {
-        // 측정 로그 제거
         stopRecordingAndProcess();
       }
 
@@ -944,14 +909,12 @@ export const FaceMeasurementCamera = ({
 
       // 얼굴 감지 타이머 정리
       if (faceDetectionRef.current) {
-        // 얼굴 감지 로그 제거
         clearInterval(faceDetectionRef.current);
         faceDetectionRef.current = null;
       }
 
       // 캡처 타이머 정리
       if (captureIntervalRef.current) {
-        // 로그 제거
         clearInterval(captureIntervalRef.current);
         captureIntervalRef.current = null;
       }
@@ -1096,21 +1059,8 @@ export const FaceMeasurementCamera = ({
   useEffect(() => {
     // 초기 마운트시에만 현재 디바이스 타입 로깅
     if (initialRenderRef.current) {
-      // 디바이스 로그 제거
       initialRenderRef.current = false;
       return;
-    }
-
-    // 변경 감지 - 로그만 남기고 아무 액션 없음
-    const currentType = isMobile ? '모바일' : '데스크톱';
-    if (prevDeviceTypeRef.current !== currentType) {
-      // 로그 제거 (
-        '[정보] 디바이스 타입 변경 감지됨 (액션 없음):',
-        prevDeviceTypeRef.current,
-        '->',
-        currentType
-      );
-      // 디바이스 타입이 변경되더라도 카메라 설정 유지
     }
   }, [isMobile]);
 
